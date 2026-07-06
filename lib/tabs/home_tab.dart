@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../models/transaction.dart';
 import '../widgets/interactive_card.dart';
 
@@ -12,11 +13,13 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab> {
   late ScrollController _scrollController;
-  
+
   // Performance Masterstroke: We use a ValueNotifier instead of calling setState!
-  // This allows us to update only the header on scroll ticks, leaving the heavy 
+  // This allows us to update only the header on scroll ticks, leaving the heavy
   // scrollable body (with 9 styled transaction cards) completely untouched and cached in the widget tree.
-  final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier<double>(
+    0.0,
+  );
 
   @override
   void initState() {
@@ -25,7 +28,10 @@ class _HomeTabState extends State<HomeTab> {
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
         // Direct assignment on the notifier - does NOT trigger setState/rebuild of this whole state!
-        _scrollOffsetNotifier.value = _scrollController.offset.clamp(0.0, 150.0);
+        _scrollOffsetNotifier.value = _scrollController.offset.clamp(
+          0.0,
+          150.0,
+        );
       }
     });
   }
@@ -45,9 +51,11 @@ class _HomeTabState extends State<HomeTab> {
     // Dynamic colors for Light/Dark Mode
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
+    final Color subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -55,8 +63,12 @@ class _HomeTabState extends State<HomeTab> {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: isDark ? const Color(0xFF151B2D) : Colors.white,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark
+            ? const Color(0xFF151B2D)
+            : Colors.white,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
         systemNavigationBarContrastEnforced: false,
       ),
       child: Column(
@@ -85,13 +97,17 @@ class _HomeTabState extends State<HomeTab> {
                   top: 60.0 - (t * 15.0), // Shrinks padding top from 60 to 45
                   left: 24,
                   right: 24,
-                  bottom: 36.0 - (t * 26.0), // Shrinks padding bottom from 36 to 10
+                  bottom:
+                      36.0 - (t * 26.0), // Shrinks padding bottom from 36 to 10
                 ),
                 child: Column(
                   children: [
                     // Greeting row & avatars (Wrapped in SingleChildScrollView to prevent overflow and clip silently)
                     SizedBox(
-                      height: 48.0 * (1.0 - t), // Increased height to 48.0 for extra safety and breathing room
+                      height:
+                          48.0 *
+                          (1.0 -
+                              t), // Increased height to 48.0 for extra safety and breathing room
                       child: SingleChildScrollView(
                         physics: const NeverScrollableScrollPhysics(),
                         child: SizedBox(
@@ -138,9 +154,15 @@ class _HomeTabState extends State<HomeTab> {
                                           height: 40,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: const Color(0xFF1A2D5A), width: 2.5),
+                                            border: Border.all(
+                                              color: const Color(0xFF1A2D5A),
+                                              width: 2.5,
+                                            ),
                                             gradient: const LinearGradient(
-                                              colors: [Color(0xFFF97316), Color(0xFFFB923C)],
+                                              colors: [
+                                                Color(0xFFF97316),
+                                                Color(0xFFFB923C),
+                                              ],
                                             ),
                                           ),
                                           alignment: Alignment.center,
@@ -161,9 +183,15 @@ class _HomeTabState extends State<HomeTab> {
                                           height: 40,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: const Color(0xFF1A2D5A), width: 2.5),
+                                            border: Border.all(
+                                              color: const Color(0xFF1A2D5A),
+                                              width: 2.5,
+                                            ),
                                             gradient: const LinearGradient(
-                                              colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
+                                              colors: [
+                                                Color(0xFF6366F1),
+                                                Color(0xFF818CF8),
+                                              ],
                                             ),
                                           ),
                                           alignment: Alignment.center,
@@ -186,8 +214,9 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 32.0 * (1.0 - t)), // Spacing collapses from 32 to 0
-
+                    SizedBox(
+                      height: 32.0 * (1.0 - t),
+                    ), // Spacing collapses from 32 to 0
                     // SHARED TOTAL BALANCE Label (Wrapped in SingleChildScrollView to prevent overflow and clip silently)
                     SizedBox(
                       height: 16.0 * (1.0 - t),
@@ -210,8 +239,9 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 6.0 * (1.0 - t)), // Spacing collapses from 6 to 0
-
+                    SizedBox(
+                      height: 6.0 * (1.0 - t),
+                    ), // Spacing collapses from 6 to 0
                     // Dynamic Resizing Balance Amount (Centres and shrinks)
                     RichText(
                       text: TextSpan(
@@ -226,18 +256,21 @@ class _HomeTabState extends State<HomeTab> {
                           TextSpan(
                             text: ',50',
                             style: TextStyle(
-                              fontSize: 28.0 - (t * 12.0), // Shrinks from 28 to 16
+                              fontSize:
+                                  28.0 - (t * 12.0), // Shrinks from 28 to 16
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 12.0 * (1.0 - t)), // Spacing collapses from 12 to 0
-
+                    SizedBox(
+                      height: 12.0 * (1.0 - t),
+                    ), // Spacing collapses from 12 to 0
                     // Trend Growth Badge (Wrapped in SingleChildScrollView to prevent overflow and clip silently)
                     SizedBox(
-                      height: 32.0 * (1.0 - t), // Increased height for safe padding
+                      height:
+                          32.0 * (1.0 - t), // Increased height for safe padding
                       child: SingleChildScrollView(
                         physics: const NeverScrollableScrollPhysics(),
                         child: SizedBox(
@@ -245,7 +278,10 @@ class _HomeTabState extends State<HomeTab> {
                           child: Opacity(
                             opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(20),
@@ -253,7 +289,11 @@ class _HomeTabState extends State<HomeTab> {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.north_east_rounded, color: Color(0xFF4ADE80), size: 14),
+                                  Icon(
+                                    Icons.north_east_rounded,
+                                    color: Color(0xFF4ADE80),
+                                    size: 14,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     '+8.2% vs last month',
@@ -282,7 +322,10 @@ class _HomeTabState extends State<HomeTab> {
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -359,7 +402,8 @@ class _HomeTabState extends State<HomeTab> {
                       physics: const NeverScrollableScrollPhysics(),
                       padding: EdgeInsets.zero,
                       itemCount: transactionsData.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final tx = transactionsData[index];
                         final bool isPositive = tx.amount > 0;
@@ -373,7 +417,9 @@ class _HomeTabState extends State<HomeTab> {
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.25 : 0.05),
+                                  color: const Color(
+                                    0xFF0F1B35,
+                                  ).withOpacity(isDark ? 0.25 : 0.05),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -397,7 +443,8 @@ class _HomeTabState extends State<HomeTab> {
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         tx.name,
@@ -424,8 +471,12 @@ class _HomeTabState extends State<HomeTab> {
                                 Row(
                                   children: [
                                     Icon(
-                                      isPositive ? Icons.north_east_rounded : Icons.south_east_rounded,
-                                      color: isPositive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                      isPositive
+                                          ? Icons.north_east_rounded
+                                          : Icons.south_east_rounded,
+                                      color: isPositive
+                                          ? const Color(0xFF16A34A)
+                                          : const Color(0xFFDC2626),
                                       size: 14,
                                     ),
                                     const SizedBox(width: 2),
@@ -434,7 +485,9 @@ class _HomeTabState extends State<HomeTab> {
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w800,
-                                        color: isPositive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                        color: isPositive
+                                            ? const Color(0xFF16A34A)
+                                            : const Color(0xFFDC2626),
                                       ),
                                     ),
                                   ],
@@ -520,7 +573,9 @@ class _HomeTabState extends State<HomeTab> {
           Text(
             title.toUpperCase(),
             style: TextStyle(
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99), // Slate 400 vs Slate 600
+              color: isDark
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF6B7A99), // Slate 400 vs Slate 600
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,

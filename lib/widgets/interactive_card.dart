@@ -33,8 +33,8 @@ class _InteractiveCardState extends State<InteractiveCard> {
         curve: Curves.easeOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
-          transform: _isPressed 
-              ? Matrix4.translationValues(0, 1.5, 0) 
+          transform: _isPressed
+              ? Matrix4.translationValues(0, 1.5, 0)
               : Matrix4.translationValues(0, 0, 0),
           child: widget.child,
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../main.dart'; // Import to access global themeNotifier
+import '../main.dart'; // Import to access global themeNotifier and localeNotifier
+import '../l10n/app_localizations.dart'; // Import Custom Localization
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -12,6 +12,7 @@ class SettingsTab extends StatefulWidget {
 
 class _SettingsTabState extends State<SettingsTab> {
   late bool _darkMode;
+  late bool _isEnglish; // Controls real-time language toggling
   bool _pushNotifications = true;
   bool _biometricAuth = false;
 
@@ -19,21 +20,23 @@ class _SettingsTabState extends State<SettingsTab> {
   void initState() {
     super.initState();
     _darkMode = themeNotifier.value == ThemeMode.dark;
+    _isEnglish = localeNotifier.value.languageCode == 'en';
   }
 
   @override
   Widget build(BuildContext context) {
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final double totalBottomInset = 90 + bottomPadding + 24;
-
+    
     // Dynamic styles based on theme
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
+    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
+
+    // Resolve localization translations
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
 
     final SystemUiOverlayStyle overlayStyle = isDark
         ? SystemUiOverlayStyle.light.copyWith(
@@ -54,17 +57,12 @@ class _SettingsTabState extends State<SettingsTab> {
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: EdgeInsets.only(
-            top: 60,
-            left: 24,
-            right: 24,
-            bottom: totalBottomInset,
-          ),
+          padding: EdgeInsets.only(top: 60, left: 24, right: 24, bottom: totalBottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Settings',
+                l10n.settings,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 24,
@@ -73,7 +71,7 @@ class _SettingsTabState extends State<SettingsTab> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Customize your shared app preferences',
+                l10n.customizePreferences,
                 style: TextStyle(
                   color: textColor.withOpacity(0.5),
                   fontSize: 14,
@@ -90,9 +88,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(
-                        0xFF0F1B35,
-                      ).withOpacity(isDark ? 0.25 : 0.04),
+                      color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.25 : 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -113,21 +109,11 @@ class _SettingsTabState extends State<SettingsTab> {
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFFF97316),
-                                    Color(0xFFFB923C),
-                                  ],
+                                  colors: [Color(0xFFF97316), Color(0xFFFB923C)],
                                 ),
                               ),
                               alignment: Alignment.center,
-                              child: const Text(
-                                'L',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: const Text('L', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                             ),
                           ),
                           Positioned(
@@ -138,21 +124,11 @@ class _SettingsTabState extends State<SettingsTab> {
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFF6366F1),
-                                    Color(0xFF818CF8),
-                                  ],
+                                  colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
                                 ),
                               ),
                               alignment: Alignment.center,
-                              child: const Text(
-                                'M',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: const Text('M', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
@@ -173,7 +149,7 @@ class _SettingsTabState extends State<SettingsTab> {
                           ),
                           const SizedBox(height: 1),
                           Text(
-                            'Joint Account • Premium Plan',
+                            l10n.premiumPlan,
                             style: TextStyle(
                               color: textColor.withOpacity(0.5),
                               fontSize: 12,
@@ -185,98 +161,36 @@ class _SettingsTabState extends State<SettingsTab> {
                     ),
                     IconButton(
                       onPressed: () {},
-                      icon: Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: subTextColor,
-                        size: 16,
-                      ),
+                      icon: Icon(Icons.arrow_forward_ios_rounded, color: subTextColor, size: 16),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 28),
-              _buildSectionHeader('Account settings', subTextColor),
-              _buildSettingTile(
-                Icons.person_outline_rounded,
-                'Edit Profiles',
-                'Manage personal profiles',
-                cardColor,
-                textColor,
-                subTextColor,
-                isDark,
-              ),
-              _buildSettingTile(
-                Icons.link_rounded,
-                'Connected Banks',
-                '2 external bank accounts linked',
-                cardColor,
-                textColor,
-                subTextColor,
-                isDark,
-              ),
-              _buildSettingTile(
-                Icons.card_giftcard_outlined,
-                'Cards Settings',
-                'Virtual cards and blockings',
-                cardColor,
-                textColor,
-                subTextColor,
-                isDark,
-              ),
+              _buildSectionHeader(l10n.accountSettings, subTextColor),
+              _buildSettingTile(Icons.person_outline_rounded, l10n.editProfiles, l10n.managePersonalProfiles, cardColor, textColor, subTextColor, isDark),
+              _buildSettingTile(Icons.link_rounded, l10n.connectedBanks, l10n.banksLinked, cardColor, textColor, subTextColor, isDark),
+              _buildSettingTile(Icons.card_giftcard_outlined, l10n.cardsSettings, l10n.cardsSubtitle, cardColor, textColor, subTextColor, isDark),
               const SizedBox(height: 28),
-              _buildSectionHeader('Preferences', subTextColor),
-              _buildToggleTile(
-                Icons.dark_mode_outlined,
-                'Dark Mode',
-                _darkMode,
-                cardColor,
-                textColor,
-                isDark,
-                (v) {
-                  setState(() {
-                    _darkMode = v;
-                    themeNotifier.value = v ? ThemeMode.dark : ThemeMode.light;
-                  });
-                },
-              ),
-              _buildToggleTile(
-                Icons.notifications_none_rounded,
-                'Push Notifications',
-                _pushNotifications,
-                cardColor,
-                textColor,
-                isDark,
-                (v) => setState(() => _pushNotifications = v),
-              ),
-              _buildToggleTile(
-                Icons.fingerprint_rounded,
-                'Biometric Sign-In',
-                _biometricAuth,
-                cardColor,
-                textColor,
-                isDark,
-                (v) => setState(() => _biometricAuth = v),
-              ),
+              _buildSectionHeader(l10n.preferences, subTextColor),
+              _buildToggleTile(Icons.translate_rounded, 'English Language', _isEnglish, cardColor, textColor, isDark, (v) {
+                setState(() {
+                  _isEnglish = v;
+                  localeNotifier.value = v ? const Locale('en') : const Locale('pt');
+                });
+              }),
+              _buildToggleTile(Icons.dark_mode_outlined, l10n.darkModeLabel, _darkMode, cardColor, textColor, isDark, (v) {
+                setState(() {
+                  _darkMode = v;
+                  themeNotifier.value = v ? ThemeMode.dark : ThemeMode.light;
+                });
+              }),
+              _buildToggleTile(Icons.notifications_none_rounded, l10n.pushNotifications, _pushNotifications, cardColor, textColor, isDark, (v) => setState(() => _pushNotifications = v)),
+              _buildToggleTile(Icons.fingerprint_rounded, l10n.biometricSignIn, _biometricAuth, cardColor, textColor, isDark, (v) => setState(() => _biometricAuth = v)),
               const SizedBox(height: 28),
-              _buildSectionHeader('Support', subTextColor),
-              _buildSettingTile(
-                Icons.help_outline_rounded,
-                'Help Center',
-                'FAQs and technical support',
-                cardColor,
-                textColor,
-                subTextColor,
-                isDark,
-              ),
-              _buildSettingTile(
-                Icons.policy_outlined,
-                'Privacy Policy',
-                'Data security policies',
-                cardColor,
-                textColor,
-                subTextColor,
-                isDark,
-              ),
+              _buildSectionHeader(l10n.support, subTextColor),
+              _buildSettingTile(Icons.help_outline_rounded, l10n.helpCenter, l10n.faqsSupport, cardColor, textColor, subTextColor, isDark),
+              _buildSettingTile(Icons.policy_outlined, l10n.privacyPolicy, l10n.dataSecurity, cardColor, textColor, subTextColor, isDark),
             ],
           ),
         ),
@@ -299,15 +213,7 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  Widget _buildSettingTile(
-    IconData icon,
-    String title,
-    String subtitle,
-    Color cardColor,
-    Color textColor,
-    Color subTextColor,
-    bool isDark,
-  ) {
+  Widget _buildSettingTile(IconData icon, String title, String subtitle, Color cardColor, Color textColor, Color subTextColor, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -323,8 +229,8 @@ class _SettingsTabState extends State<SettingsTab> {
       ),
       child: ListTile(
         leading: Icon(
-          icon,
-          color: isDark ? const Color(0xFF818CF8) : const Color(0xFF1A2D5A),
+          icon, 
+          color: isDark ? const Color(0xFF818CF8) : const Color(0xFF1A2D5A), 
           size: 20,
         ),
         title: Text(
@@ -343,26 +249,14 @@ class _SettingsTabState extends State<SettingsTab> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        trailing: Icon(
-          Icons.arrow_forward_ios_rounded,
-          color: isDark ? Colors.white30 : const Color(0xFFCBD5E1),
-          size: 14,
-        ),
+        trailing: Icon(Icons.arrow_forward_ios_rounded, color: isDark ? Colors.white30 : const Color(0xFFCBD5E1), size: 14),
         onTap: () {},
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
     );
   }
 
-  Widget _buildToggleTile(
-    IconData icon,
-    String title,
-    bool value,
-    Color cardColor,
-    Color textColor,
-    bool isDark,
-    ValueChanged<bool> onChanged,
-  ) {
+  Widget _buildToggleTile(IconData icon, String title, bool value, Color cardColor, Color textColor, bool isDark, ValueChanged<bool> onChanged) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -378,8 +272,8 @@ class _SettingsTabState extends State<SettingsTab> {
       ),
       child: SwitchListTile(
         secondary: Icon(
-          icon,
-          color: isDark ? const Color(0xFF818CF8) : const Color(0xFF1A2D5A),
+          icon, 
+          color: isDark ? const Color(0xFF818CF8) : const Color(0xFF1A2D5A), 
           size: 20,
         ),
         title: Text(

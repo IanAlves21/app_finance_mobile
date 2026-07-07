@@ -1,17 +1,31 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'tabs/analytics_tab.dart';
+import 'l10n/app_localizations.dart'; // Import Custom Localization
 import 'tabs/home_tab.dart';
-import 'tabs/settings_tab.dart';
+import 'tabs/analytics_tab.dart';
 import 'tabs/wallets_tab.dart';
-import 'widgets/add_transaction_bottom_sheet.dart';
+import 'tabs/settings_tab.dart';
 import 'widgets/interactive_card.dart';
+import 'widgets/add_transaction_bottom_sheet.dart';
 
 // Global Notifier for App Theme Mode
-final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(
-  ThemeMode.light,
-);
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+
+// Global Notifier for App Locale - Dynamically follows system settings (defaults to 'en')
+final ValueNotifier<Locale> localeNotifier = ValueNotifier<Locale>(_getInitialLocale());
+
+Locale _getInitialLocale() {
+  final ui.Locale systemLocale = ui.PlatformDispatcher.instance.locale;
+  final String languageCode = systemLocale.languageCode;
+  
+  if (languageCode == 'pt') {
+    return const Locale('pt');
+  }
+  
+  // Default to English
+  return const Locale('en');
+}
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,49 +41,55 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode currentMode, __) {
-        return MaterialApp(
-          title: 'Finance Shared App',
-          debugShowCheckedModeBanner: false,
-          themeMode: currentMode,
+        return ValueListenableBuilder<Locale>(
+          valueListenable: localeNotifier,
+          builder: (_, Locale currentLocale, __) {
+            return MaterialApp(
+              title: 'Finance Shared App',
+              debugShowCheckedModeBanner: false,
+              themeMode: currentMode,
+              locale: currentLocale, // Dynamic locale driven by notifier
+              
+              // REGISTER OUR CUSTOM l10n DELEGATES
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              
+              // LIGHT THEME (Clean corporate blue & grey)
+              theme: ThemeData(
+                useMaterial3: true,
+                brightness: Brightness.light,
+                fontFamily: 'Nunito',
+                cardColor: Colors.white,
+                scaffoldBackgroundColor: const Color(0xFFF4F5F8),
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: const Color(0xFF1A2D5A),
+                  primary: const Color(0xFFF97316),
+                  secondary: const Color(0xFF6366F1),
+                  surface: const Color(0xFFF4F5F8),
+                  onSurface: const Color(0xFF0F1B35),
+                ),
+              ),
 
-          // LIGHT THEME (Clean corporate blue & grey)
-          theme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.light,
-            fontFamily: 'Nunito',
-            cardColor: Colors.white,
-            scaffoldBackgroundColor: const Color(0xFFF4F5F8),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF1A2D5A),
-              primary: const Color(0xFFF97316),
-              secondary: const Color(0xFF6366F1),
-              surface: const Color(0xFFF4F5F8),
-              onSurface: const Color(0xFF0F1B35),
-            ),
-          ),
-
-          // DARK THEME (Stunning Midnight Navy & Obsidian Palette)
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.dark,
-            fontFamily: 'Nunito',
-            cardColor: const Color(0xFF151B2D), // Rich midnight navy card
-            scaffoldBackgroundColor: const Color(
-              0xFF0B0F19,
-            ), // Deep obsidian midnight background
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF1A2D5A),
-              brightness: Brightness.dark,
-              primary: const Color(0xFFF97316),
-              secondary: const Color(0xFF818CF8),
-              surface: const Color(0xFF151B2D),
-              onSurface: const Color(
-                0xFFF1F5F9,
-              ), // Gorgeous soft off-white text
-            ),
-          ),
-
-          home: const DashboardScreen(),
+              // DARK THEME (Stunning Midnight Navy & Obsidian Palette)
+              darkTheme: ThemeData(
+                useMaterial3: true,
+                brightness: Brightness.dark,
+                fontFamily: 'Nunito',
+                cardColor: const Color(0xFF151B2D), // Rich midnight navy card
+                scaffoldBackgroundColor: const Color(0xFF0B0F19), // Deep obsidian midnight background
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: const Color(0xFF1A2D5A),
+                  brightness: Brightness.dark,
+                  primary: const Color(0xFFF97316),
+                  secondary: const Color(0xFF818CF8),
+                  surface: const Color(0xFF151B2D),
+                  onSurface: const Color(0xFFF1F5F9), // Gorgeous soft off-white text
+                ),
+              ),
+              
+              home: const DashboardScreen(),
+            );
+          },
         );
       },
     );
@@ -110,21 +130,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
+    
+    // Resolve dynamic localization keys
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
 
     final SystemUiOverlayStyle systemUiStyle = SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: isDark ? const Color(0xFF151B2D) : Colors.white,
-      systemNavigationBarIconBrightness: isDark
-          ? Brightness.light
-          : Brightness.dark,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       systemNavigationBarDividerColor: Colors.transparent,
       systemNavigationBarContrastEnforced: false,
     );
 
-    // We wrap the main screen in AnnotatedRegion to color the Android system navigation bar
-    // and in AnimatedTheme to create a beautiful 400ms cross-fade animation!
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: systemUiStyle,
       child: AnimatedTheme(
@@ -134,7 +153,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Scaffold(
           body: Stack(
             children: [
-              Positioned.fill(child: _tabs[_currentIndex]),
+              Positioned.fill(
+                child: _tabs[_currentIndex],
+              ),
               Positioned(
                 left: 0,
                 right: 0,
@@ -149,43 +170,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(
-                          0xFF0F1B35,
-                        ).withOpacity(isDark ? 0.35 : 0.10),
+                        color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.35 : 0.10),
                         blurRadius: 24,
                         offset: const Offset(0, -4),
                       ),
                     ],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.only(
-                      bottom: 12 + bottomPadding,
-                      left: 8,
-                      right: 8,
-                    ),
+                    padding: EdgeInsets.only(bottom: 12 + bottomPadding, left: 8, right: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildNavItem(0, Icons.home_rounded, 'Home', isDark),
-                        _buildNavItem(
-                          1,
-                          Icons.bar_chart_rounded,
-                          'Analytics',
-                          isDark,
-                        ),
+                        _buildNavItem(0, Icons.home_rounded, l10n.homeNav, isDark),
+                        _buildNavItem(1, Icons.bar_chart_rounded, l10n.analyticsNav, isDark),
                         const SizedBox(width: 80),
-                        _buildNavItem(
-                          2,
-                          Icons.account_balance_wallet_rounded,
-                          'Wallets',
-                          isDark,
-                        ),
-                        _buildNavItem(
-                          3,
-                          Icons.settings_rounded,
-                          'Settings',
-                          isDark,
-                        ),
+                        _buildNavItem(2, Icons.account_balance_wallet_rounded, l10n.walletsNav, isDark),
+                        _buildNavItem(3, Icons.settings_rounded, l10n.settingsNav, isDark),
                       ],
                     ),
                   ),
@@ -203,9 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF0B0F19)
-                            : const Color(0xFFF4F5F8),
+                        color: isDark ? const Color(0xFF0B0F19) : const Color(0xFFF4F5F8), 
                         width: 4,
                       ),
                       gradient: const LinearGradient(
@@ -238,13 +236,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildNavItem(int index, IconData icon, String label, bool isDark) {
     final bool isActive = _currentIndex == index;
-    final Color color = isActive
-        ? const Color(0xFFF97316)
-        : (isDark
-              ? const Color(0xFF94A3B8)
-              : const Color(
-                  0xFF6B7A99,
-                )); // Slate 400 for dark, Slate 600 for light
+    final Color color = isActive 
+        ? const Color(0xFFF97316) 
+        : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99));
 
     return Expanded(
       child: GestureDetector(
@@ -256,7 +250,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             AnimatedScale(
               scale: isActive ? 1.15 : 1.0,
               duration: const Duration(milliseconds: 150),
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(
+                icon,
+                color: color,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 4),
             Text(

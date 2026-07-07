@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import '../widgets/interactive_card.dart';
+import '../l10n/app_localizations.dart'; // Import Custom Localization
 
 class WalletsTab extends StatefulWidget {
   const WalletsTab({super.key});
@@ -11,9 +11,7 @@ class WalletsTab extends StatefulWidget {
 }
 
 class _WalletsTabState extends State<WalletsTab> {
-  final PageController _cardPageController = PageController(
-    viewportFraction: 0.85,
-  );
+  final PageController _cardPageController = PageController(viewportFraction: 0.85);
   int _activeCardIndex = 0;
 
   final List<Map<String, dynamic>> _mockCards = [
@@ -49,10 +47,11 @@ class _WalletsTabState extends State<WalletsTab> {
     // Dynamic styles based on theme
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : const Color(0xFF0F1B35);
-    final Color subTextColor = isDark
-        ? const Color(0xFF6B7A99).withOpacity(0.6)
-        : const Color(0xFF6B7A99);
+    final Color subTextColor = isDark ? const Color(0xFF6B7A99).withOpacity(0.6) : const Color(0xFF6B7A99);
     final Color cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+
+    // Resolve localization translations
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
 
     final SystemUiOverlayStyle overlayStyle = isDark
         ? SystemUiOverlayStyle.light.copyWith(
@@ -73,12 +72,7 @@ class _WalletsTabState extends State<WalletsTab> {
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: EdgeInsets.only(
-            top: 60,
-            left: 0,
-            right: 0,
-            bottom: totalBottomInset,
-          ),
+          padding: EdgeInsets.only(top: 60, left: 0, right: 0, bottom: totalBottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -89,7 +83,7 @@ class _WalletsTabState extends State<WalletsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Wallets',
+                      l10n.wallets,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 24,
@@ -98,7 +92,7 @@ class _WalletsTabState extends State<WalletsTab> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Manage your shared accounts & cards',
+                      l10n.manageSharedAccounts,
                       style: TextStyle(
                         color: textColor.withOpacity(0.5),
                         fontSize: 14,
@@ -116,8 +110,7 @@ class _WalletsTabState extends State<WalletsTab> {
                 child: PageView.builder(
                   controller: _cardPageController,
                   itemCount: _mockCards.length,
-                  onPageChanged: (index) =>
-                      setState(() => _activeCardIndex = index),
+                  onPageChanged: (index) => setState(() => _activeCardIndex = index),
                   itemBuilder: (context, index) {
                     final card = _mockCards[index];
                     final List<Color> colors = card['colors'] as List<Color>;
@@ -131,7 +124,10 @@ class _WalletsTabState extends State<WalletsTab> {
                           value = (1 - (value.abs() * 0.08)).clamp(0.0, 1.0);
                         }
                         return Center(
-                          child: Transform.scale(scale: value, child: child),
+                          child: Transform.scale(
+                            scale: value,
+                            child: child,
+                          ),
                         );
                       },
                       child: Container(
@@ -147,9 +143,7 @@ class _WalletsTabState extends State<WalletsTab> {
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: colors.first.withOpacity(
-                                isDark ? 0.20 : 0.35,
-                              ),
+                              color: colors.first.withOpacity(isDark ? 0.20 : 0.35),
                               blurRadius: 16,
                               offset: const Offset(0, 6),
                             ),
@@ -170,11 +164,7 @@ class _WalletsTabState extends State<WalletsTab> {
                                     fontStyle: FontStyle.italic,
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.wifi_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
+                                const Icon(Icons.wifi_rounded, color: Colors.white, size: 22),
                               ],
                             ),
                             const Spacer(),
@@ -195,7 +185,7 @@ class _WalletsTabState extends State<WalletsTab> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'CARD HOLDER',
+                                      l10n.cardHolder,
                                       style: TextStyle(
                                         color: Colors.white.withOpacity(0.4),
                                         fontSize: 9,
@@ -217,7 +207,7 @@ class _WalletsTabState extends State<WalletsTab> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      'EXPIRES',
+                                      l10n.expires,
                                       style: TextStyle(
                                         color: Colors.white.withOpacity(0.4),
                                         fontSize: 9,
@@ -257,9 +247,7 @@ class _WalletsTabState extends State<WalletsTab> {
                     width: isActive ? 20 : 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: isActive
-                          ? const Color(0xFFF97316)
-                          : const Color(0xFFCBD5E1),
+                      color: isActive ? const Color(0xFFF97316) : const Color(0xFFCBD5E1),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   );
@@ -274,7 +262,7 @@ class _WalletsTabState extends State<WalletsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Quick Actions',
+                      l10n.quickActions,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 17,
@@ -285,41 +273,17 @@ class _WalletsTabState extends State<WalletsTab> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildQuickAction(
-                          Icons.send_rounded,
-                          'Send',
-                          const Color(0xFFDCFCE7),
-                          const Color(0xFF16A34A),
-                          textColor,
-                        ),
-                        _buildQuickAction(
-                          Icons.arrow_downward_rounded,
-                          'Request',
-                          const Color(0xFFFEF3C7),
-                          const Color(0xFFD97706),
-                          textColor,
-                        ),
-                        _buildQuickAction(
-                          Icons.payment_rounded,
-                          'Pay Bills',
-                          const Color(0xFFFEE2E2),
-                          const Color(0xFFDC2626),
-                          textColor,
-                        ),
-                        _buildQuickAction(
-                          Icons.grid_view_rounded,
-                          'More',
-                          const Color(0xFFEDE9FE),
-                          const Color(0xFF7C3AED),
-                          textColor,
-                        ),
+                        _buildQuickAction(Icons.send_rounded, l10n.send, const Color(0xFFDCFCE7), const Color(0xFF16A34A), textColor),
+                        _buildQuickAction(Icons.arrow_downward_rounded, l10n.request, const Color(0xFFFEF3C7), const Color(0xFFD97706), textColor),
+                        _buildQuickAction(Icons.payment_rounded, l10n.payBills, const Color(0xFFFEE2E2), const Color(0xFFDC2626), textColor),
+                        _buildQuickAction(Icons.grid_view_rounded, l10n.more, const Color(0xFFEDE9FE), const Color(0xFF7C3AED), textColor),
                       ],
                     ),
                     const SizedBox(height: 36),
 
                     // Monthly spending limit tracker
                     Text(
-                      'Shared Monthly Limit',
+                      l10n.sharedMonthlyLimit,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 17,
@@ -334,9 +298,7 @@ class _WalletsTabState extends State<WalletsTab> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF0F1B35,
-                            ).withOpacity(isDark ? 0.15 : 0.04),
+                            color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.15 : 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -349,7 +311,7 @@ class _WalletsTabState extends State<WalletsTab> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Shared Limit Used',
+                                l10n.sharedLimitUsed,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 13,
@@ -383,17 +345,13 @@ class _WalletsTabState extends State<WalletsTab> {
                             child: LinearProgressIndicator(
                               value: 3418 / 8000,
                               minHeight: 8,
-                              backgroundColor: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFF1F5F9),
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                Color(0xFFF97316),
-                              ),
+                              backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF97316)),
                             ),
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'You have spent 42% of your shared threshold limit.',
+                            l10n.limitText,
                             style: TextStyle(
                               color: subTextColor,
                               fontSize: 11,
@@ -413,13 +371,7 @@ class _WalletsTabState extends State<WalletsTab> {
     );
   }
 
-  Widget _buildQuickAction(
-    IconData icon,
-    String label,
-    Color bg,
-    Color iconColor,
-    Color textColor,
-  ) {
+  Widget _buildQuickAction(IconData icon, String label, Color bg, Color iconColor, Color textColor) {
     return InteractiveCard(
       onTap: () {},
       child: Column(

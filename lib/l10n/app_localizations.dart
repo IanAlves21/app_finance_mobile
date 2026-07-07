@@ -541,6 +541,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'SmartFit Gym'**
   String get smartFitGym;
+
+  /// No description provided for @transactionDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Details'**
+  String get transactionDetails;
+
+  /// No description provided for @dateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get dateLabel;
+
+  /// No description provided for @paidByLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by'**
+  String get paidByLabel;
+
+  /// No description provided for @accountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountLabel;
+
+  /// No description provided for @noteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get noteLabel;
+
+  /// No description provided for @completedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completedStatus;
 }
 
 class _AppLocalizationsDelegate

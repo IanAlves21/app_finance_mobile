@@ -229,4 +229,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get smartFitGym => 'SmartFit Gym';
+
+  @override
+  String get transactionDetails => 'Transaction Details';
+
+  @override
+  String get dateLabel => 'Date';
+
+  @override
+  String get paidByLabel => 'Paid by';
+
+  @override
+  String get accountLabel => 'Account';
+
+  @override
+  String get noteLabel => 'Note';
+
+  @override
+  String get completedStatus => 'Completed';
 }

@@ -73,5 +73,12 @@
   "salaryDeposit": "Salary Deposit",
   "starbucksCoffee": "Starbucks Coffee",
   "shellGasStation": "Shell Gas Station",
-  "smartFitGym": "SmartFit Gym"
+  "smartFitGym": "SmartFit Gym",
+  
+  "transactionDetails": "Transaction Details",
+  "dateLabel": "Date",
+  "paidByLabel": "Paid by",
+  "accountLabel": "Account",
+  "noteLabel": "Note",
+  "completedStatus": "Completed"
 }

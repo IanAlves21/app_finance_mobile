@@ -73,5 +73,12 @@
   "salaryDeposit": "Depósito de Salário",
   "starbucksCoffee": "Café Starbucks",
   "shellGasStation": "Posto de Gasolina Shell",
-  "smartFitGym": "Academia SmartFit"
+  "smartFitGym": "Academia SmartFit",
+
+  "transactionDetails": "Detalhes da Transação",
+  "dateLabel": "Data",
+  "paidByLabel": "Pago por",
+  "accountLabel": "Conta",
+  "noteLabel": "Observação",
+  "completedStatus": "Concluído"
 }

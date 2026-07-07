@@ -229,4 +229,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get smartFitGym => 'Academia SmartFit';
+
+  @override
+  String get transactionDetails => 'Detalhes da Transação';
+
+  @override
+  String get dateLabel => 'Data';
+
+  @override
+  String get paidByLabel => 'Pago por';
+
+  @override
+  String get accountLabel => 'Conta';
+
+  @override
+  String get noteLabel => 'Observação';
+
+  @override
+  String get completedStatus => 'Concluído';
 }

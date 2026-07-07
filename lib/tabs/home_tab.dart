@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/transaction.dart';
 import '../widgets/interactive_card.dart';
+import '../widgets/transaction_detail_bottom_sheet.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../l10n/app_localizations_extension.dart';
 
@@ -364,7 +365,16 @@ class _HomeTabState extends State<HomeTab> {
                         final bool isPositive = tx.amount > 0;
 
                         return InteractiveCard(
-                          onTap: () {},
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => TransactionDetailBottomSheet(
+                                transaction: tx,
+                              ),
+                            );
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(

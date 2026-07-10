@@ -1,9 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app_finance_mobile/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+  testWidgets('App renders LoginScreen initially and performs successful login', (WidgetTester tester) async {
+    // Reset login status to false initially
+    isLoggedInNotifier.value = false;
+    
+    // Force Portuguese for deterministic assertions
+    localeNotifier.value = const Locale('pt');
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify LoginScreen is shown
+    expect(find.text('Bem-vindos de volta'), findsOneWidget);
+    expect(find.text('Sua vida financeira a dois'), findsOneWidget);
+    expect(find.text('E-MAIL'), findsOneWidget);
+    expect(find.text('SENHA'), findsOneWidget);
+
+    // Enter email and password
+    await tester.enterText(find.byType(TextField).at(0), 'teste@email.com');
+    await tester.enterText(find.byType(TextField).at(1), 'senha123');
+    await tester.pumpAndSettle();
+
+    // Tap on Submit Button
+    final loginButtonFinder = find.text('Entrar');
+    expect(loginButtonFinder, findsOneWidget);
+    await tester.tap(loginButtonFinder);
+    
+    // Pump frames to let the animation and delay run (LoginViewModel has a 1200ms delay)
+    await tester.pump(const Duration(milliseconds: 500));
+    // Verify it is loading (showing CircularProgressIndicator)
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    // Pump remainder of delay
+    await tester.pumpAndSettle(const Duration(milliseconds: 1000));
+
+    // Verify it entered the Dashboard and login screen is gone
+    expect(find.text('Bem-vindos de volta'), findsNothing);
+    expect(find.text('SALDO TOTAL COMPARTILHADO'), findsOneWidget);
+  });
+
   testWidgets('App dynamically switches locales and renders correct text', (WidgetTester tester) async {
+    // Force login state to bypass login screen in existing test flows
+    isLoggedInNotifier.value = true;
+    
     // Force Portuguese initially for deterministic test assertion
     localeNotifier.value = const Locale('pt');
 
@@ -25,6 +71,9 @@ void main() {
   });
 
   testWidgets('App opens TransactionDetailBottomSheet on transaction tap and closes it', (WidgetTester tester) async {
+    // Force login state to bypass login screen in existing test flows
+    isLoggedInNotifier.value = true;
+
     // Set locale to Portuguese
     localeNotifier.value = const Locale('pt');
 

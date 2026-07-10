@@ -9,6 +9,11 @@ import 'tabs/wallets_tab.dart';
 import 'tabs/settings_tab.dart';
 import 'widgets/interactive_card.dart';
 import 'widgets/add_transaction_bottom_sheet.dart';
+import 'views/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Global Notifier for App Logged In state
+final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier<bool>(false);
 
 // Global Notifier for App Theme Mode
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
@@ -28,9 +33,19 @@ Locale _getInitialLocale() {
   return const Locale('en');
 }
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // Load persistent login session before running the app
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+    isLoggedInNotifier.value = isLoggedIn;
+  } catch (e) {
+    debugPrint('Error loading persistent session: $e');
+  }
+
   runApp(const MyApp());
 }
 
@@ -88,7 +103,48 @@ class MyApp extends StatelessWidget {
                 ),
               ),
               
-              home: const DashboardScreen(),
+              home: ValueListenableBuilder<bool>(
+                valueListenable: isLoggedInNotifier,
+                builder: (context, isLoggedIn, _) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 400),
+                    switchInCurve: Curves.easeInOut,
+                    switchOutCurve: Curves.easeInOut,
+                    transitionBuilder: (Widget child, Animation<double> animation) {
+                      final bool isDashboard = child.key == const ValueKey('DashboardScreen');
+                      // Dashboard (Painel) fica posicionado à direita (1.0, 0.0) e Login fica à esquerda (-1.0, 0.0).
+                      // O próprio AnimatedSwitcher reverte a animação automaticamente na saída (exit), fazendo com que
+                      // o fluxo seja 100% simétrico e livre de dependências de estado externo (isLoggedIn) no cache!
+                      final Offset beginOffset = isDashboard ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
+
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: beginOffset,
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: isLoggedIn
+                        ? const DashboardScreen(key: ValueKey('DashboardScreen'))
+                        : LoginScreen(
+                            key: const ValueKey('LoginScreen'),
+                            onLogin: () async {
+                              try {
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setBool('is_logged_in', true);
+                              } catch (e) {
+                                debugPrint('Error saving persistent session: $e');
+                              }
+                              isLoggedInNotifier.value = true;
+                            },
+                          ),
+                  );
+                },
+              ),
             );
           },
         );

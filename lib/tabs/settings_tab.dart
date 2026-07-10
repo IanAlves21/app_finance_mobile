@@ -249,6 +249,16 @@ class _SettingsTabState extends State<SettingsTab> {
                     subTextColor,
                     isDark,
                   ),
+                  _buildSettingTile(
+                    Icons.logout_rounded,
+                    _viewModel.isEnglish ? 'Sign Out' : 'Sair',
+                    _viewModel.isEnglish ? 'Disconnect from joint account' : 'Desconectar da conta conjunta',
+                    cardColor,
+                    isDark ? AppColors.redAccent : Colors.red,
+                    subTextColor,
+                    isDark,
+                    onTap: _viewModel.logout,
+                  ),
                 ],
               ),
             ),
@@ -280,8 +290,9 @@ class _SettingsTabState extends State<SettingsTab> {
     Color cardColor,
     Color textColor,
     Color subTextColor,
-    bool isDark,
-  ) {
+    bool isDark, {
+    VoidCallback? onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -322,7 +333,7 @@ class _SettingsTabState extends State<SettingsTab> {
           color: isDark ? Colors.white30 : AppColors.slate300,
           size: 14,
         ),
-        onTap: () {},
+        onTap: onTap ?? () {},
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
     );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart'; // import global themeNotifier & localeNotifier
 
 class SettingsViewModel extends ChangeNotifier {
@@ -33,5 +33,15 @@ class SettingsViewModel extends ChangeNotifier {
   void toggleBiometricAuth(bool value) {
     _biometricAuth = value;
     notifyListeners();
+  }
+
+  Future<void> logout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_logged_in', false);
+    } catch (e) {
+      debugPrint('Error clearing persistent session: $e');
+    }
+    isLoggedInNotifier.value = false;
   }
 }

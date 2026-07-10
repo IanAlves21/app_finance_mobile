@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../theme/app_colors.dart';
+import '../viewmodels/analytics_view_model.dart';
 
 class AnalyticsTab extends StatefulWidget {
   const AnalyticsTab({super.key});
@@ -11,12 +13,19 @@ class AnalyticsTab extends StatefulWidget {
 }
 
 class _AnalyticsTabState extends State<AnalyticsTab> {
-  int _activeBarIndex = 4; // Defaults to May
-  String _activeFilter = 'Monthly';
+  late final AnalyticsViewModel _viewModel;
 
-  final List<double> _mockChartValues = [0.4, 0.65, 0.35, 0.8, 0.55, 0.9];
-  final List<String> _mockChartMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  final List<double> _mockChartExpenses = [1200.0, 2100.0, 1050.0, 3100.0, 1850.0, 3418.0];
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = AnalyticsViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +35,11 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
     // Dynamic colors for Light/Dark Mode
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600; // Slate 400 vs Slate 600
+    final Color subTextColor = isDark
+        ? AppColors.slate400
+        : AppColors.slate600; // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
 
     // Resolve localization translations
@@ -48,277 +59,342 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
             systemNavigationBarContrastEnforced: false,
           );
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: overlayStyle,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.only(top: 60, left: 24, right: 24, bottom: totalBottomInset),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.analytics,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                ),
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: overlayStyle,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: 60,
+                left: 24,
+                right: 24,
+                bottom: totalBottomInset,
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.sharedMonthlySpending,
-                style: TextStyle(
-                  color: textColor.withValues(alpha: 0.5),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Toggle filter tabs
-              Row(
-                children: [l10n.weekly, l10n.monthly, l10n.yearly].map((filter) {
-                  final bool isSelected = _activeFilter == filter || 
-                      (_activeFilter == 'Monthly' && filter == l10n.monthly) ||
-                      (_activeFilter == 'Weekly' && filter == l10n.weekly) ||
-                      (_activeFilter == 'Yearly' && filter == l10n.yearly);
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (filter == l10n.weekly) _activeFilter = 'Weekly';
-                          if (filter == l10n.monthly) _activeFilter = 'Monthly';
-                          if (filter == l10n.yearly) _activeFilter = 'Yearly';
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primarySeed : cardColor,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: isSelected
-                              ? []
-                              : [
-                                  BoxShadow(
-                                    color: AppColors.darkSlate.withValues(alpha: isDark ? 0.20 : 0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  )
-                                ],
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          filter,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : subTextColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.analytics,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
                     ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 32),
-
-              // Chart Container Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.sharedMonthlySpending,
+                    style: TextStyle(
+                      color: textColor.withValues(alpha: 0.5),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${l10n.spendingIn} ${_mockChartMonths[_activeBarIndex].toUpperCase()}',
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Toggle filter tabs
+                  Row(
+                    children: [l10n.weekly, l10n.monthly, l10n.yearly].map((
+                      filter,
+                    ) {
+                      final bool isSelected =
+                          _viewModel.activeFilter == filter ||
+                          (_viewModel.activeFilter == 'Monthly' &&
+                              filter == l10n.monthly) ||
+                          (_viewModel.activeFilter == 'Weekly' &&
+                              filter == l10n.weekly) ||
+                          (_viewModel.activeFilter == 'Yearly' &&
+                              filter == l10n.yearly);
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if (filter == l10n.weekly)
+                              _viewModel.setActiveFilter('Weekly');
+                            if (filter == l10n.monthly)
+                              _viewModel.setActiveFilter('Monthly');
+                            if (filter == l10n.yearly)
+                              _viewModel.setActiveFilter('Yearly');
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primarySeed
+                                  : cardColor,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: isSelected
+                                  ? []
+                                  : [
+                                      BoxShadow(
+                                        color: AppColors.darkSlate.withValues(
+                                          alpha: isDark ? 0.20 : 0.04,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              filter,
                               style: TextStyle(
-                                color: subTextColor,
-                                fontSize: 11,
+                                color: isSelected ? Colors.white : subTextColor,
+                                fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'R\$ ${_mockChartExpenses[_activeBarIndex].toStringAsFixed(2).replaceAll('.', ',')}',
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Chart Container Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.darkSlate.withValues(
+                            alpha: isDark ? 0.25 : 0.06,
+                          ),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${l10n.spendingIn} ${_viewModel.activeMonth.toUpperCase()}',
+                                  style: TextStyle(
+                                    color: subTextColor,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'R\$ ${_viewModel.activeExpense.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.redBg,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.trending_down_rounded,
+                                    color: AppColors.redAccent,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '-4.2%',
+                                    style: TextStyle(
+                                      color: AppColors.redAccent,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppColors.redBg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.trending_down_rounded, color: AppColors.redAccent, size: 14),
-                              SizedBox(width: 4),
-                              Text(
-                                '-4.2%',
-                                style: TextStyle(
-                                  color: AppColors.redAccent,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: 32),
+
+                        // Customized Bar Chart Representation
+                        SizedBox(
+                          height: 180,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: List.generate(
+                              _viewModel.chartValues.length,
+                              (index) {
+                                final bool isActive =
+                                    _viewModel.activeBarIndex == index;
+                                final double percentage =
+                                    _viewModel.chartValues[index];
+
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        _viewModel.setActiveBarIndex(index),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: AnimatedContainer(
+                                              duration: const Duration(
+                                                milliseconds: 250,
+                                              ),
+                                              curve: Curves.easeOutCubic,
+                                              width: 26,
+                                              height: 150 * percentage,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                gradient: LinearGradient(
+                                                  colors: isActive
+                                                      ? [
+                                                          AppColors
+                                                              .accentOrangeLight,
+                                                          AppColors
+                                                              .accentOrange,
+                                                        ]
+                                                      : (isDark
+                                                            ? [
+                                                                AppColors
+                                                                    .darkBarBg,
+                                                                AppColors
+                                                                    .darkBarFg,
+                                                              ]
+                                                            : [
+                                                                AppColors
+                                                                    .slate200,
+                                                                AppColors
+                                                                    .slate300,
+                                                              ]),
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                ),
+                                                boxShadow: isActive
+                                                    ? [
+                                                        BoxShadow(
+                                                          color: AppColors
+                                                              .accentOrange
+                                                              .withValues(
+                                                                alpha: 0.3,
+                                                              ),
+                                                          blurRadius: 8,
+                                                          offset: const Offset(
+                                                            0,
+                                                            4,
+                                                          ),
+                                                        ),
+                                                      ]
+                                                    : [],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          _viewModel.chartMonths[index],
+                                          style: TextStyle(
+                                            color: isActive
+                                                ? textColor
+                                                : subTextColor,
+                                            fontSize: 12,
+                                            fontWeight: isActive
+                                                ? FontWeight.bold
+                                                : FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 32),
 
-                    // Customized Bar Chart Representation
-                    SizedBox(
-                      height: 180,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: List.generate(_mockChartValues.length, (index) {
-                          final bool isActive = _activeBarIndex == index;
-                          final double percentage = _mockChartValues[index];
-
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _activeBarIndex = index),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 250),
-                                        curve: Curves.easeOutCubic,
-                                        width: 26,
-                                        height: 150 * percentage,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          gradient: LinearGradient(
-                                            colors: isActive
-                                                ? [AppColors.accentOrangeLight, AppColors.accentOrange]
-                                                : (isDark
-                                                    ? [AppColors.darkBarBg, AppColors.darkBarFg]
-                                                    : [AppColors.slate200, AppColors.slate300]),
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                          ),
-                                          boxShadow: isActive
-                                              ? [
-                                                  BoxShadow(
-                                                    color: AppColors.accentOrange.withValues(alpha: 0.3),
-                                                    blurRadius: 8,
-                                                    offset: const Offset(0, 4),
-                                                  )
-                                                ]
-                                              : [],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    _mockChartMonths[index],
-                                    style: TextStyle(
-                                      color: isActive ? textColor : subTextColor,
-                                      fontSize: 12,
-                                      fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
+                  // Spending Category Progress Bars
+                  Text(
+                    l10n.categoryBreakdown,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 16),
 
-              // Spending Category Progress Bars
-              Text(
-                l10n.categoryBreakdown,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
+                  _buildCategoryProgress(
+                    context: context,
+                    title: l10n.shopping,
+                    amount: 'R\$ 1.250,00',
+                    percentage: 0.35,
+                    color: AppColors.purpleAccent,
+                    icon: Icons.shopping_cart_outlined,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildCategoryProgress(
+                    context: context,
+                    title: l10n.foodDining,
+                    amount: 'R\$ 1.120,50',
+                    percentage: 0.32,
+                    color: AppColors.yellowAccent,
+                    icon: Icons.restaurant_rounded,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildCategoryProgress(
+                    context: context,
+                    title: l10n.transportation,
+                    amount: 'R\$ 640,00',
+                    percentage: 0.18,
+                    color: AppColors.accentViolet,
+                    icon: Icons.directions_car_rounded,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildCategoryProgress(
+                    context: context,
+                    title: l10n.others,
+                    amount: 'R\$ 407,50',
+                    percentage: 0.15,
+                    color: AppColors.greenAccent,
+                    icon: Icons.bubble_chart_outlined,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-
-              _buildCategoryProgress(
-                context: context,
-                title: l10n.shopping,
-                amount: 'R\$ 1.250,00',
-                percentage: 0.35,
-                color: AppColors.purpleAccent,
-                icon: Icons.shopping_cart_outlined,
-                cardColor: cardColor,
-                textColor: textColor,
-              ),
-              const SizedBox(height: 14),
-              _buildCategoryProgress(
-                context: context,
-                title: l10n.foodDining,
-                amount: 'R\$ 1.120,50',
-                percentage: 0.32,
-                color: AppColors.yellowAccent,
-                icon: Icons.restaurant_rounded,
-                cardColor: cardColor,
-                textColor: textColor,
-              ),
-              const SizedBox(height: 14),
-              _buildCategoryProgress(
-                context: context,
-                title: l10n.transportation,
-                amount: 'R\$ 640,00',
-                percentage: 0.18,
-                color: AppColors.accentViolet,
-                icon: Icons.directions_car_rounded,
-                cardColor: cardColor,
-                textColor: textColor,
-              ),
-              const SizedBox(height: 14),
-              _buildCategoryProgress(
-                context: context,
-                title: l10n.others,
-                amount: 'R\$ 407,50',
-                percentage: 0.15,
-                color: AppColors.greenAccent,
-                icon: Icons.bubble_chart_outlined,
-                cardColor: cardColor,
-                textColor: textColor,
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -378,7 +454,9 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
             child: LinearProgressIndicator(
               value: percentage,
               minHeight: 8,
-              backgroundColor: isDark ? AppColors.darkInterfaceColor : AppColors.slate100,
+              backgroundColor: isDark
+                  ? AppColors.darkInterfaceColor
+                  : AppColors.slate100,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),

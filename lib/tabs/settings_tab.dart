@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../main.dart'; // Import to access global themeNotifier and localeNotifier
+
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../theme/app_colors.dart';
+import '../viewmodels/settings_view_model.dart';
 import '../widgets/shared_avatars.dart';
 
 class SettingsTab extends StatefulWidget {
@@ -13,28 +14,32 @@ class SettingsTab extends StatefulWidget {
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  late bool _darkMode;
-  late bool _isEnglish; // Controls real-time language toggling
-  bool _pushNotifications = true;
-  bool _biometricAuth = false;
+  late final SettingsViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    _darkMode = themeNotifier.value == ThemeMode.dark;
-    _isEnglish = localeNotifier.value.languageCode == 'en';
+    _viewModel = SettingsViewModel();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final double totalBottomInset = 90 + bottomPadding + 24;
-    
+
     // Dynamic styles based on theme
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600; // Slate 400 vs Slate 600
+    final Color subTextColor = isDark
+        ? AppColors.slate400
+        : AppColors.slate600; // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
 
     // Resolve localization translations
@@ -54,116 +59,202 @@ class _SettingsTabState extends State<SettingsTab> {
             systemNavigationBarContrastEnforced: false,
           );
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: overlayStyle,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.only(top: 60, left: 24, right: 24, bottom: totalBottomInset),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.settings,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                ),
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: overlayStyle,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: 60,
+                left: 24,
+                right: 24,
+                bottom: totalBottomInset,
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.customizePreferences,
-                style: TextStyle(
-                  color: textColor.withValues(alpha: 0.5),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.settings,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.customizePreferences,
+                    style: TextStyle(
+                      color: textColor.withValues(alpha: 0.5),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
 
-              // Profile Header Widget
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const SharedAvatars(
-                      size: 36.0,
-                      overlap: 20.0,
-                      hasBorder: false,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Lucas & Mariana',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  // Profile Header Widget
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.darkSlate.withValues(
+                            alpha: isDark ? 0.25 : 0.04,
                           ),
-                          const SizedBox(height: 1),
-                          Text(
-                            l10n.premiumPlan,
-                            style: TextStyle(
-                              color: textColor.withOpacity(0.5),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const SharedAvatars(
+                          size: 36.0,
+                          overlap: 20.0,
+                          hasBorder: false,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Lucas & Mariana',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                l10n.premiumPlan,
+                                style: TextStyle(
+                                  color: textColor.withOpacity(0.5),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: subTextColor,
+                            size: 16,
+                          ),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.arrow_forward_ios_rounded, color: subTextColor, size: 16),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 28),
+                  _buildSectionHeader(l10n.accountSettings, subTextColor),
+                  _buildSettingTile(
+                    Icons.person_outline_rounded,
+                    l10n.editProfiles,
+                    l10n.managePersonalProfiles,
+                    cardColor,
+                    textColor,
+                    subTextColor,
+                    isDark,
+                  ),
+                  _buildSettingTile(
+                    Icons.link_rounded,
+                    l10n.connectedBanks,
+                    l10n.banksLinked,
+                    cardColor,
+                    textColor,
+                    subTextColor,
+                    isDark,
+                  ),
+                  _buildSettingTile(
+                    Icons.card_giftcard_outlined,
+                    l10n.cardsSettings,
+                    l10n.cardsSubtitle,
+                    cardColor,
+                    textColor,
+                    subTextColor,
+                    isDark,
+                  ),
+                  const SizedBox(height: 28),
+                  _buildSectionHeader(l10n.preferences, subTextColor),
+                  _buildToggleTile(
+                    Icons.translate_rounded,
+                    'English Language',
+                    _viewModel.isEnglish,
+                    cardColor,
+                    textColor,
+                    isDark,
+                    (v) {
+                      _viewModel.toggleLanguage(v);
+                    },
+                  ),
+                  _buildToggleTile(
+                    Icons.dark_mode_outlined,
+                    l10n.darkModeLabel,
+                    _viewModel.darkMode,
+                    cardColor,
+                    textColor,
+                    isDark,
+                    (v) {
+                      _viewModel.toggleDarkMode(v);
+                    },
+                  ),
+                  _buildToggleTile(
+                    Icons.notifications_none_rounded,
+                    l10n.pushNotifications,
+                    _viewModel.pushNotifications,
+                    cardColor,
+                    textColor,
+                    isDark,
+                    (v) {
+                      _viewModel.togglePushNotifications(v);
+                    },
+                  ),
+                  _buildToggleTile(
+                    Icons.fingerprint_rounded,
+                    l10n.biometricSignIn,
+                    _viewModel.biometricAuth,
+                    cardColor,
+                    textColor,
+                    isDark,
+                    (v) {
+                      _viewModel.toggleBiometricAuth(v);
+                    },
+                  ),
+                  const SizedBox(height: 28),
+                  _buildSectionHeader(l10n.support, subTextColor),
+                  _buildSettingTile(
+                    Icons.help_outline_rounded,
+                    l10n.helpCenter,
+                    l10n.faqsSupport,
+                    cardColor,
+                    textColor,
+                    subTextColor,
+                    isDark,
+                  ),
+                  _buildSettingTile(
+                    Icons.policy_outlined,
+                    l10n.privacyPolicy,
+                    l10n.dataSecurity,
+                    cardColor,
+                    textColor,
+                    subTextColor,
+                    isDark,
+                  ),
+                ],
               ),
-              const SizedBox(height: 28),
-              _buildSectionHeader(l10n.accountSettings, subTextColor),
-              _buildSettingTile(Icons.person_outline_rounded, l10n.editProfiles, l10n.managePersonalProfiles, cardColor, textColor, subTextColor, isDark),
-              _buildSettingTile(Icons.link_rounded, l10n.connectedBanks, l10n.banksLinked, cardColor, textColor, subTextColor, isDark),
-              _buildSettingTile(Icons.card_giftcard_outlined, l10n.cardsSettings, l10n.cardsSubtitle, cardColor, textColor, subTextColor, isDark),
-              const SizedBox(height: 28),
-              _buildSectionHeader(l10n.preferences, subTextColor),
-              _buildToggleTile(Icons.translate_rounded, 'English Language', _isEnglish, cardColor, textColor, isDark, (v) {
-                setState(() {
-                  _isEnglish = v;
-                  localeNotifier.value = v ? const Locale('en') : const Locale('pt');
-                });
-              }),
-              _buildToggleTile(Icons.dark_mode_outlined, l10n.darkModeLabel, _darkMode, cardColor, textColor, isDark, (v) {
-                setState(() {
-                  _darkMode = v;
-                  themeNotifier.value = v ? ThemeMode.dark : ThemeMode.light;
-                });
-              }),
-              _buildToggleTile(Icons.notifications_none_rounded, l10n.pushNotifications, _pushNotifications, cardColor, textColor, isDark, (v) => setState(() => _pushNotifications = v)),
-              _buildToggleTile(Icons.fingerprint_rounded, l10n.biometricSignIn, _biometricAuth, cardColor, textColor, isDark, (v) => setState(() => _biometricAuth = v)),
-              const SizedBox(height: 28),
-              _buildSectionHeader(l10n.support, subTextColor),
-              _buildSettingTile(Icons.help_outline_rounded, l10n.helpCenter, l10n.faqsSupport, cardColor, textColor, subTextColor, isDark),
-              _buildSettingTile(Icons.policy_outlined, l10n.privacyPolicy, l10n.dataSecurity, cardColor, textColor, subTextColor, isDark),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -182,7 +273,15 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  Widget _buildSettingTile(IconData icon, String title, String subtitle, Color cardColor, Color textColor, Color subTextColor, bool isDark) {
+  Widget _buildSettingTile(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+    bool isDark,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -198,8 +297,8 @@ class _SettingsTabState extends State<SettingsTab> {
       ),
       child: ListTile(
         leading: Icon(
-          icon, 
-          color: isDark ? AppColors.accentVioletLight : AppColors.primarySeed, 
+          icon,
+          color: isDark ? AppColors.accentVioletLight : AppColors.primarySeed,
           size: 20,
         ),
         title: Text(
@@ -218,14 +317,26 @@ class _SettingsTabState extends State<SettingsTab> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        trailing: Icon(Icons.arrow_forward_ios_rounded, color: isDark ? Colors.white30 : AppColors.slate300, size: 14),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          color: isDark ? Colors.white30 : AppColors.slate300,
+          size: 14,
+        ),
         onTap: () {},
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
     );
   }
 
-  Widget _buildToggleTile(IconData icon, String title, bool value, Color cardColor, Color textColor, bool isDark, ValueChanged<bool> onChanged) {
+  Widget _buildToggleTile(
+    IconData icon,
+    String title,
+    bool value,
+    Color cardColor,
+    Color textColor,
+    bool isDark,
+    ValueChanged<bool> onChanged,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -241,8 +352,8 @@ class _SettingsTabState extends State<SettingsTab> {
       ),
       child: SwitchListTile(
         secondary: Icon(
-          icon, 
-          color: isDark ? AppColors.accentVioletLight : AppColors.primarySeed, 
+          icon,
+          color: isDark ? AppColors.accentVioletLight : AppColors.primarySeed,
           size: 20,
         ),
         title: Text(

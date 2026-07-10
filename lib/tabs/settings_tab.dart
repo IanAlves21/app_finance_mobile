@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../main.dart'; // Import to access global themeNotifier and localeNotifier
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../theme/app_colors.dart';
+import '../widgets/shared_avatars.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -32,7 +34,7 @@ class _SettingsTabState extends State<SettingsTab> {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
+    final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600; // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
 
     // Resolve localization translations
@@ -41,7 +43,7 @@ class _SettingsTabState extends State<SettingsTab> {
     final SystemUiOverlayStyle overlayStyle = isDark
         ? SystemUiOverlayStyle.light.copyWith(
             statusBarColor: Colors.transparent,
-            systemNavigationBarColor: const Color(0xFF151B2D),
+            systemNavigationBarColor: AppColors.darkCard,
             systemNavigationBarIconBrightness: Brightness.light,
             systemNavigationBarContrastEnforced: false,
           )
@@ -73,7 +75,7 @@ class _SettingsTabState extends State<SettingsTab> {
               Text(
                 l10n.customizePreferences,
                 style: TextStyle(
-                  color: textColor.withOpacity(0.5),
+                  color: textColor.withValues(alpha: 0.5),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -88,7 +90,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.25 : 0.04),
+                      color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -96,43 +98,10 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
                 child: Row(
                   children: [
-                    SizedBox(
-                      width: 56,
-                      height: 40,
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [Color(0xFFF97316), Color(0xFFFB923C)],
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text('L', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                          Positioned(
-                            left: 20,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text('M', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                        ],
-                      ),
+                    const SharedAvatars(
+                      size: 36.0,
+                      overlap: 20.0,
+                      hasBorder: false,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -221,7 +190,7 @@ class _SettingsTabState extends State<SettingsTab> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.20 : 0.03),
+            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.20 : 0.03),
             blurRadius: 6,
             offset: const Offset(0, 1),
           ),
@@ -230,7 +199,7 @@ class _SettingsTabState extends State<SettingsTab> {
       child: ListTile(
         leading: Icon(
           icon, 
-          color: isDark ? const Color(0xFF818CF8) : const Color(0xFF1A2D5A), 
+          color: isDark ? AppColors.accentVioletLight : AppColors.primarySeed, 
           size: 20,
         ),
         title: Text(
@@ -249,7 +218,7 @@ class _SettingsTabState extends State<SettingsTab> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        trailing: Icon(Icons.arrow_forward_ios_rounded, color: isDark ? Colors.white30 : const Color(0xFFCBD5E1), size: 14),
+        trailing: Icon(Icons.arrow_forward_ios_rounded, color: isDark ? Colors.white30 : AppColors.slate300, size: 14),
         onTap: () {},
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
@@ -264,7 +233,7 @@ class _SettingsTabState extends State<SettingsTab> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.20 : 0.03),
+            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.20 : 0.03),
             blurRadius: 6,
             offset: const Offset(0, 1),
           ),
@@ -273,7 +242,7 @@ class _SettingsTabState extends State<SettingsTab> {
       child: SwitchListTile(
         secondary: Icon(
           icon, 
-          color: isDark ? const Color(0xFF818CF8) : const Color(0xFF1A2D5A), 
+          color: isDark ? AppColors.accentVioletLight : AppColors.primarySeed, 
           size: 20,
         ),
         title: Text(
@@ -286,7 +255,8 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: const Color(0xFFF97316),
+        activeThumbColor: AppColors.accentOrange,
+        activeTrackColor: AppColors.accentOrange.withValues(alpha: 0.3),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
     );

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/transaction.dart';
-import '../widgets/interactive_card.dart';
-import '../widgets/transaction_detail_bottom_sheet.dart';
+
 import '../l10n/app_localizations.dart'; // Import Custom Localization
-import '../l10n/app_localizations_extension.dart';
+import '../models/transaction.dart';
+import '../services/api_service.dart';
+import '../theme/app_colors.dart';
+import '../utils/currency_formatter.dart';
+import '../widgets/shared_avatars.dart';
+import '../widgets/summary_card.dart';
+import '../widgets/transaction_card.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -15,7 +19,16 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab> {
   late ScrollController _scrollController;
-  final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier<double>(
+    0.0,
+  );
+
+  final ApiService _apiService = ApiService();
+  List<Transaction> _transactions = [];
+  bool _isLoading = true;
+  double _balance = 0.0;
+  double _income = 0.0;
+  double _expenses = 0.0;
 
   @override
   void initState() {
@@ -23,10 +36,47 @@ class _HomeTabState extends State<HomeTab> {
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
-        _scrollOffsetNotifier.value = _scrollController.offset.clamp(0.0, 150.0);
+        _scrollOffsetNotifier.value = _scrollController.offset.clamp(
+          0.0,
+          150.0,
+        );
       }
     });
+    _loadTransactions();
   }
+
+  Future<void> _loadTransactions() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    final fetched = await _apiService.fetchTransactions();
+
+    if (!mounted) return;
+
+    // Calculate metrics
+    double calculatedIncome = 0.0;
+    double calculatedExpenses = 0.0;
+    for (final tx in fetched) {
+      if (tx.amount > 0) {
+        calculatedIncome += tx.amount;
+      } else {
+        calculatedExpenses += tx.amount.abs();
+      }
+    }
+    final double calculatedBalance = calculatedIncome - calculatedExpenses;
+
+    setState(() {
+      _transactions = fetched;
+      _income = calculatedIncome;
+      _expenses = calculatedExpenses;
+      _balance = calculatedBalance;
+      _isLoading = false;
+    });
+  }
+
+
 
   @override
   void dispose() {
@@ -43,10 +93,11 @@ class _HomeTabState extends State<HomeTab> {
     // Dynamic colors for Light/Dark Mode
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
-    final Color cardColor = theme.cardColor;
+    final Color subTextColor = isDark
+        ? AppColors.slate400
+        : AppColors.slate600; // Slate 400 vs Slate 600
 
     // Resolve localization translations
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -56,8 +107,12 @@ class _HomeTabState extends State<HomeTab> {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: isDark ? const Color(0xFF151B2D) : Colors.white,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark
+            ? AppColors.darkCard
+            : Colors.white,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
         systemNavigationBarContrastEnforced: false,
       ),
       child: Column(
@@ -72,7 +127,7 @@ class _HomeTabState extends State<HomeTab> {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF1A2D5A), Color(0xFF0F1B35)],
+                    colors: [AppColors.primarySeed, AppColors.darkSlate],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -126,60 +181,7 @@ class _HomeTabState extends State<HomeTab> {
                                   ],
                                 ),
                                 // Shared overlapping avatars
-                                SizedBox(
-                                  width: 72,
-                                  height: 40,
-                                  child: Stack(
-                                    children: [
-                                      Positioned(
-                                        left: 0,
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(color: const Color(0xFF1A2D5A), width: 2.5),
-                                            gradient: const LinearGradient(
-                                              colors: [Color(0xFFF97316), Color(0xFFFB923C)],
-                                            ),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: const Text(
-                                            'L',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        left: 24,
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(color: const Color(0xFF1A2D5A), width: 2.5),
-                                            gradient: const LinearGradient(
-                                              colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
-                                            ),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: const Text(
-                                            'M',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                const SharedAvatars(),
                               ],
                             ),
                           ),
@@ -215,7 +217,7 @@ class _HomeTabState extends State<HomeTab> {
                     // Dynamic Resizing Balance Amount
                     RichText(
                       text: TextSpan(
-                        text: 'R\$ 24.381',
+                        text: CurrencyFormatter.formatBalanceParts(_balance)[0],
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 42.0 - (t * 18.0),
@@ -224,7 +226,7 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                         children: [
                           TextSpan(
-                            text: ',50',
+                            text: CurrencyFormatter.formatBalanceParts(_balance)[1],
                             style: TextStyle(
                               fontSize: 28.0 - (t * 12.0),
                               fontWeight: FontWeight.w700,
@@ -245,7 +247,10 @@ class _HomeTabState extends State<HomeTab> {
                           child: Opacity(
                             opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(20),
@@ -253,12 +258,16 @@ class _HomeTabState extends State<HomeTab> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.north_east_rounded, color: Color(0xFF4ADE80), size: 14),
+                                  const Icon(
+                                    Icons.north_east_rounded,
+                                    color: AppColors.greenGrowth,
+                                    size: 14,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '+8.2% ${l10n.vsLastMonth}',
                                     style: const TextStyle(
-                                      color: Color(0xFF4ADE80),
+                                      color: AppColors.greenGrowth,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -278,271 +287,125 @@ class _HomeTabState extends State<HomeTab> {
 
           // ── SCROLLABLE BODY CONTENT ──
           Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        // Income Card
-                        Expanded(
-                          child: _buildSummaryCard(
-                            context: context,
-                            title: l10n.monthlyIncome,
-                            value: 'R\$ 9.200',
-                            badgeText: '+12%',
-                            badgeColor: const Color(0xFF16A34A),
-                            badgeBg: const Color(0xFFDCFCE7),
-                            icon: Icons.trending_up_rounded,
-                            iconColor: const Color(0xFF16A34A),
-                            iconBg: const Color(0xFFDCFCE7),
-                            cardColor: cardColor,
-                            textColor: textColor,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Expense Card
-                        Expanded(
-                          child: _buildSummaryCard(
-                            context: context,
-                            title: l10n.monthlyExpenses,
-                            value: 'R\$ 3.418',
-                            badgeText: '-5%',
-                            badgeColor: const Color(0xFFDC2626),
-                            badgeBg: const Color(0xFFFEE2E2),
-                            icon: Icons.trending_down_rounded,
-                            iconColor: const Color(0xFFDC2626),
-                            iconBg: const Color(0xFFFEE2E2),
-                            cardColor: cardColor,
-                            textColor: textColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.recentTransactions,
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            l10n.seeAll,
-                            style: const TextStyle(
-                              color: Color(0xFFF97316),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+            child: RefreshIndicator(
+              onRefresh: _loadTransactions,
+              color: AppColors.accentOrange,
+              backgroundColor: isDark ? AppColors.slate800 : Colors.white,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          // Income Card
+                          Expanded(
+                            child: SummaryCard(
+                              title: l10n.monthlyIncome,
+                              value: CurrencyFormatter.formatSummaryValue(_income),
+                              badgeText: '+12%',
+                              badgeColor: AppColors.greenAccent,
+                              badgeBg: AppColors.greenBg,
+                              icon: Icons.trending_up_rounded,
+                              iconColor: AppColors.greenAccent,
+                              iconBg: AppColors.greenBg,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      itemCount: transactionsData.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final tx = transactionsData[index];
-                        final bool isPositive = tx.amount > 0;
-
-                        return InteractiveCard(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => TransactionDetailBottomSheet(
-                                transaction: tx,
+                          const SizedBox(width: 12),
+                          // Expense Card
+                          Expanded(
+                            child: SummaryCard(
+                              title: l10n.monthlyExpenses,
+                              value: CurrencyFormatter.formatSummaryValue(_expenses),
+                              badgeText: '-5%',
+                              badgeColor: AppColors.redAccent,
+                              badgeBg: AppColors.redBg,
+                              icon: Icons.trending_down_rounded,
+                              iconColor: AppColors.redAccent,
+                              iconBg: AppColors.redBg,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.recentTransactions,
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {},
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              l10n.seeAll,
+                              style: const TextStyle(
+                                color: AppColors.accentOrange,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: cardColor,
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.25 : 0.05),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: tx.iconBg,
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Icon(
-                                    tx.icon,
-                                    color: tx.iconColor,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l10n.getTransactionName(tx.name), // Dynamic Translation!
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: textColor,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        tx.date,
-                                        style: TextStyle(
-                                          color: subTextColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      isPositive ? Icons.north_east_rounded : Icons.south_east_rounded,
-                                      color: isPositive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 2),
-                                    Text(
-                                      '${isPositive ? '+' : ''}R\$ ${tx.amount.abs().toStringAsFixed(2).replaceAll('.', ',')}',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        color: isPositive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
                             ),
                           ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: totalBottomInset),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard({
-    required BuildContext context,
-    required String title,
-    required String value,
-    required String badgeText,
-    required Color badgeColor,
-    required Color badgeBg,
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
-    required Color cardColor,
-    required Color textColor,
-  }) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.25 : 0.07),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: iconColor, size: 17),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: badgeBg,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  badgeText,
-                  style: TextStyle(
-                    color: badgeColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      _isLoading
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 40),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.accentOrange,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : _transactions.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 40,
+                                ),
+                                child: Text(
+                                  'Nenhuma transação encontrada',
+                                  style: TextStyle(color: subTextColor),
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.zero,
+                              itemCount: _transactions.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                final tx = _transactions[index];
+                                return TransactionCard(transaction: tx);
+                              },
+                            ),
+                      SizedBox(height: totalBottomInset),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            title, // Uses translated string directly
-            style: TextStyle(
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99),
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            value,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
             ),
           ),
         ],

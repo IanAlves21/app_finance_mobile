@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'l10n/app_localizations.dart'; // Import Custom Localization
+import 'theme/app_colors.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/analytics_tab.dart';
 import 'tabs/wallets_tab.dart';
@@ -59,14 +60,14 @@ class MyApp extends StatelessWidget {
                 useMaterial3: true,
                 brightness: Brightness.light,
                 fontFamily: 'Nunito',
-                cardColor: Colors.white,
-                scaffoldBackgroundColor: const Color(0xFFF4F5F8),
+                cardColor: AppColors.lightCard,
+                scaffoldBackgroundColor: AppColors.lightScaffold,
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF1A2D5A),
-                  primary: const Color(0xFFF97316),
-                  secondary: const Color(0xFF6366F1),
-                  surface: const Color(0xFFF4F5F8),
-                  onSurface: const Color(0xFF0F1B35),
+                  seedColor: AppColors.primarySeed,
+                  primary: AppColors.accentOrange,
+                  secondary: AppColors.accentViolet,
+                  surface: AppColors.lightScaffold,
+                  onSurface: AppColors.darkSlate,
                 ),
               ),
 
@@ -75,14 +76,14 @@ class MyApp extends StatelessWidget {
                 useMaterial3: true,
                 brightness: Brightness.dark,
                 fontFamily: 'Nunito',
-                cardColor: const Color(0xFF151B2D), // Rich midnight navy card
-                scaffoldBackgroundColor: const Color(0xFF0B0F19), // Deep obsidian midnight background
+                cardColor: AppColors.darkCard, // Rich midnight navy card
+                scaffoldBackgroundColor: AppColors.darkScaffold, // Deep obsidian midnight background
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF1A2D5A),
+                  seedColor: AppColors.primarySeed,
                   brightness: Brightness.dark,
-                  primary: const Color(0xFFF97316),
-                  secondary: const Color(0xFF818CF8),
-                  surface: const Color(0xFF151B2D),
+                  primary: AppColors.accentOrange,
+                  secondary: AppColors.accentVioletLight,
+                  surface: AppColors.darkCard,
                   onSurface: const Color(0xFFF1F5F9), // Gorgeous soft off-white text
                 ),
               ),

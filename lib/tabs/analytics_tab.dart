@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../theme/app_colors.dart';
 
 class AnalyticsTab extends StatefulWidget {
   const AnalyticsTab({super.key});
@@ -27,7 +28,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
     final bool isDark = theme.brightness == Brightness.dark;
     
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
+    final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600; // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
 
     // Resolve localization translations
@@ -36,7 +37,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
     final SystemUiOverlayStyle overlayStyle = isDark
         ? SystemUiOverlayStyle.light.copyWith(
             statusBarColor: Colors.transparent,
-            systemNavigationBarColor: const Color(0xFF151B2D),
+            systemNavigationBarColor: AppColors.darkCard,
             systemNavigationBarIconBrightness: Brightness.light,
             systemNavigationBarContrastEnforced: false,
           )
@@ -68,7 +69,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
               Text(
                 l10n.sharedMonthlySpending,
                 style: TextStyle(
-                  color: textColor.withOpacity(0.5),
+                  color: textColor.withValues(alpha: 0.5),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -95,13 +96,13 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF1A2D5A) : cardColor,
+                          color: isSelected ? AppColors.primarySeed : cardColor,
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: isSelected
                               ? []
                               : [
                                   BoxShadow(
-                                    color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.20 : 0.04),
+                                    color: AppColors.darkSlate.withValues(alpha: isDark ? 0.20 : 0.04),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   )
@@ -131,7 +132,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.25 : 0.06),
+                      color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.06),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -169,17 +170,17 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEE2E2),
+                            color: AppColors.redBg,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.trending_down_rounded, color: Color(0xFFDC2626), size: 14),
+                              Icon(Icons.trending_down_rounded, color: AppColors.redAccent, size: 14),
                               SizedBox(width: 4),
                               Text(
                                 '-4.2%',
                                 style: TextStyle(
-                                  color: Color(0xFFDC2626),
+                                  color: AppColors.redAccent,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -219,17 +220,17 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                           borderRadius: BorderRadius.circular(8),
                                           gradient: LinearGradient(
                                             colors: isActive
-                                                ? [const Color(0xFFFB923C), const Color(0xFFF97316)]
+                                                ? [AppColors.accentOrangeLight, AppColors.accentOrange]
                                                 : (isDark
-                                                    ? [const Color(0xFF223047), const Color(0xFF2A3A54)]
-                                                    : [const Color(0xFFE2E8F0), const Color(0xFFCBD5E1)]),
+                                                    ? [AppColors.darkBarBg, AppColors.darkBarFg]
+                                                    : [AppColors.slate200, AppColors.slate300]),
                                             begin: Alignment.topCenter,
                                             end: Alignment.bottomCenter,
                                           ),
                                           boxShadow: isActive
                                               ? [
                                                   BoxShadow(
-                                                    color: const Color(0xFFF97316).withOpacity(0.3),
+                                                    color: AppColors.accentOrange.withValues(alpha: 0.3),
                                                     blurRadius: 8,
                                                     offset: const Offset(0, 4),
                                                   )
@@ -276,7 +277,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                 title: l10n.shopping,
                 amount: 'R\$ 1.250,00',
                 percentage: 0.35,
-                color: const Color(0xFF7C3AED),
+                color: AppColors.purpleAccent,
                 icon: Icons.shopping_cart_outlined,
                 cardColor: cardColor,
                 textColor: textColor,
@@ -287,7 +288,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                 title: l10n.foodDining,
                 amount: 'R\$ 1.120,50',
                 percentage: 0.32,
-                color: const Color(0xFFD97706),
+                color: AppColors.yellowAccent,
                 icon: Icons.restaurant_rounded,
                 cardColor: cardColor,
                 textColor: textColor,
@@ -298,7 +299,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                 title: l10n.transportation,
                 amount: 'R\$ 640,00',
                 percentage: 0.18,
-                color: const Color(0xFF6366F1),
+                color: AppColors.accentViolet,
                 icon: Icons.directions_car_rounded,
                 cardColor: cardColor,
                 textColor: textColor,
@@ -309,7 +310,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                 title: l10n.others,
                 amount: 'R\$ 407,50',
                 percentage: 0.15,
-                color: const Color(0xFF16A34A),
+                color: AppColors.greenAccent,
                 icon: Icons.bubble_chart_outlined,
                 cardColor: cardColor,
                 textColor: textColor,
@@ -340,7 +341,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.20 : 0.04),
+            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.20 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -377,7 +378,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
             child: LinearProgressIndicator(
               value: percentage,
               minHeight: 8,
-              backgroundColor: isDark ? const Color(0xFF222E45) : const Color(0xFFF1F5F9),
+              backgroundColor: isDark ? AppColors.darkInterfaceColor : AppColors.slate100,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/interactive_card.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../theme/app_colors.dart';
+import '../widgets/quick_action_item.dart';
 
 class WalletsTab extends StatefulWidget {
   const WalletsTab({super.key});
@@ -20,7 +21,7 @@ class _WalletsTabState extends State<WalletsTab> {
       'number': '•••• •••• •••• 4820',
       'balance': 'R\$ 18.231,50',
       'expiry': '12/31',
-      'colors': [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+      'colors': [AppColors.slate800, AppColors.slate900],
       'brand': 'VISA',
     },
     {
@@ -28,7 +29,7 @@ class _WalletsTabState extends State<WalletsTab> {
       'number': '•••• •••• •••• 9210',
       'balance': 'R\$ 6.150,00',
       'expiry': '08/30',
-      'colors': [const Color(0xFF4338CA), const Color(0xFF312E81)],
+      'colors': [AppColors.indigoAccent, AppColors.indigoBg],
       'brand': 'Mastercard',
     },
   ];
@@ -46,9 +47,9 @@ class _WalletsTabState extends State<WalletsTab> {
 
     // Dynamic styles based on theme
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : const Color(0xFF0F1B35);
-    final Color subTextColor = isDark ? const Color(0xFF6B7A99).withOpacity(0.6) : const Color(0xFF6B7A99);
-    final Color cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final Color textColor = isDark ? Colors.white : AppColors.darkSlate;
+    final Color subTextColor = isDark ? AppColors.slate600.withValues(alpha: 0.6) : AppColors.slate600;
+    final Color cardColor = isDark ? AppColors.slate800 : Colors.white;
 
     // Resolve localization translations
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -56,7 +57,7 @@ class _WalletsTabState extends State<WalletsTab> {
     final SystemUiOverlayStyle overlayStyle = isDark
         ? SystemUiOverlayStyle.light.copyWith(
             statusBarColor: Colors.transparent,
-            systemNavigationBarColor: const Color(0xFF151B2D),
+            systemNavigationBarColor: AppColors.darkCard,
             systemNavigationBarIconBrightness: Brightness.light,
             systemNavigationBarContrastEnforced: false,
           )
@@ -247,7 +248,7 @@ class _WalletsTabState extends State<WalletsTab> {
                     width: isActive ? 20 : 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: isActive ? const Color(0xFFF97316) : const Color(0xFFCBD5E1),
+                      color: isActive ? AppColors.accentOrange : AppColors.slate300,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   );
@@ -273,10 +274,38 @@ class _WalletsTabState extends State<WalletsTab> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildQuickAction(Icons.send_rounded, l10n.send, const Color(0xFFDCFCE7), const Color(0xFF16A34A), textColor),
-                        _buildQuickAction(Icons.arrow_downward_rounded, l10n.request, const Color(0xFFFEF3C7), const Color(0xFFD97706), textColor),
-                        _buildQuickAction(Icons.payment_rounded, l10n.payBills, const Color(0xFFFEE2E2), const Color(0xFFDC2626), textColor),
-                        _buildQuickAction(Icons.grid_view_rounded, l10n.more, const Color(0xFFEDE9FE), const Color(0xFF7C3AED), textColor),
+                        QuickActionItem(
+                          icon: Icons.send_rounded,
+                          label: l10n.send,
+                          bg: AppColors.greenBg,
+                          iconColor: AppColors.greenAccent,
+                          textColor: textColor,
+                          onTap: () {},
+                        ),
+                        QuickActionItem(
+                          icon: Icons.arrow_downward_rounded,
+                          label: l10n.request,
+                          bg: AppColors.yellowBg,
+                          iconColor: AppColors.yellowAccent,
+                          textColor: textColor,
+                          onTap: () {},
+                        ),
+                        QuickActionItem(
+                          icon: Icons.payment_rounded,
+                          label: l10n.payBills,
+                          bg: AppColors.redBg,
+                          iconColor: AppColors.redAccent,
+                          textColor: textColor,
+                          onTap: () {},
+                        ),
+                        QuickActionItem(
+                          icon: Icons.grid_view_rounded,
+                          label: l10n.more,
+                          bg: AppColors.purpleBg,
+                          iconColor: AppColors.purpleAccent,
+                          textColor: textColor,
+                          onTap: () {},
+                        ),
                       ],
                     ),
                     const SizedBox(height: 36),
@@ -298,7 +327,7 @@ class _WalletsTabState extends State<WalletsTab> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.15 : 0.04),
+                            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.15 : 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -345,8 +374,8 @@ class _WalletsTabState extends State<WalletsTab> {
                             child: LinearProgressIndicator(
                               value: 3418 / 8000,
                               minHeight: 8,
-                              backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF97316)),
+                              backgroundColor: isDark ? AppColors.slate700 : AppColors.slate100,
+                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentOrange),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -367,34 +396,6 @@ class _WalletsTabState extends State<WalletsTab> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildQuickAction(IconData icon, String label, Color bg, Color iconColor, Color textColor) {
-    return InteractiveCard(
-      onTap: () {},
-      child: Column(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
       ),
     );
   }

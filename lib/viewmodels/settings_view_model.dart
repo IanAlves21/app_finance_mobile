@@ -39,9 +39,14 @@ class SettingsViewModel extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('is_logged_in', false);
+      await prefs.remove('access_token');
+      await prefs.remove('user_id');
+      await prefs.remove('user_name');
+      await prefs.remove('user_email');
     } catch (e) {
       debugPrint('Error clearing persistent session: $e');
     }
+    currentUserNotifier.value = null;
     isLoggedInNotifier.value = false;
   }
 }

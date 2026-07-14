@@ -80,5 +80,6 @@
   "paidByLabel": "Pago por",
   "accountLabel": "Conta",
   "noteLabel": "Observação",
-  "completedStatus": "Concluído"
+  "completedStatus": "Concluído",
+  "sessionExpiredMessage": "Sua sessão expirou. Por favor, faça login novamente."
 }

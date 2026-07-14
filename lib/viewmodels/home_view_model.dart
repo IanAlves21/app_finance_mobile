@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import '../models/transaction.dart';
@@ -21,28 +22,39 @@ class HomeViewModel extends ChangeNotifier {
   double get income => _income;
   double get expenses => _expenses;
 
-  Future<void> loadTransactions() async {
+  Future<void> loadTransactions({VoidCallback? onUnauthorized}) async {
     _isLoading = true;
     notifyListeners();
 
-    final fetched = await _apiService.fetchTransactions();
+    try {
+      final fetched = await _apiService.fetchTransactions();
 
-    // Calculate aggregates
-    double calculatedIncome = 0.0;
-    double calculatedExpenses = 0.0;
-    for (final tx in fetched) {
-      if (tx.amount > 0) {
-        calculatedIncome += tx.amount;
-      } else {
-        calculatedExpenses += tx.amount.abs();
+      // Calculate aggregates
+      double calculatedIncome = 0.0;
+      double calculatedExpenses = 0.0;
+      for (final tx in fetched) {
+        if (tx.amount > 0) {
+          calculatedIncome += tx.amount;
+        } else {
+          calculatedExpenses += tx.amount.abs();
+        }
       }
-    }
 
-    _transactions = fetched;
-    _income = calculatedIncome;
-    _expenses = calculatedExpenses;
-    _balance = calculatedIncome - calculatedExpenses;
-    _isLoading = false;
-    notifyListeners();
+      _transactions = fetched;
+      _income = calculatedIncome;
+      _expenses = calculatedExpenses;
+      _balance = calculatedIncome - calculatedExpenses;
+    } on HttpException catch (e) {
+      if (e.message == 'Unauthorized') {
+        if (onUnauthorized != null) {
+          onUnauthorized();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading transactions: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import '../widgets/custom_toast.dart';
 import '../viewmodels/login_view_model.dart';
 import '../widgets/interactive_card.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLogin;
+  final LoginViewModel? viewModel;
 
-  const LoginScreen({super.key, required this.onLogin});
+  const LoginScreen({super.key, required this.onLogin, this.viewModel});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -23,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = LoginViewModel();
+    _viewModel = widget.viewModel ?? LoginViewModel();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _emailFocusNode = FocusNode();
@@ -67,15 +69,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleSubmit() {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha todos os campos.'),
-          backgroundColor: AppColors.redAccent,
-        ),
-      );
+      CustomToast.showError(context, 'Por favor, preencha todos os campos.');
       return;
     }
-    _viewModel.submitLogin(widget.onLogin);
+    _viewModel.submitLogin(
+      onSuccess: widget.onLogin,
+      onError: (errorMsg) {
+        CustomToast.showError(context, errorMsg);
+      },
+    );
   }
 
   @override

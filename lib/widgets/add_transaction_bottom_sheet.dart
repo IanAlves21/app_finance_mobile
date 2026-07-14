@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'interactive_card.dart';
+import 'custom_toast.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 
 class AddTransactionBottomSheet extends StatefulWidget {
@@ -230,17 +231,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             InteractiveCard(
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      l10n.transactionSaved,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    backgroundColor: const Color(0xFF16A34A),
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                CustomToast.showSuccess(context, l10n.transactionSaved);
               },
               child: Container(
                 width: double.infinity,

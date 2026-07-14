@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../main.dart';
+import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../viewmodels/settings_view_model.dart';
 import '../widgets/shared_avatars.dart';
@@ -120,27 +122,32 @@ class _SettingsTabState extends State<SettingsTab> {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Lucas & Mariana',
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 1),
-                              Text(
-                                l10n.premiumPlan,
-                                style: TextStyle(
-                                  color: textColor.withOpacity(0.5),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                          child: ValueListenableBuilder<User?>(
+                            valueListenable: currentUserNotifier,
+                            builder: (context, user, _) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user?.name ?? 'Lucas & Mariana',
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    user?.email ?? l10n.premiumPlan,
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(0.5),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                         IconButton(

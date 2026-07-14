@@ -247,4 +247,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get completedStatus => 'Completed';
+
+  @override
+  String get sessionExpiredMessage =>
+      'Your session has expired. Please log in again.';
 }

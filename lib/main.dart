@@ -10,10 +10,16 @@ import 'tabs/settings_tab.dart';
 import 'widgets/interactive_card.dart';
 import 'widgets/add_transaction_bottom_sheet.dart';
 import 'views/login_screen.dart';
+import 'viewmodels/login_view_model.dart';
+import 'models/user.dart';
+import 'services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Global Notifier for App Logged In state
 final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier<bool>(false);
+
+// Global Notifier for App Current User data
+final ValueNotifier<User?> currentUserNotifier = ValueNotifier<User?>(null);
 
 // Global Notifier for App Theme Mode
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
@@ -40,8 +46,27 @@ void main() async {
   // Load persistent login session before running the app
   try {
     final prefs = await SharedPreferences.getInstance();
-    final bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
-    isLoggedInNotifier.value = isLoggedIn;
+    final String? token = prefs.getString('access_token');
+    
+    // Verifica se temos um token salvo e se ele ainda é válido (não expirou)
+    if (token != null && !ApiService.isTokenExpired(token)) {
+      isLoggedInNotifier.value = true;
+      final String? id = prefs.getString('user_id');
+      final String? name = prefs.getString('user_name');
+      final String? email = prefs.getString('user_email');
+      if (id != null && name != null && email != null) {
+        currentUserNotifier.value = User(id: id, name: name, email: email);
+      }
+    } else {
+      // Se expirou ou não existe, limpa localmente para forçar nova autenticação
+      isLoggedInNotifier.value = false;
+      currentUserNotifier.value = null;
+      await prefs.setBool('is_logged_in', false);
+      await prefs.remove('access_token');
+      await prefs.remove('user_id');
+      await prefs.remove('user_name');
+      await prefs.remove('user_email');
+    }
   } catch (e) {
     debugPrint('Error loading persistent session: $e');
   }
@@ -50,7 +75,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final LoginViewModel? loginViewModel;
+
+  const MyApp({super.key, this.loginViewModel});
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +159,7 @@ class MyApp extends StatelessWidget {
                         ? const DashboardScreen(key: ValueKey('DashboardScreen'))
                         : LoginScreen(
                             key: const ValueKey('LoginScreen'),
+                            viewModel: loginViewModel,
                             onLogin: () async {
                               try {
                                 final prefs = await SharedPreferences.getInstance();

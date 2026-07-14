@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app_finance_mobile/main.dart';
+import 'package:app_finance_mobile/services/api_service.dart';
+import 'package:app_finance_mobile/viewmodels/login_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 void main() {
   setUp(() {
@@ -14,7 +19,28 @@ void main() {
     // Force Portuguese for deterministic assertions
     localeNotifier.value = const Locale('pt');
 
-    await tester.pumpWidget(const MyApp());
+    final mockClient = MockClient((request) async {
+      if (request.url.path == '/auth/login') {
+        return http.Response(
+          json.encode({
+            'access_token': 'mocked_jwt_token',
+            'user': {
+              'id': 'mocked_user_id',
+              'name': 'Ian Gustavo',
+              'email': 'ian@teste.com'
+            }
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final mockApiService = ApiService(client: mockClient);
+    final mockLoginViewModel = LoginViewModel(apiService: mockApiService);
+
+    await tester.pumpWidget(MyApp(loginViewModel: mockLoginViewModel));
     await tester.pumpAndSettle();
 
     // Verify LoginScreen is shown

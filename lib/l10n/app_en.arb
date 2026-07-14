@@ -80,5 +80,6 @@
   "paidByLabel": "Paid by",
   "accountLabel": "Account",
   "noteLabel": "Note",
-  "completedStatus": "Completed"
+  "completedStatus": "Completed",
+  "sessionExpiredMessage": "Your session has expired. Please log in again."
 }

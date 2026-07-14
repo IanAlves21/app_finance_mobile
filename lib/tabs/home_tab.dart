@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../main.dart';
+import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../utils/currency_formatter.dart';
 import '../viewmodels/home_view_model.dart';
+import '../widgets/custom_toast.dart';
 import '../widgets/shared_avatars.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/transaction_card.dart';
@@ -24,6 +27,18 @@ class _HomeTabState extends State<HomeTab> {
 
   late final HomeViewModel _viewModel;
 
+  Future<void> _loadData() async {
+    await _viewModel.loadTransactions(
+      onUnauthorized: () {
+        if (!mounted) return;
+        final localizations = AppLocalizations.of(context);
+        if (localizations != null) {
+          CustomToast.showError(context, localizations.sessionExpiredMessage);
+        }
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +52,7 @@ class _HomeTabState extends State<HomeTab> {
         );
       }
     });
-    _viewModel.loadTransactions();
+    _loadData();
   }
 
   @override
@@ -141,13 +156,18 @@ class _HomeTabState extends State<HomeTab> {
                                           ),
                                         ),
                                         const SizedBox(height: 2),
-                                        const Text(
-                                          'Lucas & Mariana',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        ValueListenableBuilder<User?>(
+                                          valueListenable: currentUserNotifier,
+                                          builder: (context, user, _) {
+                                            return Text(
+                                              user?.name ?? 'Lucas & Mariana',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),
@@ -263,7 +283,7 @@ class _HomeTabState extends State<HomeTab> {
               // ── SCROLLABLE BODY CONTENT ──
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _viewModel.loadTransactions,
+                  onRefresh: _loadData,
                   color: AppColors.accentOrange,
                   backgroundColor: isDark ? AppColors.slate800 : Colors.white,
                   child: SingleChildScrollView(

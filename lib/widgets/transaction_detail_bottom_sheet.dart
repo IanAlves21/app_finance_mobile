@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/transaction.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/app_localizations_extension.dart';
+import '../utils/transaction_ui_extension.dart';
+import '../utils/currency_formatter.dart';
 
 class TransactionDetailBottomSheet extends StatelessWidget {
   final Transaction transaction;
@@ -10,25 +12,6 @@ class TransactionDetailBottomSheet extends StatelessWidget {
     super.key,
     required this.transaction,
   });
-
-  String _formatBRL(double value) {
-    final bool isNegative = value < 0;
-    final double absValue = value.abs();
-    final String cents = (absValue % 1).toStringAsFixed(2).split('.')[1];
-    final int integers = absValue.toInt();
-    
-    // Format thousands separator
-    final String integerStr = integers.toString();
-    final StringBuffer buffer = StringBuffer();
-    for (int i = 0; i < integerStr.length; i++) {
-      if (i > 0 && (integerStr.length - i) % 3 == 0) {
-        buffer.write('.');
-      }
-      buffer.write(integerStr[i]);
-    }
-    
-    return '${isNegative ? '-' : ''}R\$ ${buffer.toString()},$cents';
-  }
 
   String _getCategoryTranslation(String category, AppLocalizations l10n) {
     switch (category.toLowerCase()) {
@@ -209,7 +192,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _formatBRL(transaction.amount),
+                        CurrencyFormatter.formatBalanceParts(transaction.amount).join(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,

@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../theme/app_colors.dart';
 
 class Transaction {
   final String id;
@@ -8,9 +6,6 @@ class Transaction {
   final String category;
   final String date;
   final double amount;
-  final IconData icon;
-  final Color iconBg;
-  final Color iconColor;
   final String paidBy;
   final String account;
   final String note;
@@ -22,9 +17,6 @@ class Transaction {
     required this.category,
     required this.date,
     required this.amount,
-    required this.icon,
-    required this.iconBg,
-    required this.iconColor,
     this.paidBy = "John Doe",
     this.account = "Shared Joint Card •••• 4242",
     this.note = "Standard shared transaction",
@@ -62,11 +54,6 @@ class Transaction {
       formattedDate = json['date']?.toString() ?? '';
     }
 
-    // Resolve icons and colors based on category and name
-    final IconData icon = _getIconForCategory(category, name);
-    final Color iconBg = _getIconBgColorForCategory(category);
-    final Color iconColor = _getIconColorForCategory(category);
-
     // Resolve default fields or fallback values
     final String paidBy = json['paidBy'] != null && json['paidBy']['name'] != null
         ? json['paidBy']['name'].toString()
@@ -97,9 +84,6 @@ class Transaction {
       category: category,
       date: formattedDate,
       amount: amount,
-      icon: icon,
-      iconBg: iconBg,
-      iconColor: iconColor,
       paidBy: paidBy,
       account: account,
       note: note,
@@ -150,75 +134,9 @@ class Transaction {
     return 'Others';
   }
 
-  static IconData _getIconForCategory(String category, String name) {
-    final desc = name.toLowerCase();
-    switch (category) {
-      case 'Income':
-        if (desc.contains('salary') || desc.contains('salário')) {
-          return Icons.savings_rounded;
-        }
-        return Icons.work_outline_rounded;
-      case 'Food':
-        return Icons.shopping_cart_outlined;
-      case 'Dining':
-        if (desc.contains('starbucks') ||
-            desc.contains('café') ||
-            desc.contains('cafe')) {
-          return Icons.local_cafe_rounded;
-        }
-        return Icons.restaurant_rounded;
-      case 'Transport':
-        if (desc.contains('gas') ||
-            desc.contains('fuel') ||
-            desc.contains('posto') ||
-            desc.contains('combustível')) {
-          return Icons.local_gas_station_rounded;
-        }
-        return Icons.directions_car_rounded;
-      case 'Entertainment':
-        return Icons.movie_creation_outlined;
-      default:
-        return Icons.fitness_center_rounded;
-    }
-  }
-
-  static Color _getIconBgColorForCategory(String category) {
-    switch (category) {
-      case 'Income':
-        return AppColors.greenBg;
-      case 'Food':
-        return AppColors.yellowBg;
-      case 'Dining':
-        return AppColors.redBg;
-      case 'Transport':
-        return AppColors.purpleBg;
-      case 'Entertainment':
-        return AppColors.redBg;
-      default:
-        return AppColors.blueBg;
-    }
-  }
-
-  static Color _getIconColorForCategory(String category) {
-    switch (category) {
-      case 'Income':
-        return AppColors.greenAccent;
-      case 'Food':
-        return AppColors.yellowAccent;
-      case 'Dining':
-        return AppColors.redAccent;
-      case 'Transport':
-        return AppColors.purpleAccent;
-      case 'Entertainment':
-        return AppColors.redAccent;
-      default:
-        return AppColors.blueAccent;
-    }
-  }
-
   static String _resolveUser(String paidById) {
     if (paidById == '968ab5f5-8277-487f-8554-7571872b0fee') {
-      return 'John Doe'; // Wait, let's keep 'John Doe' to make sure unit/widget tests that look for 'John Doe' continue to work perfectly!
+      return 'John Doe';
     }
     if (paidById.endsWith('fee') || paidById.contains('lucas')) {
       return 'Lucas';
@@ -245,9 +163,6 @@ const List<Transaction> transactionsData = [
     category: "Income",
     date: "Jul 5, 2026",
     amount: 4500.0,
-    icon: Icons.work_outline_rounded,
-    iconBg: AppColors.greenBg,
-    iconColor: AppColors.greenAccent,
     paidBy: "John Doe",
     account: "Shared Wallet Account",
     note: "Payment for design system deliverables",
@@ -259,9 +174,6 @@ const List<Transaction> transactionsData = [
     category: "Food",
     date: "Jul 4, 2026",
     amount: -187.5,
-    icon: Icons.shopping_cart_outlined,
-    iconBg: AppColors.yellowBg,
-    iconColor: AppColors.yellowAccent,
     paidBy: "Jane Smith",
     account: "Joint Visa Card •••• 8812",
     note: "Weekly organic groceries at Target",
@@ -273,9 +185,6 @@ const List<Transaction> transactionsData = [
     category: "Dining",
     date: "Jul 3, 2026",
     amount: -94.2,
-    icon: Icons.restaurant_rounded,
-    iconBg: AppColors.redBg,
-    iconColor: AppColors.redAccent,
     paidBy: "John Doe",
     account: "Joint Visa Card •••• 8812",
     note: "Anniversary dinner celebration",
@@ -287,9 +196,6 @@ const List<Transaction> transactionsData = [
     category: "Transport",
     date: "Jul 2, 2026",
     amount: -320.0,
-    icon: Icons.directions_car_rounded,
-    iconBg: AppColors.purpleBg,
-    iconColor: AppColors.purpleAccent,
     paidBy: "Jane Smith",
     account: "AutoPay Shared Checking",
     note: "Monthly premium auto-debit",
@@ -301,9 +207,6 @@ const List<Transaction> transactionsData = [
     category: "Entertainment",
     date: "Jul 1, 2026",
     amount: -55.90,
-    icon: Icons.movie_creation_outlined,
-    iconBg: AppColors.redBg,
-    iconColor: AppColors.redAccent,
     paidBy: "John Doe",
     account: "Joint Mastercard •••• 1990",
     note: "Premium Ultra-HD subscription plan",
@@ -315,9 +218,6 @@ const List<Transaction> transactionsData = [
     category: "Income",
     date: "Jun 30, 2026",
     amount: 8000.0,
-    icon: Icons.savings_rounded,
-    iconBg: AppColors.greenBg,
-    iconColor: AppColors.greenAccent,
     paidBy: "Company Inc.",
     account: "Joint Shared Savings",
     note: "Monthly primary corporate salary deposit",
@@ -329,9 +229,6 @@ const List<Transaction> transactionsData = [
     category: "Food",
     date: "Jun 29, 2026",
     amount: -28.50,
-    icon: Icons.local_cafe_rounded,
-    iconBg: AppColors.yellowBg,
-    iconColor: AppColors.yellowAccent,
     paidBy: "Jane Smith",
     account: "Joint Visa Card •••• 8812",
     note: "Two iced lattes and a croissant",
@@ -343,9 +240,6 @@ const List<Transaction> transactionsData = [
     category: "Transport",
     date: "Jun 28, 2026",
     amount: -150.0,
-    icon: Icons.local_gas_station_rounded,
-    iconBg: AppColors.purpleBg,
-    iconColor: AppColors.purpleAccent,
     paidBy: "John Doe",
     account: "Joint Visa Card •••• 8812",
     note: "Refuel SUV full tank",
@@ -357,9 +251,6 @@ const List<Transaction> transactionsData = [
     category: "Others",
     date: "Jun 27, 2026",
     amount: -110.00,
-    icon: Icons.fitness_center_rounded,
-    iconBg: AppColors.blueBg,
-    iconColor: AppColors.blueAccent,
     paidBy: "John Doe",
     account: "Joint Mastercard •••• 1990",
     note: "Shared gym membership monthly fee",

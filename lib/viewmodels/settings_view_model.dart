@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart'; // import global themeNotifier & localeNotifier
+import '../services/session_manager.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   bool _darkMode = themeNotifier.value == ThemeMode.dark;
@@ -36,17 +36,6 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_logged_in', false);
-      await prefs.remove('access_token');
-      await prefs.remove('user_id');
-      await prefs.remove('user_name');
-      await prefs.remove('user_email');
-    } catch (e) {
-      debugPrint('Error clearing persistent session: $e');
-    }
-    currentUserNotifier.value = null;
-    isLoggedInNotifier.value = false;
+    await SessionManager.logout();
   }
 }

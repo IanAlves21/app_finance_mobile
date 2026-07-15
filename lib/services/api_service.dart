@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
+import 'session_manager.dart';
 import '../models/transaction.dart';
 
 class ApiService {
@@ -63,18 +63,7 @@ class ApiService {
 
   // Limpa a sessão local e atualiza os notifiers globais para forçar redirecionamento ao Login
   static Future<void> logout() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_logged_in', false);
-      await prefs.remove('access_token');
-      await prefs.remove('user_id');
-      await prefs.remove('user_name');
-      await prefs.remove('user_email');
-    } catch (e) {
-      debugPrint('Erro ao limpar sessão local: $e');
-    }
-    currentUserNotifier.value = null;
-    isLoggedInNotifier.value = false;
+    await SessionManager.logout();
   }
 
   Future<Map<String, dynamic>> login(String email, String password) async {

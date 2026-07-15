@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'interactive_card.dart';
 import 'custom_toast.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
-import '../services/api_service.dart';
+import '../viewmodels/add_transaction_view_model.dart';
 
 class AddTransactionBottomSheet extends StatefulWidget {
   const AddTransactionBottomSheet({super.key});
@@ -16,7 +16,20 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   final _amountController = TextEditingController();
   String _selectedType = 'Expense';
   String _selectedCategory = 'Food';
-  bool _isLoading = false;
+  late final AddTransactionViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = AddTransactionViewModel();
+    _viewModel.addListener(_onViewModelChanged);
+  }
+
+  void _onViewModelChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   Future<void> _saveTransaction() async {
     final String description = _nameController.text.trim();
@@ -35,17 +48,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final apiService = ApiService();
-      await apiService.createTransaction(
+      await _viewModel.saveTransaction(
         description: description,
         amount: amount,
         type: _selectedType.toUpperCase(), // 'INCOME' ou 'EXPENSE'
-        date: DateTime.now().toIso8601String(),
       );
 
       if (!mounted) return;
@@ -55,12 +62,6 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     } catch (e) {
       if (!mounted) return;
       CustomToast.showError(context, 'Erro ao salvar transação: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -68,6 +69,8 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
+    _viewModel.removeListener(_onViewModelChanged);
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -277,7 +280,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
 
             // Submit Button
             InteractiveCard(
-              onTap: _isLoading ? null : _saveTransaction,
+              onTap: _viewModel.isLoading ? null : _saveTransaction,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -295,7 +298,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                   ],
                 ),
                 alignment: Alignment.center,
-                child: _isLoading
+                child: _viewModel.isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,

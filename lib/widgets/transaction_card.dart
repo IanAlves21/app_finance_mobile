@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/transaction.dart';
 import '../theme/app_colors.dart';
+import '../utils/transaction_ui_extension.dart';
 import 'interactive_card.dart';
 import 'transaction_detail_bottom_sheet.dart';
 import '../l10n/app_localizations.dart';

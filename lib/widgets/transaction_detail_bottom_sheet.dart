@@ -293,35 +293,48 @@ class TransactionDetailBottomSheet extends StatelessWidget {
 
           // Status Badge Pill
           Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF16A34A),
-                      shape: BoxShape.circle,
+            child: () {
+              final bool isPending = transaction.status == 'Pending';
+              final Color badgeBgColor = isPending
+                  ? (isDark ? const Color(0xFF78350F) : const Color(0xFFFEF3C7))
+                  : (isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7));
+              final Color badgeTextColor = isPending
+                  ? const Color(0xFFD97706)
+                  : const Color(0xFF16A34A);
+              final String statusText = isPending
+                  ? (Localizations.localeOf(context).languageCode == 'pt' ? 'Pendente' : 'Pending')
+                  : l10n.completedStatus;
+
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: badgeBgColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: badgeTextColor,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.completedStatus,
-                    style: const TextStyle(
-                      color: Color(0xFF16A34A),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(width: 6),
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        color: badgeTextColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }(),
           ),
         ],
       ),

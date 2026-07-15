@@ -10,7 +10,22 @@ import 'package:http/testing.dart';
 
 void main() {
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'cached_transactions': json.encode([
+        {
+          'id': '1',
+          'description': 'Freelance Payment',
+          'type': 'INCOME',
+          'amount': '4500.0',
+          'date': '2026-07-05T12:00:00.000Z',
+          'category': {'name': 'Income'},
+          'paidBy': {'name': 'John Doe'},
+          'wallet': {'name': 'Shared Wallet Account'},
+          'note': 'Payment for design system deliverables',
+          'status': 'COMPLETED'
+        }
+      ]),
+    });
   });
   testWidgets('App renders LoginScreen initially and performs successful login', (WidgetTester tester) async {
     // Reset login status to false initially

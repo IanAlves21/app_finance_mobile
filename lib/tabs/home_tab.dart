@@ -50,8 +50,25 @@ class _HomeTabState extends State<HomeTab> {
           0.0,
           150.0,
         );
+
+        // Carrega a próxima página se chegar perto do fim do scroll
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final currentScroll = _scrollController.position.pixels;
+        const delta = 100.0;
+        if (maxScroll - currentScroll <= delta) {
+          _viewModel.loadNextPage(
+            onUnauthorized: () {
+              if (!mounted) return;
+              final localizations = AppLocalizations.of(context);
+              if (localizations != null) {
+                CustomToast.showError(context, localizations.sessionExpiredMessage);
+              }
+            },
+          );
+        }
       }
     });
+    transactionRefreshNotifier.addListener(_loadData);
     _loadData();
   }
 
@@ -59,6 +76,7 @@ class _HomeTabState extends State<HomeTab> {
   void dispose() {
     _scrollController.dispose();
     _scrollOffsetNotifier.dispose();
+    transactionRefreshNotifier.removeListener(_loadData);
     _viewModel.dispose();
     super.dispose();
   }
@@ -389,17 +407,32 @@ class _HomeTabState extends State<HomeTab> {
                                     ),
                                   ),
                                 )
-                              : ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  padding: EdgeInsets.zero,
-                                  itemCount: _viewModel.transactions.length,
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
-                                  itemBuilder: (context, index) {
-                                    final tx = _viewModel.transactions[index];
-                                    return TransactionCard(transaction: tx);
-                                  },
+                              : Column(
+                                  children: [
+                                    ListView.separated(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      padding: EdgeInsets.zero,
+                                      itemCount: _viewModel.transactions.length,
+                                      separatorBuilder: (context, index) =>
+                                          const SizedBox(height: 12),
+                                      itemBuilder: (context, index) {
+                                        final tx = _viewModel.transactions[index];
+                                        return TransactionCard(transaction: tx);
+                                      },
+                                    ),
+                                    if (_viewModel.isLoadMoreLoading)
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              AppColors.accentOrange,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                           SizedBox(height: totalBottomInset),
                         ],

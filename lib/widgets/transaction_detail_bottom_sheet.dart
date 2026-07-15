@@ -86,11 +86,12 @@ class TransactionDetailBottomSheet extends StatelessWidget {
         'label': l10n.accountLabel,
         'value': transaction.account,
       },
-      {
-        'icon': Icons.description_rounded,
-        'label': l10n.noteLabel,
-        'value': transaction.note,
-      },
+      if (transaction.note.trim().isNotEmpty && transaction.note != 'Standard shared transaction')
+        {
+          'icon': Icons.description_rounded,
+          'label': l10n.noteLabel,
+          'value': transaction.note,
+        },
     ];
 
     return Container(

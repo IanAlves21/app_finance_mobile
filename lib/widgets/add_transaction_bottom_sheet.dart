@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'interactive_card.dart';
 import 'custom_toast.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../services/api_service.dart';
 
 class AddTransactionBottomSheet extends StatefulWidget {
   const AddTransactionBottomSheet({super.key});
@@ -15,6 +16,53 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   final _amountController = TextEditingController();
   String _selectedType = 'Expense';
   String _selectedCategory = 'Food';
+  bool _isLoading = false;
+
+  Future<void> _saveTransaction() async {
+    final String description = _nameController.text.trim();
+    final String amountStr = _amountController.text.trim().replaceAll(',', '.');
+    
+    final l10n = AppLocalizations.of(context)!;
+
+    if (description.isEmpty) {
+      CustomToast.showError(context, l10n.descriptionHint);
+      return;
+    }
+
+    final double? amount = double.tryParse(amountStr);
+    if (amount == null || amount <= 0) {
+      CustomToast.showError(context, 'Por favor, insira um valor válido');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final apiService = ApiService();
+      await apiService.createTransaction(
+        description: description,
+        amount: amount,
+        type: _selectedType.toUpperCase(), // 'INCOME' ou 'EXPENSE'
+        date: DateTime.now().toIso8601String(),
+      );
+
+      if (!mounted) return;
+      
+      Navigator.pop(context, true);
+      CustomToast.showSuccess(context, l10n.transactionSaved);
+    } catch (e) {
+      if (!mounted) return;
+      CustomToast.showError(context, 'Erro ao salvar transação: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -229,10 +277,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
 
             // Submit Button
             InteractiveCard(
-              onTap: () {
-                Navigator.pop(context);
-                CustomToast.showSuccess(context, l10n.transactionSaved);
-              },
+              onTap: _isLoading ? null : _saveTransaction,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -250,14 +295,23 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                   ],
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  l10n.saveTransaction,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        l10n.saveTransaction,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ],

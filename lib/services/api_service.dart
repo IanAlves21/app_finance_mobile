@@ -105,7 +105,7 @@ class ApiService {
     }
   }
 
-  Future<List<Transaction>> fetchTransactions() async {
+  Future<List<Transaction>> fetchTransactions({int page = 1, int limit = 15}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final String? token = prefs.getString('access_token');
@@ -122,7 +122,7 @@ class ApiService {
       }
 
       final response = await client
-          .get(Uri.parse('$baseUrl/transactions'), headers: headers)
+          .get(Uri.parse('$baseUrl/transactions?page=$page&limit=$limit'), headers: headers)
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
@@ -144,6 +144,60 @@ class ApiService {
       debugPrint('ApiService error, falling back to mock data: $e');
       // Fallback amigável apenas para erros de rede/timeout
       return transactionsData;
+    }
+  }
+
+  Future<Transaction> createTransaction({
+    required String description,
+    required double amount,
+    required String type, // 'INCOME' ou 'EXPENSE'
+    required String date, // ISO string
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('access_token');
+
+    if (token != null && isTokenExpired(token)) {
+      await logout();
+      throw const HttpException('Unauthorized');
+    }
+
+    final Map<String, String> headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final response = await client.post(
+      Uri.parse('$baseUrl/transactions'),
+      headers: headers,
+      body: json.encode({
+        'description': description,
+        'amount': amount,
+        'type': type,
+        'date': date,
+      }),
+    ).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Transaction.fromJson(data);
+    } else if (response.statusCode == 401) {
+      await logout();
+      throw const HttpException('Unauthorized');
+    } else {
+      String errorMessage = 'Falha ao criar transação';
+      try {
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data.containsKey('message')) {
+          if (data['message'] is List) {
+            errorMessage = (data['message'] as List).join(', ');
+          } else {
+            errorMessage = data['message'].toString();
+          }
+        }
+      } catch (_) {}
+      throw HttpException(errorMessage);
     }
   }
 }

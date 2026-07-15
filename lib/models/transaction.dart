@@ -42,8 +42,10 @@ class Transaction {
         double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0;
     final double amount = (type == 'INCOME') ? rawAmount : -rawAmount;
 
-    // Infer category
-    final String category = _inferCategory(name, type);
+    // Parse category
+    final String category = json['category'] != null && json['category']['name'] != null
+        ? json['category']['name'].toString()
+        : _inferCategory(name, type);
 
     // Format date
     String formattedDate = '';
@@ -66,14 +68,19 @@ class Transaction {
     final Color iconColor = _getIconColorForCategory(category);
 
     // Resolve default fields or fallback values
-    final String paidBy = json['paidById'] != null
-        ? _resolveUser(json['paidById'].toString())
-        : "John Doe";
-    final String account = json['walletId'] != null
-        ? _resolveAccount(json['walletId'].toString())
-        : "Shared Wallet Account";
-    final String note =
-        json['note']?.toString() ?? "Standard shared transaction";
+    final String paidBy = json['paidBy'] != null && json['paidBy']['name'] != null
+        ? json['paidBy']['name'].toString()
+        : (json['paidById'] != null
+            ? _resolveUser(json['paidById'].toString())
+            : "John Doe");
+            
+    final String account = json['wallet'] != null && json['wallet']['name'] != null
+        ? json['wallet']['name'].toString()
+        : (json['walletId'] != null
+            ? _resolveAccount(json['walletId'].toString())
+            : "Shared Wallet Account");
+            
+    final String note = json['note']?.toString() ?? "";
 
     // Format status
     String status = "Completed";

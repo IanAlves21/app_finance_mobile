@@ -18,6 +18,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Global Notifier for App Logged In state
 final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier<bool>(false);
 
+// Global Notifier for Refreshing Transactions across tabs
+final ValueNotifier<int> transactionRefreshNotifier = ValueNotifier<int>(0);
+
 // Global Notifier for App Current User data
 final ValueNotifier<User?> currentUserNotifier = ValueNotifier<User?>(null);
 
@@ -199,8 +202,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const SettingsTab(),
   ];
 
-  void _showAddTransactionBottomSheet() {
-    showModalBottomSheet(
+  void _showAddTransactionBottomSheet() async {
+    final bool? shouldRefresh = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -208,6 +211,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return const AddTransactionBottomSheet();
       },
     );
+
+    if (shouldRefresh == true) {
+      transactionRefreshNotifier.value++;
+    }
   }
 
   @override

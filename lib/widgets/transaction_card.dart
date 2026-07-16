@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/transaction.dart';
 import '../theme/app_colors.dart';
 import '../utils/transaction_ui_extension.dart';
@@ -101,7 +102,7 @@ class TransactionCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  '${isPositive ? '+' : ''}R\$ ${transaction.amount.abs().toStringAsFixed(2).replaceAll('.', ',')}',
+                  '${isPositive ? '+' : '- '}${NumberFormat.simpleCurrency(locale: 'pt_BR').format(transaction.amount.abs())}',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,

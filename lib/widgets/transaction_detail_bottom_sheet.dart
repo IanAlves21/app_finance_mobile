@@ -155,7 +155,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                   : const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1A2D5A), Color(0xFF0F1B35)],
+                      colors: [Color(0xFF991B1B), Color(0xFFDC2626)],
                     ),
             ),
             child: Row(
@@ -204,9 +204,9 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                       Text(
                         l10n.getTransactionName(transaction.name),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.95),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],

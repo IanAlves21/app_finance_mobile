@@ -26,6 +26,7 @@ class _HomeTabState extends State<HomeTab> {
   );
 
   late final HomeViewModel _viewModel;
+  String? _activeFilter; // 'INCOME', 'EXPENSE' ou null
 
   Future<void> _loadData() async {
     await _viewModel.loadTransactions(
@@ -332,6 +333,8 @@ class _HomeTabState extends State<HomeTab> {
                                   icon: Icons.trending_up_rounded,
                                   iconColor: AppColors.greenAccent,
                                   iconBg: AppColors.greenBg,
+                                  isSelected: _activeFilter == 'INCOME',
+                                  onTap: () => setState(() => _activeFilter = _activeFilter == 'INCOME' ? null : 'INCOME'),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -348,6 +351,8 @@ class _HomeTabState extends State<HomeTab> {
                                   icon: Icons.trending_down_rounded,
                                   iconColor: AppColors.redAccent,
                                   iconBg: AppColors.redBg,
+                                  isSelected: _activeFilter == 'EXPENSE',
+                                  onTap: () => setState(() => _activeFilter = _activeFilter == 'EXPENSE' ? null : 'EXPENSE'),
                                 ),
                               ),
                             ],
@@ -384,56 +389,67 @@ class _HomeTabState extends State<HomeTab> {
                             ],
                           ),
                           const SizedBox(height: 14),
-                          _viewModel.isLoading
-                              ? const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 40),
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.accentOrange,
+                          (() {
+                            final filteredTx = _viewModel.transactions.where((tx) {
+                              if (_activeFilter == 'INCOME') {
+                                return tx.amount > 0;
+                              } else if (_activeFilter == 'EXPENSE') {
+                                return tx.amount < 0;
+                              }
+                              return true;
+                            }).toList();
+
+                            return _viewModel.isLoading
+                                ? const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 40),
+                                      child: CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          AppColors.accentOrange,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                )
-                              : _viewModel.transactions.isEmpty
-                              ? Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 40,
+                                  )
+                                : filteredTx.isEmpty
+                                ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 40,
+                                      ),
+                                      child: Text(
+                                        'Nenhuma transação encontrada',
+                                        style: TextStyle(color: subTextColor),
+                                      ),
                                     ),
-                                    child: Text(
-                                      'Nenhuma transação encontrada',
-                                      style: TextStyle(color: subTextColor),
-                                    ),
-                                  ),
-                                )
-                              : Column(
-                                  children: [
-                                    ListView.separated(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      padding: EdgeInsets.zero,
-                                      itemCount: _viewModel.transactions.length,
-                                      separatorBuilder: (context, index) =>
-                                          const SizedBox(height: 12),
-                                      itemBuilder: (context, index) {
-                                        final tx = _viewModel.transactions[index];
-                                        return TransactionCard(transaction: tx);
-                                      },
-                                    ),
-                                    if (_viewModel.isLoadMoreLoading)
-                                      const Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 16),
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              AppColors.accentOrange,
+                                  )
+                                : Column(
+                                    children: [
+                                      ListView.separated(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        padding: EdgeInsets.zero,
+                                        itemCount: filteredTx.length,
+                                        separatorBuilder: (context, index) =>
+                                            const SizedBox(height: 12),
+                                        itemBuilder: (context, index) {
+                                          final tx = filteredTx[index];
+                                          return TransactionCard(transaction: tx);
+                                        },
+                                      ),
+                                      if (_viewModel.isLoadMoreLoading)
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 16),
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              valueColor: AlwaysStoppedAnimation<Color>(
+                                                AppColors.accentOrange,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                  ],
-                                ),
+                                    ],
+                                  );
+                          })(),
                           SizedBox(height: totalBottomInset),
                         ],
                       ),

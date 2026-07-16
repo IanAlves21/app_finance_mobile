@@ -583,6 +583,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your session has expired. Please log in again.'**
   String get sessionExpiredMessage;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Categories'**
+  String get manageCategories;
+
+  /// No description provided for @manageCategoriesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage custom expense and income categories'**
+  String get manageCategoriesSubtitle;
+
+  /// No description provided for @newCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'New Category'**
+  String get newCategory;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY NAME'**
+  String get categoryName;
+
+  /// No description provided for @categoryNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Gym, Pet, Gifts'**
+  String get categoryNameHint;
+
+  /// No description provided for @categoryIconLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY ICON'**
+  String get categoryIconLabel;
+
+  /// No description provided for @categoryColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY COLOR'**
+  String get categoryColorLabel;
+
+  /// No description provided for @saveCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Category'**
+  String get saveCategory;
+
+  /// No description provided for @noCategoriesCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories created'**
+  String get noCategoriesCreated;
+
+  /// No description provided for @tapToAddCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the \"+\" button to add'**
+  String get tapToAddCategory;
+
+  /// No description provided for @expensesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPENSES'**
+  String get expensesTab;
+
+  /// No description provided for @incomesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'INCOMES'**
+  String get incomesTab;
+
+  /// No description provided for @customLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get customLabel;
+
+  /// No description provided for @systemLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get systemLabel;
+
+  /// No description provided for @coupleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Couple'**
+  String get coupleLabel;
+
+  /// No description provided for @categoryCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category created successfully!'**
+  String get categoryCreatedSuccess;
+
+  /// No description provided for @categoryNameError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a category name'**
+  String get categoryNameError;
+
+  /// No description provided for @categoryLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading categories'**
+  String get categoryLoadError;
+
+  /// No description provided for @categoryCreateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating category'**
+  String get categoryCreateError;
+
+  /// No description provided for @categoryUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category updated successfully!'**
+  String get categoryUpdatedSuccess;
+
+  /// No description provided for @categoryUpdateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating category'**
+  String get categoryUpdateError;
+
+  /// No description provided for @editCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Category'**
+  String get editCategory;
+
+  /// No description provided for @deleteCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Category'**
+  String get deleteCategory;
+
+  /// No description provided for @deleteCategoryConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the category \"{name}\"?'**
+  String deleteCategoryConfirm(Object name);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @categoryDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category deleted successfully!'**
+  String get categoryDeleteSuccess;
 }
 
 class _AppLocalizationsDelegate

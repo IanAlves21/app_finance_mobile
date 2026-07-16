@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../viewmodels/settings_view_model.dart';
 import '../widgets/shared_avatars.dart';
+import '../views/category_list_screen.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -180,6 +181,23 @@ class _SettingsTabState extends State<SettingsTab> {
                     textColor,
                     subTextColor,
                     isDark,
+                  ),
+                  _buildSettingTile(
+                    Icons.category_outlined,
+                    l10n.manageCategories,
+                    l10n.manageCategoriesSubtitle,
+                    cardColor,
+                    textColor,
+                    subTextColor,
+                    isDark,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CategoryListScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildSettingTile(
                     Icons.card_giftcard_outlined,

@@ -251,4 +251,88 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get sessionExpiredMessage =>
       'Sua sessão expirou. Por favor, faça login novamente.';
+
+  @override
+  String get manageCategories => 'Gerenciar Categorias';
+
+  @override
+  String get manageCategoriesSubtitle =>
+      'Gerencie as categorias de despesas e receitas';
+
+  @override
+  String get newCategory => 'Nova Categoria';
+
+  @override
+  String get categoryName => 'NOME DA CATEGORIA';
+
+  @override
+  String get categoryNameHint => 'Ex: Academia, Pet, Presentes';
+
+  @override
+  String get categoryIconLabel => 'ÍCONE DA CATEGORIA';
+
+  @override
+  String get categoryColorLabel => 'COR DA CATEGORIA';
+
+  @override
+  String get saveCategory => 'Salvar Categoria';
+
+  @override
+  String get noCategoriesCreated => 'Nenhuma categoria criada';
+
+  @override
+  String get tapToAddCategory => 'Toque no botão \"+\" para adicionar';
+
+  @override
+  String get expensesTab => 'DESPESAS';
+
+  @override
+  String get incomesTab => 'RECEITAS';
+
+  @override
+  String get customLabel => 'Customizada';
+
+  @override
+  String get systemLabel => 'Padrão do Sistema';
+
+  @override
+  String get coupleLabel => 'Casal';
+
+  @override
+  String get categoryCreatedSuccess => 'Categoria criada com sucesso!';
+
+  @override
+  String get categoryNameError => 'Por favor, insira o nome da categoria';
+
+  @override
+  String get categoryLoadError => 'Erro ao carregar categorias';
+
+  @override
+  String get categoryCreateError => 'Erro ao criar categoria';
+
+  @override
+  String get categoryUpdatedSuccess => 'Categoria atualizada com sucesso!';
+
+  @override
+  String get categoryUpdateError => 'Erro ao atualizar categoria';
+
+  @override
+  String get editCategory => 'Editar Categoria';
+
+  @override
+  String get deleteCategory => 'Excluir Categoria';
+
+  @override
+  String deleteCategoryConfirm(Object name) {
+    return 'Deseja realmente excluir a categoria \"$name\"?';
+  }
+
+  @override
+  String get delete => 'Excluir';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get categoryDeleteSuccess => 'Categoria excluída com sucesso!';
 }

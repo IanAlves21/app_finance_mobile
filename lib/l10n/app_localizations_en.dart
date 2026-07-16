@@ -251,4 +251,88 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sessionExpiredMessage =>
       'Your session has expired. Please log in again.';
+
+  @override
+  String get manageCategories => 'Manage Categories';
+
+  @override
+  String get manageCategoriesSubtitle =>
+      'Manage custom expense and income categories';
+
+  @override
+  String get newCategory => 'New Category';
+
+  @override
+  String get categoryName => 'CATEGORY NAME';
+
+  @override
+  String get categoryNameHint => 'e.g., Gym, Pet, Gifts';
+
+  @override
+  String get categoryIconLabel => 'CATEGORY ICON';
+
+  @override
+  String get categoryColorLabel => 'CATEGORY COLOR';
+
+  @override
+  String get saveCategory => 'Save Category';
+
+  @override
+  String get noCategoriesCreated => 'No categories created';
+
+  @override
+  String get tapToAddCategory => 'Tap the \"+\" button to add';
+
+  @override
+  String get expensesTab => 'EXPENSES';
+
+  @override
+  String get incomesTab => 'INCOMES';
+
+  @override
+  String get customLabel => 'Custom';
+
+  @override
+  String get systemLabel => 'System Default';
+
+  @override
+  String get coupleLabel => 'Couple';
+
+  @override
+  String get categoryCreatedSuccess => 'Category created successfully!';
+
+  @override
+  String get categoryNameError => 'Please enter a category name';
+
+  @override
+  String get categoryLoadError => 'Error loading categories';
+
+  @override
+  String get categoryCreateError => 'Error creating category';
+
+  @override
+  String get categoryUpdatedSuccess => 'Category updated successfully!';
+
+  @override
+  String get categoryUpdateError => 'Error updating category';
+
+  @override
+  String get editCategory => 'Edit Category';
+
+  @override
+  String get deleteCategory => 'Delete Category';
+
+  @override
+  String deleteCategoryConfirm(Object name) {
+    return 'Are you sure you want to delete the category \"$name\"?';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get categoryDeleteSuccess => 'Category deleted successfully!';
 }

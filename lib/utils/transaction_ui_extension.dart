@@ -3,7 +3,59 @@ import '../models/transaction.dart';
 import '../theme/app_colors.dart';
 
 extension TransactionUI on Transaction {
+  Color _parseHexColor(String hexStr) {
+    try {
+      final String cleanHex = hexStr.replaceAll('#', '').trim();
+      if (cleanHex.length == 6) {
+        return Color(int.parse('FF$cleanHex', radix: 16));
+      }
+      return Color(int.parse(cleanHex, radix: 16));
+    } catch (_) {
+      return AppColors.primarySeed;
+    }
+  }
+
+  IconData _getIconData(String? iconName) {
+    switch (iconName?.toLowerCase()) {
+      case 'briefcase':
+      case 'savings':
+        return Icons.savings_rounded;
+      case 'shopping-cart':
+      case 'food':
+        return Icons.shopping_cart_outlined;
+      case 'restaurant':
+      case 'dining':
+        return Icons.restaurant_rounded;
+      case 'directions-car':
+      case 'transport':
+        return Icons.directions_car_rounded;
+      case 'money':
+      case 'monetization-on':
+        return Icons.monetization_on_outlined;
+      case 'subscriptions':
+      case 'streaming':
+        return Icons.subscriptions_rounded;
+      case 'home':
+      case 'rent':
+        return Icons.home_outlined;
+      case 'medical':
+      case 'health':
+        return Icons.medical_services_outlined;
+      case 'school':
+      case 'education':
+        return Icons.school_outlined;
+      case 'pets':
+      case 'pet':
+        return Icons.pets_rounded;
+      default:
+        return Icons.category_rounded;
+    }
+  }
+
   IconData get icon {
+    if (categoryIcon != null) {
+      return _getIconData(categoryIcon);
+    }
     final desc = name.toLowerCase();
     switch (category) {
       case 'Income':
@@ -36,6 +88,9 @@ extension TransactionUI on Transaction {
   }
 
   Color get iconBg {
+    if (categoryColor != null) {
+      return _parseHexColor(categoryColor!).withOpacity(0.15);
+    }
     switch (category) {
       case 'Income':
         return AppColors.greenBg;
@@ -53,6 +108,9 @@ extension TransactionUI on Transaction {
   }
 
   Color get iconColor {
+    if (categoryColor != null) {
+      return _parseHexColor(categoryColor!);
+    }
     switch (category) {
       case 'Income':
         return AppColors.greenAccent;

@@ -10,6 +10,8 @@ class Transaction {
   final String account;
   final String note;
   final String status;
+  final String? categoryIcon;
+  final String? categoryColor;
 
   const Transaction({
     required this.id,
@@ -21,6 +23,8 @@ class Transaction {
     this.account = "Shared Joint Card •••• 4242",
     this.note = "Standard shared transaction",
     this.status = "Completed",
+    this.categoryIcon,
+    this.categoryColor,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -78,6 +82,9 @@ class Transaction {
       status = 'Failed';
     }
 
+    final String? categoryIcon = json['category'] != null ? json['category']['icon']?.toString() : null;
+    final String? categoryColor = json['category'] != null ? json['category']['color']?.toString() : null;
+
     return Transaction(
       id: id,
       name: name,
@@ -88,6 +95,8 @@ class Transaction {
       account: account,
       note: note,
       status: status,
+      categoryIcon: categoryIcon,
+      categoryColor: categoryColor,
     );
   }
 

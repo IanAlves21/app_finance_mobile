@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'interactive_card.dart';
 import 'custom_toast.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../theme/app_colors.dart';
 import '../viewmodels/add_transaction_view_model.dart';
 
 class AddTransactionBottomSheet extends StatefulWidget {
@@ -15,7 +18,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
   String _selectedType = 'Expense';
-  String _selectedCategory = 'Food';
+  String _selectedCategory = '';
   late final AddTransactionViewModel _viewModel;
 
   @override
@@ -23,17 +26,74 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     super.initState();
     _viewModel = AddTransactionViewModel();
     _viewModel.addListener(_onViewModelChanged);
+    _viewModel.loadCategories();
   }
 
   void _onViewModelChanged() {
     if (mounted) {
+      final filtered = _viewModel.categories
+          .where((cat) => cat.type == _selectedType.toUpperCase() && !cat.id.startsWith('offline_cat_'))
+          .toList();
+      
+      if (filtered.isNotEmpty && (_selectedCategory.isEmpty || !filtered.any((cat) => cat.id == _selectedCategory))) {
+        _selectedCategory = filtered.first.id;
+      }
       setState(() {});
+    }
+  }
+
+  Color _parseHexColor(String hexStr) {
+    try {
+      final String cleanHex = hexStr.replaceAll('#', '').trim();
+      if (cleanHex.length == 6) {
+        return Color(int.parse('FF$cleanHex', radix: 16));
+      }
+      return Color(int.parse(cleanHex, radix: 16));
+    } catch (_) {
+      return AppColors.primarySeed;
+    }
+  }
+
+  IconData _getIconData(String? iconName) {
+    switch (iconName?.toLowerCase()) {
+      case 'briefcase':
+      case 'savings':
+        return Icons.savings_rounded;
+      case 'shopping-cart':
+      case 'food':
+        return Icons.shopping_cart_outlined;
+      case 'restaurant':
+      case 'dining':
+        return Icons.restaurant_rounded;
+      case 'directions-car':
+      case 'transport':
+        return Icons.directions_car_rounded;
+      case 'money':
+      case 'monetization-on':
+        return Icons.monetization_on_outlined;
+      case 'subscriptions':
+      case 'streaming':
+        return Icons.subscriptions_rounded;
+      case 'home':
+      case 'rent':
+        return Icons.home_outlined;
+      case 'medical':
+      case 'health':
+        return Icons.medical_services_outlined;
+      case 'school':
+      case 'education':
+        return Icons.school_outlined;
+      case 'pets':
+      case 'pet':
+        return Icons.pets_rounded;
+      default:
+        return Icons.category_rounded;
     }
   }
 
   Future<void> _saveTransaction() async {
     final String description = _nameController.text.trim();
-    final String amountStr = _amountController.text.trim().replaceAll(',', '.');
+    final String cleanAmount = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
     
     final l10n = AppLocalizations.of(context)!;
 
@@ -42,7 +102,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
       return;
     }
 
-    final double? amount = double.tryParse(amountStr);
+    final double? amount = cleanAmount.isEmpty ? null : double.tryParse(cleanAmount)! / 100;
     if (amount == null || amount <= 0) {
       CustomToast.showError(context, 'Por favor, insira um valor válido');
       return;
@@ -53,6 +113,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
         description: description,
         amount: amount,
         type: _selectedType.toUpperCase(), // 'INCOME' ou 'EXPENSE'
+        categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
       );
 
       if (!mounted) return;
@@ -63,6 +124,66 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
       if (!mounted) return;
       CustomToast.showError(context, 'Erro ao salvar transação: $e');
     }
+  }
+
+  Widget _buildDropdownItem({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required String label,
+    required Color textColor,
+    bool isPending = false,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: isPending ? iconBgColor.withOpacity(0.05) : iconBgColor,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              size: 18,
+              color: isPending ? iconColor.withOpacity(0.4) : iconColor,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: isPending ? textColor.withOpacity(0.4) : textColor,
+            ),
+          ),
+        ),
+        if (isPending) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.accentOrange.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Text(
+              'Pendente ⏳',
+              style: TextStyle(
+                color: AppColors.accentOrange,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   @override
@@ -137,13 +258,22 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             // Income / Expense Selector Toggle
             Row(
               children: [l10n.expense, l10n.income].map((type) {
-                final bool isSelected = (_selectedType == 'Expense' && type == l10n.expense) ||
-                    (_selectedType == 'Income' && type == l10n.income);
+                final bool isExpense = type == l10n.expense;
+                final bool isSelected = (_selectedType == 'Expense' && isExpense) ||
+                    (_selectedType == 'Income' && !isExpense);
                 return Expanded(
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        _selectedType = type == l10n.expense ? 'Expense' : 'Income';
+                        _selectedType = isExpense ? 'Expense' : 'Income';
+                        final filtered = _viewModel.categories
+                            .where((cat) => cat.type == _selectedType.toUpperCase() && !cat.id.startsWith('offline_cat_'))
+                            .toList();
+                        if (filtered.isNotEmpty) {
+                          _selectedCategory = filtered.first.id;
+                        } else {
+                          _selectedCategory = '';
+                        }
                       });
                     },
                     child: Container(
@@ -151,7 +281,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: isSelected 
-                            ? const Color(0xFF1A2D5A) 
+                            ? (isExpense ? AppColors.redAccent : AppColors.greenAccent) 
                             : inputFillColor,
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -202,10 +332,14 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             const SizedBox(height: 6),
             TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                CurrencyInputFormatter(),
+              ],
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
-                hintText: '0,00',
+                hintText: 'R\$ 0,00',
                 hintStyle: TextStyle(color: subTextColor.withOpacity(0.5)),
                 filled: true,
                 fillColor: inputFillColor,
@@ -225,8 +359,16 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             ),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
-              initialValue: _selectedCategory,
+              isExpanded: true,
+              isDense: false,
+              menuMaxHeight: 300,
+              value: _selectedCategory.isNotEmpty ? _selectedCategory : null,
               dropdownColor: cardColor,
+              borderRadius: BorderRadius.circular(16),
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: subTextColor.withOpacity(0.8),
+              ),
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 filled: true,
@@ -235,46 +377,35 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
-              items: [
-                DropdownMenuItem<String>(
-                  value: 'Food',
-                  child: Text(
-                    l10n.food,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
-                  ),
+              hint: Text(
+                _viewModel.isLoading ? 'Carregando... ⏳' : 'Selecione uma categoria',
+                style: TextStyle(
+                  color: subTextColor.withOpacity(0.5),
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
                 ),
-                DropdownMenuItem<String>(
-                  value: 'Dining',
-                  child: Text(
-                    l10n.dining,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
+              ),
+              items: _viewModel.categories
+                  .where((cat) => cat.type == _selectedType.toUpperCase())
+                  .map((category) {
+                final categoryColor = _parseHexColor(category.color);
+                final bool isPending = category.id.startsWith('offline_cat_');
+                return DropdownMenuItem<String>(
+                  value: category.id,
+                  enabled: !isPending,
+                  child: _buildDropdownItem(
+                    icon: _getIconData(category.icon),
+                    iconColor: categoryColor,
+                    iconBgColor: categoryColor.withOpacity(0.15),
+                    label: category.name,
+                    textColor: textColor,
+                    isPending: isPending,
                   ),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Transport',
-                  child: Text(
-                    l10n.transport,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
-                  ),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Income',
-                  child: Text(
-                    l10n.income,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
-                  ),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Others',
-                  child: Text(
-                    l10n.others,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
-                  ),
-                ),
-              ],
-              onChanged: (v) => setState(() => _selectedCategory = v ?? 'Others'),
+                );
+              }).toList(),
+              onChanged: (v) => setState(() => _selectedCategory = v ?? ''),
             ),
             const SizedBox(height: 32),
 
@@ -320,6 +451,35 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanText.isEmpty) {
+      return const TextEditingValue(
+        text: 'R\$ 0,00',
+        selection: TextSelection.collapsed(offset: 7),
+      );
+    }
+
+    double value = double.parse(cleanText) / 100;
+    final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
+    String newText = formatter.format(value);
+
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
     );
   }
 }

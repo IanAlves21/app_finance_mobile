@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
+import '../services/secure_storage_manager.dart';
 
 class LoginViewModel extends ChangeNotifier {
   final ApiService _apiService;
@@ -59,7 +60,7 @@ class LoginViewModel extends ChangeNotifier {
       final userObj = User.fromJson(userJson);
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', accessToken);
+      await SecureStorageManager.writeToken(accessToken);
       await prefs.setString('user_id', userObj.id);
       await prefs.setString('user_name', userObj.name);
       await prefs.setString('user_email', userObj.email);

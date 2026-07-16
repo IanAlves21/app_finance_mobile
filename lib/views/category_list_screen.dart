@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
-import '../services/api_service.dart';
+import '../repositories/category_repository.dart';
+import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
 import '../widgets/add_category_bottom_sheet.dart';
 
@@ -14,7 +15,7 @@ class CategoryListScreen extends StatefulWidget {
 
 class _CategoryListScreenState extends State<CategoryListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ApiService _apiService = ApiService();
+  final CategoryRepository _categoryRepository = locator<CategoryRepository>();
   List<Category> _categories = [];
   bool _isLoading = true;
 
@@ -28,7 +29,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
   Future<void> _loadCategories() async {
     setState(() => _isLoading = true);
     try {
-      final cats = await _apiService.fetchCategories();
+      final cats = await _categoryRepository.fetchCategories();
       setState(() {
         _categories = cats;
         _isLoading = false;
@@ -108,7 +109,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
         ),
         content: Text(
           l10n.deleteCategoryConfirm(category.name),
-          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.8)),
+          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
         ),
         actions: [
           TextButton(
@@ -137,7 +138,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
     final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
     try {
-      await _apiService.deleteCategory(categoryId);
+      await _categoryRepository.deleteCategory(categoryId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.categoryDeleteSuccess)),
@@ -173,7 +174,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             Icon(
               Icons.category_outlined,
               size: 48,
-              color: AppColors.slate400.withOpacity(0.5),
+              color: AppColors.slate400.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 12),
             Text(
@@ -188,7 +189,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             Text(
               l10n.tapToAddCategory,
               style: TextStyle(
-                color: AppColors.slate400.withOpacity(0.6),
+                color: AppColors.slate400.withValues(alpha: 0.6),
                 fontSize: 12,
               ),
             ),
@@ -197,8 +198,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
       );
     }
 
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 16,
+        bottom: bottomPadding + 86, // Espaço para a barra de navegação do Android + FAB (Floating Action Button)
+      ),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final category = filtered[index];
@@ -211,7 +218,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.darkSlate.withOpacity(0.03),
+                color: AppColors.darkSlate.withValues(alpha: 0.03),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -222,7 +229,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: catColor.withOpacity(0.12),
+                color: catColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -258,7 +265,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.accentOrange.withOpacity(0.12),
+                      color: AppColors.accentOrange.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(

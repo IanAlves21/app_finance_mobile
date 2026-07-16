@@ -141,7 +141,7 @@ class _SettingsTabState extends State<SettingsTab> {
                                   Text(
                                     user?.email ?? l10n.premiumPlan,
                                     style: TextStyle(
-                                      color: textColor.withOpacity(0.5),
+                                      color: textColor.withValues(alpha: 0.5),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),

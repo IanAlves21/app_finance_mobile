@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app_finance_mobile/main.dart';
 import 'package:app_finance_mobile/services/api_service.dart';
+import 'package:app_finance_mobile/services/secure_storage_manager.dart';
+import 'package:app_finance_mobile/services/service_locator.dart';
+import 'package:app_finance_mobile/repositories/transaction_repository.dart';
+import 'package:app_finance_mobile/repositories/category_repository.dart';
 import 'package:app_finance_mobile/viewmodels/login_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +14,41 @@ import 'package:http/testing.dart';
 
 void main() {
   setUp(() {
+    SecureStorageManager.useMock = true;
+    SecureStorageManager.mockToken = 'mocked_jwt_token';
+
+    // Reset GetIt and register default services for testing
+    locator.reset();
+
+    final defaultMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions') {
+        return http.Response(
+          json.encode([
+            {
+              'id': '1',
+              'description': 'Freelance Payment',
+              'type': 'INCOME',
+              'amount': '4500.0',
+              'date': '2026-07-05T12:00:00.000Z',
+              'category': {'name': 'Income'},
+              'paidBy': {'name': 'John Doe'},
+              'wallet': {'name': 'Shared Wallet Account'},
+              'note': 'Payment for design system deliverables',
+              'status': 'COMPLETED'
+            }
+          ]),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final defaultApiService = ApiService(client: defaultMockClient);
+    locator.registerSingleton<ApiService>(defaultApiService);
+    locator.registerSingleton<TransactionRepository>(TransactionRepository(apiService: defaultApiService));
+    locator.registerSingleton<CategoryRepository>(CategoryRepository(apiService: defaultApiService));
+
     SharedPreferences.setMockInitialValues({
       'cached_transactions': json.encode([
         {

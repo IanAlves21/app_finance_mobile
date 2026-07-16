@@ -166,8 +166,8 @@ class _HomeTabState extends State<HomeTab> {
                                         Text(
                                           l10n.goodMorning,
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.55,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.55,
                                             ),
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -212,7 +212,7 @@ class _HomeTabState extends State<HomeTab> {
                                 child: Text(
                                   l10n.sharedTotalBalance,
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.white.withValues(alpha: 0.5),
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 1.0,
@@ -266,7 +266,7 @@ class _HomeTabState extends State<HomeTab> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.08),
+                                    color: Colors.white.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(

@@ -1,12 +1,18 @@
 import 'package:flutter/foundation.dart' hide Category;
 import '../models/category.dart';
-import '../services/api_service.dart';
+import '../repositories/category_repository.dart';
+import '../repositories/transaction_repository.dart';
+import '../services/service_locator.dart';
 
 class AddTransactionViewModel extends ChangeNotifier {
-  final ApiService _apiService;
+  final TransactionRepository _transactionRepository;
+  final CategoryRepository _categoryRepository;
 
-  AddTransactionViewModel({ApiService? apiService})
-      : _apiService = apiService ?? ApiService();
+  AddTransactionViewModel({
+    TransactionRepository? transactionRepository,
+    CategoryRepository? categoryRepository,
+  })  : _transactionRepository = transactionRepository ?? locator<TransactionRepository>(),
+        _categoryRepository = categoryRepository ?? locator<CategoryRepository>();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -18,7 +24,7 @@ class AddTransactionViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _categories = await _apiService.fetchCategories();
+      _categories = await _categoryRepository.fetchCategories();
     } catch (e) {
       debugPrint('Erro ao carregar categorias no ViewModel: $e');
     } finally {
@@ -37,7 +43,7 @@ class AddTransactionViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _apiService.createTransaction(
+      await _transactionRepository.createTransaction(
         description: description,
         amount: amount,
         type: type,

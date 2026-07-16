@@ -45,7 +45,7 @@ class TransactionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkSlate.withOpacity(isDark ? 0.25 : 0.05),
+              color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

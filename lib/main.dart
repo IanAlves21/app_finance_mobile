@@ -13,6 +13,8 @@ import 'views/login_screen.dart';
 import 'viewmodels/login_view_model.dart';
 import 'models/user.dart';
 import 'services/api_service.dart';
+import 'services/secure_storage_manager.dart';
+import 'services/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Global Notifier for App Logged In state
@@ -44,12 +46,13 @@ Locale _getInitialLocale() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  setupLocator(); // Inicializa o GetIt DI Container
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
   // Load persistent login session before running the app
   try {
     final prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('access_token');
+    final String? token = await SecureStorageManager.readToken();
     
     // Verifica se temos um token salvo e se ele ainda é válido (não expirou)
     if (token != null && !ApiService.isTokenExpired(token)) {
@@ -65,7 +68,7 @@ void main() async {
       isLoggedInNotifier.value = false;
       currentUserNotifier.value = null;
       await prefs.setBool('is_logged_in', false);
-      await prefs.remove('access_token');
+      await SecureStorageManager.deleteToken();
       await prefs.remove('user_id');
       await prefs.remove('user_name');
       await prefs.remove('user_email');
@@ -86,10 +89,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
-      builder: (_, ThemeMode currentMode, __) {
+      builder: (_, ThemeMode currentMode, _) {
         return ValueListenableBuilder<Locale>(
           valueListenable: localeNotifier,
-          builder: (_, Locale currentLocale, __) {
+          builder: (_, Locale currentLocale, _) {
             return MaterialApp(
               title: 'Finance Shared App',
               debugShowCheckedModeBanner: false,
@@ -262,7 +265,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0F1B35).withOpacity(isDark ? 0.35 : 0.10),
+                        color: const Color(0xFF0F1B35).withValues(alpha: isDark ? 0.35 : 0.10),
                         blurRadius: 24,
                         offset: const Offset(0, -4),
                       ),
@@ -305,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFF97316).withOpacity(0.45),
+                          color: const Color(0xFFF97316).withValues(alpha: 0.45),
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),

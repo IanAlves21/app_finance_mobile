@@ -140,14 +140,14 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isPending ? iconBgColor.withOpacity(0.05) : iconBgColor,
+            color: isPending ? iconBgColor.withValues(alpha: 0.05) : iconBgColor,
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Icon(
               icon,
               size: 18,
-              color: isPending ? iconColor.withOpacity(0.4) : iconColor,
+              color: isPending ? iconColor.withValues(alpha: 0.4) : iconColor,
             ),
           ),
         ),
@@ -160,7 +160,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: isPending ? textColor.withOpacity(0.4) : textColor,
+              color: isPending ? textColor.withValues(alpha: 0.4) : textColor,
             ),
           ),
         ),
@@ -169,7 +169,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: AppColors.accentOrange.withOpacity(0.08),
+              color: AppColors.accentOrange.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Text(
@@ -312,7 +312,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: l10n.descriptionHint,
-                hintStyle: TextStyle(color: subTextColor.withOpacity(0.5)),
+                hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
                 filled: true,
                 fillColor: inputFillColor,
                 border: OutlineInputBorder(
@@ -340,7 +340,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'R\$ 0,00',
-                hintStyle: TextStyle(color: subTextColor.withOpacity(0.5)),
+                hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
                 filled: true,
                 fillColor: inputFillColor,
                 border: OutlineInputBorder(
@@ -362,12 +362,12 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               isExpanded: true,
               isDense: false,
               menuMaxHeight: 300,
-              value: _selectedCategory.isNotEmpty ? _selectedCategory : null,
+              initialValue: _selectedCategory.isNotEmpty ? _selectedCategory : null,
               dropdownColor: cardColor,
               borderRadius: BorderRadius.circular(16),
               icon: Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: subTextColor.withOpacity(0.8),
+                color: subTextColor.withValues(alpha: 0.8),
               ),
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
@@ -382,7 +382,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               hint: Text(
                 _viewModel.isLoading ? 'Carregando... ⏳' : 'Selecione uma categoria',
                 style: TextStyle(
-                  color: subTextColor.withOpacity(0.5),
+                  color: subTextColor.withValues(alpha: 0.5),
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
                 ),
@@ -398,7 +398,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                   child: _buildDropdownItem(
                     icon: _getIconData(category.icon),
                     iconColor: categoryColor,
-                    iconBgColor: categoryColor.withOpacity(0.15),
+                    iconBgColor: categoryColor.withValues(alpha: 0.15),
                     label: category.name,
                     textColor: textColor,
                     isPending: isPending,
@@ -422,7 +422,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFF97316).withOpacity(0.35),
+                      color: const Color(0xFFF97316).withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),

@@ -89,7 +89,7 @@ extension TransactionUI on Transaction {
 
   Color get iconBg {
     if (categoryColor != null) {
-      return _parseHexColor(categoryColor!).withOpacity(0.15);
+      return _parseHexColor(categoryColor!).withValues(alpha: 0.15);
     }
     switch (category) {
       case 'Income':

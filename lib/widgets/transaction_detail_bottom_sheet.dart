@@ -165,7 +165,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
@@ -184,7 +184,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                       Text(
                         isPositive ? l10n.income.toUpperCase() : l10n.expense.toUpperCase(),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.65),
+                          color: Colors.white.withValues(alpha: 0.65),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.8,
@@ -204,7 +204,7 @@ class TransactionDetailBottomSheet extends StatelessWidget {
                       Text(
                         l10n.getTransactionName(transaction.name),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

@@ -2,13 +2,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import '../models/transaction.dart';
-import '../services/api_service.dart';
+import '../repositories/transaction_repository.dart';
+import '../services/service_locator.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  final ApiService _apiService;
+  final TransactionRepository _transactionRepository;
 
-  HomeViewModel({ApiService? apiService})
-    : _apiService = apiService ?? ApiService();
+  HomeViewModel({TransactionRepository? transactionRepository})
+    : _transactionRepository = transactionRepository ?? locator<TransactionRepository>();
 
   List<Transaction> _transactions = [];
   bool _isLoading = true;
@@ -43,7 +44,7 @@ class HomeViewModel extends ChangeNotifier {
     }
 
     try {
-      final fetched = await _apiService.fetchTransactions(page: _currentPage, limit: 15);
+      final fetched = await _transactionRepository.fetchTransactions(page: _currentPage, limit: 15);
 
       if (fetched.length < 15) {
         _hasMore = false;

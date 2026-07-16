@@ -22,8 +22,8 @@ class CustomToast {
         : (isDark ? const Color(0xFF101B15) : const Color(0xFFF2FDF5));
 
     final Color borderColor = isError
-        ? (isDark ? AppColors.redAccent.withOpacity(0.4) : const Color(0xFFFEE2E2))
-        : (isDark ? AppColors.greenAccent.withOpacity(0.4) : const Color(0xFFDCFCE7));
+        ? (isDark ? AppColors.redAccent.withValues(alpha: 0.4) : const Color(0xFFFEE2E2))
+        : (isDark ? AppColors.greenAccent.withValues(alpha: 0.4) : const Color(0xFFDCFCE7));
 
     final Color iconColor = isError ? AppColors.redAccent : AppColors.greenAccent;
     final IconData icon = isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded;
@@ -44,7 +44,7 @@ class CustomToast {
             border: Border.all(color: borderColor, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),

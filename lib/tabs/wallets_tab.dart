@@ -97,7 +97,7 @@ class _WalletsTabState extends State<WalletsTab> {
                         Text(
                           l10n.manageSharedAccounts,
                           style: TextStyle(
-                            color: textColor.withOpacity(0.5),
+                            color: textColor.withValues(alpha: 0.5),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -150,8 +150,8 @@ class _WalletsTabState extends State<WalletsTab> {
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: colors.first.withOpacity(
-                                    isDark ? 0.20 : 0.35,
+                                  color: colors.first.withValues(
+                                    alpha: isDark ? 0.20 : 0.35,
                                   ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
@@ -203,8 +203,8 @@ class _WalletsTabState extends State<WalletsTab> {
                                         Text(
                                           l10n.cardHolder,
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.4,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.4,
                                             ),
                                             fontSize: 9,
                                             fontWeight: FontWeight.bold,
@@ -228,8 +228,8 @@ class _WalletsTabState extends State<WalletsTab> {
                                         Text(
                                           l10n.expires,
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.4,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.4,
                                             ),
                                             fontSize: 9,
                                             fontWeight: FontWeight.bold,

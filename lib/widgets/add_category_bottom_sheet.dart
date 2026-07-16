@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
-import '../services/api_service.dart';
+import '../repositories/category_repository.dart';
+import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
 import 'interactive_card.dart';
 import 'custom_toast.dart';
@@ -20,7 +21,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
   String _selectedType = 'EXPENSE';
   String _selectedIcon = 'category';
   String _selectedColor = '#1A2D5A'; // Default Primary Blue
-  final ApiService _apiService = ApiService();
+  final CategoryRepository _categoryRepository = locator<CategoryRepository>();
   bool _isLoading = false;
 
   @override
@@ -87,7 +88,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
 
     try {
       if (widget.categoryToEdit != null) {
-        await _apiService.updateCategory(
+        await _categoryRepository.updateCategory(
           id: widget.categoryToEdit!.id,
           name: name,
           type: _selectedType,
@@ -95,7 +96,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
           color: _selectedColor,
         );
       } else {
-        await _apiService.createCategory(
+        await _categoryRepository.createCategory(
           name: name,
           type: _selectedType,
           icon: _selectedIcon,
@@ -261,7 +262,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: l10n.categoryNameHint,
-                hintStyle: TextStyle(color: subTextColor.withOpacity(0.5)),
+                hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
                 filled: true,
                 fillColor: inputFillColor,
                 border: OutlineInputBorder(
@@ -298,7 +299,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: _parseHexColor(_selectedColor).withOpacity(0.3),
+                                    color: _parseHexColor(_selectedColor).withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   )
@@ -363,7 +364,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFF97316).withOpacity(0.35),
+                      color: const Color(0xFFF97316).withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),

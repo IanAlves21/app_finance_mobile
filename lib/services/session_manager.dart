@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'secure_storage_manager.dart';
 import '../main.dart';
 
 class SessionManager {
@@ -9,7 +10,7 @@ class SessionManager {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('is_logged_in', false);
-      await prefs.remove('access_token');
+      await SecureStorageManager.deleteToken();
       await prefs.remove('user_id');
       await prefs.remove('user_name');
       await prefs.remove('user_email');

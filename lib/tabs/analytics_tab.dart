@@ -111,12 +111,15 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                       return Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            if (filter == l10n.weekly)
+                            if (filter == l10n.weekly) {
                               _viewModel.setActiveFilter('Weekly');
-                            if (filter == l10n.monthly)
+                            }
+                            if (filter == l10n.monthly) {
                               _viewModel.setActiveFilter('Monthly');
-                            if (filter == l10n.yearly)
+                            }
+                            if (filter == l10n.yearly) {
                               _viewModel.setActiveFilter('Yearly');
+                            }
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),

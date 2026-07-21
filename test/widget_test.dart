@@ -75,6 +75,8 @@ void main() {
 
     final mockClient = MockClient((request) async {
       if (request.url.path == '/auth/login') {
+        // Add a realistic 800ms delay so that at 500ms the login is still loading
+        await Future.delayed(const Duration(milliseconds: 800));
         return http.Response(
           json.encode({
             'access_token': 'mocked_jwt_token',

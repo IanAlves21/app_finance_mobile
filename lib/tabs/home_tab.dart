@@ -11,6 +11,8 @@ import '../widgets/custom_toast.dart';
 import '../widgets/shared_avatars.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/transaction_card.dart';
+import '../widgets/transaction_skeleton.dart';
+import '../widgets/shimmer_loading.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -102,8 +104,10 @@ class _HomeTabState extends State<HomeTab> {
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: SystemUiOverlayStyle.light.copyWith(
+        return ShimmerLoading(
+          isLoading: _viewModel.isLoading,
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.light.copyWith(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,
             statusBarBrightness: Brightness.dark,
@@ -157,41 +161,53 @@ class _HomeTabState extends State<HomeTab> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          l10n.goodMorning,
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.55,
-                                            ),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.8,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        ValueListenableBuilder<User?>(
-                                          valueListenable: currentUserNotifier,
-                                          builder: (context, user, _) {
-                                            return Text(
-                                              user?.name ?? 'Lucas & Mariana',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
+                                    _viewModel.isLoading
+                                        ? const Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SkeletonContainer(width: 80, height: 12, borderRadius: 4),
+                                              SizedBox(height: 6),
+                                              SkeletonContainer(width: 140, height: 18, borderRadius: 4),
+                                            ],
+                                          )
+                                        : Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                l10n.goodMorning,
+                                                style: TextStyle(
+                                                  color: Colors.white.withValues(
+                                                    alpha: 0.55,
+                                                  ),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.8,
+                                                ),
                                               ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                                              const SizedBox(height: 2),
+                                              ValueListenableBuilder<User?>(
+                                                valueListenable: currentUserNotifier,
+                                                builder: (context, user, _) {
+                                                  return Text(
+                                                    user?.name ?? 'Lucas & Mariana',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          ),
                                     // Shared overlapping avatars
-                                    const SharedAvatars(),
+                                    SharedAvatars(isLoading: _viewModel.isLoading),
                                   ],
                                 ),
                               ),
@@ -200,99 +216,122 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                         SizedBox(height: 32.0 * (1.0 - t)),
 
-                        // SHARED TOTAL BALANCE Label
-                        SizedBox(
-                          height: 16.0 * (1.0 - t),
-                          child: SingleChildScrollView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            child: SizedBox(
-                              height: 16,
-                              child: Opacity(
-                                opacity: (1.0 - (t * 2.5)).clamp(0.0, 1.0),
-                                child: Text(
-                                  l10n.sharedTotalBalance,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.0,
+                        _viewModel.isLoading
+                            ? SizedBox(
+                                height: 98.0 * (1.0 - t),
+                                child: const SingleChildScrollView(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  child: SizedBox(
+                                    height: 98,
+                                    child: Column(
+                                      children: [
+                                        SkeletonContainer(width: 140, height: 11, borderRadius: 4),
+                                        SizedBox(height: 12),
+                                        SkeletonContainer(width: 200, height: 32, borderRadius: 10),
+                                        SizedBox(height: 14),
+                                        SkeletonContainer(width: 110, height: 22, borderRadius: 12),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 6.0 * (1.0 - t)),
-
-                        // Dynamic Resizing Balance Amount
-                        RichText(
-                          text: TextSpan(
-                            text: CurrencyFormatter.formatBalanceParts(
-                              _viewModel.balance,
-                            )[0],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 42.0 - (t * 18.0),
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: CurrencyFormatter.formatBalanceParts(
-                                  _viewModel.balance,
-                                )[1],
-                                style: TextStyle(
-                                  fontSize: 28.0 - (t * 12.0),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 12.0 * (1.0 - t)),
-
-                        // Trend Growth Badge
-                        SizedBox(
-                          height: 32.0 * (1.0 - t),
-                          child: SingleChildScrollView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            child: SizedBox(
-                              height: 32,
-                              child: Opacity(
-                                opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.north_east_rounded,
-                                        color: AppColors.greenGrowth,
-                                        size: 14,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '+8.2% ${l10n.vsLastMonth}',
-                                        style: const TextStyle(
-                                          color: AppColors.greenGrowth,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
+                              )
+                            : Column(
+                                children: [
+                                  // SHARED TOTAL BALANCE Label
+                                  SizedBox(
+                                    height: 16.0 * (1.0 - t),
+                                    child: SingleChildScrollView(
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      child: SizedBox(
+                                        height: 16,
+                                        child: Opacity(
+                                          opacity: (1.0 - (t * 2.5)).clamp(0.0, 1.0),
+                                          child: Text(
+                                            l10n.sharedTotalBalance,
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(alpha: 0.5),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 1.0,
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(height: 6.0 * (1.0 - t)),
+
+                                  // Dynamic Resizing Balance Amount
+                                  RichText(
+                                    text: TextSpan(
+                                      text: CurrencyFormatter.formatBalanceParts(
+                                        _viewModel.balance,
+                                      )[0],
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 42.0 - (t * 18.0),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.5,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: CurrencyFormatter.formatBalanceParts(
+                                            _viewModel.balance,
+                                          )[1],
+                                          style: TextStyle(
+                                            fontSize: 28.0 - (t * 12.0),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 12.0 * (1.0 - t)),
+
+                                  // Trend Growth Badge
+                                  SizedBox(
+                                    height: 32.0 * (1.0 - t),
+                                    child: SingleChildScrollView(
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      child: SizedBox(
+                                        height: 32,
+                                        child: Opacity(
+                                          opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(alpha: 0.08),
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.north_east_rounded,
+                                                  color: AppColors.greenGrowth,
+                                                  size: 14,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '+8.2% ${l10n.vsLastMonth}',
+                                                  style: const TextStyle(
+                                                    color: AppColors.greenGrowth,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   );
@@ -335,6 +374,7 @@ class _HomeTabState extends State<HomeTab> {
                                   iconBg: AppColors.greenBg,
                                   isSelected: _activeFilter == 'INCOME',
                                   onTap: () => setState(() => _activeFilter = _activeFilter == 'INCOME' ? null : 'INCOME'),
+                                  isLoading: _viewModel.isLoading,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -353,6 +393,7 @@ class _HomeTabState extends State<HomeTab> {
                                   iconBg: AppColors.redBg,
                                   isSelected: _activeFilter == 'EXPENSE',
                                   onTap: () => setState(() => _activeFilter = _activeFilter == 'EXPENSE' ? null : 'EXPENSE'),
+                                  isLoading: _viewModel.isLoading,
                                 ),
                               ),
                             ],
@@ -400,16 +441,7 @@ class _HomeTabState extends State<HomeTab> {
                             }).toList();
 
                             return _viewModel.isLoading
-                                ? const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 40),
-                                      child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          AppColors.accentOrange,
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                                ? const TransactionSkeleton(itemCount: 4)
                                 : filteredTx.isEmpty
                                 ? Center(
                                     child: Padding(
@@ -471,7 +503,8 @@ class _HomeTabState extends State<HomeTab> {
               ),
             ],
           ),
-        );
+        ),
+      );
       },
     );
   }

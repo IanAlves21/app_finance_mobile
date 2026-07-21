@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'shimmer_loading.dart';
 
 class SummaryCard extends StatelessWidget {
   final String title;
@@ -12,6 +13,7 @@ class SummaryCard extends StatelessWidget {
   final Color iconBg;
   final VoidCallback? onTap;
   final bool isSelected;
+  final bool isLoading;
 
   const SummaryCard({
     super.key,
@@ -25,6 +27,7 @@ class SummaryCard extends StatelessWidget {
     required this.iconBg,
     this.onTap,
     this.isSelected = false,
+    this.isLoading = false,
   });
 
   @override
@@ -59,52 +62,82 @@ class SummaryCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: iconBg,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 17),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    badgeText,
-                    style: TextStyle(
-                      color: badgeColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                isLoading
+                    ? const SkeletonContainer(
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                      )
+                    : Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: iconBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, color: iconColor, size: 17),
+                      ),
+                isLoading
+                    ? const SkeletonContainer(
+                        width: 34,
+                        height: 14,
+                        borderRadius: 8,
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: badgeBg,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: TextStyle(
+                            color: badgeColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
               ],
             ),
             const SizedBox(height: 14),
-            Text(
-              title,
-              style: TextStyle(
-                color: isDark ? AppColors.slate400 : AppColors.slate600,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-            ),
+            isLoading
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 2, bottom: 2),
+                    child: SkeletonContainer(
+                      width: 80,
+                      height: 11,
+                      borderRadius: 4,
+                    ),
+                  )
+                : Text(
+                    title,
+                    style: TextStyle(
+                      color: isDark ? AppColors.slate400 : AppColors.slate600,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
             const SizedBox(height: 3),
-            Text(
-              value,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-              ),
-            ),
+            isLoading
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 2.5),
+                    child: SkeletonContainer(
+                      width: 90,
+                      height: 15,
+                      borderRadius: 4,
+                    ),
+                  )
+                : Text(
+                    value,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
           ],
         ),
       ),

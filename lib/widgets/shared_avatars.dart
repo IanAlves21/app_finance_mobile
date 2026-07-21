@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'shimmer_loading.dart';
 
 class SharedAvatars extends StatelessWidget {
   final double size;
   final double overlap;
   final double borderWidth;
   final bool hasBorder;
+  final bool isLoading;
 
   const SharedAvatars({
     super.key,
@@ -13,10 +15,38 @@ class SharedAvatars extends StatelessWidget {
     this.overlap = 24.0,
     this.borderWidth = 2.5,
     this.hasBorder = true,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return SizedBox(
+        width: size + overlap,
+        height: size,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              child: SkeletonContainer(
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+              ),
+            ),
+            Positioned(
+              left: overlap,
+              child: SkeletonContainer(
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SizedBox(
       width: size + overlap,
       height: size,

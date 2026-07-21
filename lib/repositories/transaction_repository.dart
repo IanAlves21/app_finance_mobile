@@ -15,6 +15,8 @@ class TransactionRepository {
   Future<List<Transaction>> fetchTransactions({
     int page = 1,
     int limit = 15,
+    String? startDate,
+    String? endDate,
   }) async {
     try {
       final String? token = await SecureStorageManager.readToken();
@@ -30,8 +32,16 @@ class TransactionRepository {
         await syncPendingTransactions();
       }
 
+      String queryPath = '/transactions?page=$page&limit=$limit';
+      if (startDate != null) {
+        queryPath += '&startDate=$startDate';
+      }
+      if (endDate != null) {
+        queryPath += '&endDate=$endDate';
+      }
+
       final response = await _apiService
-          .get('/transactions?page=$page&limit=$limit')
+          .get(queryPath)
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {

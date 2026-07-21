@@ -44,7 +44,17 @@ class HomeViewModel extends ChangeNotifier {
     }
 
     try {
-      final fetched = await _transactionRepository.fetchTransactions(page: _currentPage, limit: 15);
+      // Filtra apenas as transações do mês corrente para a tela inicial (Recent Transactions)
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+      final fetched = await _transactionRepository.fetchTransactions(
+        page: _currentPage,
+        limit: 15,
+        startDate: firstDayOfMonth.toIso8601String(),
+        endDate: lastDayOfMonth.toIso8601String(),
+      );
 
       if (fetched.length < 15) {
         _hasMore = false;

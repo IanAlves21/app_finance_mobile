@@ -13,6 +13,7 @@ import '../widgets/summary_card.dart';
 import '../widgets/transaction_card.dart';
 import '../widgets/transaction_skeleton.dart';
 import '../widgets/shimmer_loading.dart';
+import '../views/transaction_history_screen.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -411,7 +412,14 @@ class _HomeTabState extends State<HomeTab> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const TransactionHistoryScreen(),
+                                    ),
+                                  );
+                                },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,

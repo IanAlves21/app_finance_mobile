@@ -162,7 +162,7 @@ class _HomeTabState extends State<HomeTab> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    _viewModel.isLoading
+                                    _viewModel.isLoadingSummary
                                         ? const Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -208,7 +208,7 @@ class _HomeTabState extends State<HomeTab> {
                                             ],
                                           ),
                                     // Shared overlapping avatars
-                                    SharedAvatars(isLoading: _viewModel.isLoading),
+                                    SharedAvatars(isLoading: _viewModel.isLoadingSummary),
                                   ],
                                 ),
                               ),
@@ -217,7 +217,7 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                         SizedBox(height: 32.0 * (1.0 - t)),
 
-                        _viewModel.isLoading
+                        _viewModel.isLoadingSummary
                             ? SizedBox(
                                 height: 98.0 * (1.0 - t),
                                 child: const SingleChildScrollView(
@@ -375,7 +375,7 @@ class _HomeTabState extends State<HomeTab> {
                                   iconBg: AppColors.greenBg,
                                   isSelected: _activeFilter == 'INCOME',
                                   onTap: () => setState(() => _activeFilter = _activeFilter == 'INCOME' ? null : 'INCOME'),
-                                  isLoading: _viewModel.isLoading,
+                                  isLoading: _viewModel.isLoadingSummary,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -394,7 +394,7 @@ class _HomeTabState extends State<HomeTab> {
                                   iconBg: AppColors.redBg,
                                   isSelected: _activeFilter == 'EXPENSE',
                                   onTap: () => setState(() => _activeFilter = _activeFilter == 'EXPENSE' ? null : 'EXPENSE'),
-                                  isLoading: _viewModel.isLoading,
+                                  isLoading: _viewModel.isLoadingSummary,
                                 ),
                               ),
                             ],

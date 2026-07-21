@@ -12,7 +12,8 @@ class HomeViewModel extends ChangeNotifier {
     : _transactionRepository = transactionRepository ?? locator<TransactionRepository>();
 
   List<Transaction> _transactions = [];
-  bool _isLoading = true;
+  bool _isLoadingTransactions = true;
+  bool _isLoadingSummary = true;
   double _balance = 0.0;
   double _income = 0.0;
   double _expenses = 0.0;
@@ -23,7 +24,9 @@ class HomeViewModel extends ChangeNotifier {
   bool _isLoadMoreLoading = false;
 
   List<Transaction> get transactions => _transactions;
-  bool get isLoading => _isLoading;
+  bool get isLoading => _isLoadingTransactions; // Backward-compatibility for list skeletons
+  bool get isLoadingTransactions => _isLoadingTransactions;
+  bool get isLoadingSummary => _isLoadingSummary;
   double get balance => _balance;
   double get income => _income;
   double get expenses => _expenses;
@@ -34,7 +37,8 @@ class HomeViewModel extends ChangeNotifier {
 
   Future<void> loadTransactions({bool isRefresh = true, VoidCallback? onUnauthorized}) async {
     if (isRefresh) {
-      _isLoading = true;
+      _isLoadingTransactions = true;
+      _isLoadingSummary = true;
       _currentPage = 1;
       _hasMore = true;
       notifyListeners();
@@ -43,60 +47,92 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
     }
 
-    try {
-      // Filtra apenas as transações do mês corrente para a tela inicial (Recent Transactions)
-      final now = DateTime.now();
-      final firstDayOfMonth = DateTime(now.year, now.month, 1);
-      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
-      final fetched = await _transactionRepository.fetchTransactions(
-        page: _currentPage,
-        limit: 15,
-        startDate: firstDayOfMonth.toIso8601String(),
-        endDate: lastDayOfMonth.toIso8601String(),
-      );
+    final startDateStr = firstDayOfMonth.toIso8601String();
+    final endDateStr = lastDayOfMonth.toIso8601String();
 
-      if (fetched.length < 15) {
-        _hasMore = false;
-      }
+    // 1. Carrega as Transações concorrentemente
+    final Future<void> transactionsFuture = () async {
+      try {
+        final fetched = await _transactionRepository.fetchTransactions(
+          page: _currentPage,
+          limit: 15,
+          startDate: startDateStr,
+          endDate: endDateStr,
+        );
 
-      if (isRefresh) {
-        _transactions = fetched;
-      } else {
-        _transactions.addAll(fetched);
-      }
+        if (fetched.length < 15) {
+          _hasMore = false;
+        }
 
-      // Calculate aggregates
-      double calculatedIncome = 0.0;
-      double calculatedExpenses = 0.0;
-      for (final tx in _transactions) {
-        if (tx.amount > 0) {
-          calculatedIncome += tx.amount;
+        if (isRefresh) {
+          _transactions = fetched;
         } else {
-          calculatedExpenses += tx.amount.abs();
+          _transactions.addAll(fetched);
         }
+      } on HttpException catch (e) {
+        if (e.message == 'Unauthorized') {
+          if (onUnauthorized != null) {
+            onUnauthorized();
+          }
+        }
+        rethrow;
+      } catch (e) {
+        debugPrint('Error loading transactions in HomeViewModel: $e');
+        rethrow;
+      } finally {
+        _isLoadingTransactions = false;
+        _isLoadMoreLoading = false;
+        notifyListeners();
       }
+    }();
 
-      _income = calculatedIncome;
-      _expenses = calculatedExpenses;
-      _balance = calculatedIncome - calculatedExpenses;
-    } on HttpException catch (e) {
-      if (e.message == 'Unauthorized') {
-        if (onUnauthorized != null) {
-          onUnauthorized();
+    // 2. Carrega o Resumo Mensal concorrentemente (somente no refresh inicial)
+    final Future<void> summaryFuture = () async {
+      if (!isRefresh) return;
+      try {
+        final summary = await _transactionRepository.fetchMonthlySummary(
+          startDate: startDateStr,
+          endDate: endDateStr,
+        );
+
+        _income = summary['income'];
+        _expenses = summary['expenses'];
+        _balance = summary['balance'];
+      } on HttpException catch (e) {
+        if (e.message == 'Unauthorized') {
+          if (onUnauthorized != null) {
+            onUnauthorized();
+          }
         }
+        rethrow;
+      } catch (e) {
+        debugPrint('Error loading monthly summary in HomeViewModel: $e');
+        rethrow;
+      } finally {
+        _isLoadingSummary = false;
+        notifyListeners();
       }
-    } catch (e) {
-      debugPrint('Error loading transactions: $e');
-    } finally {
-      _isLoading = false;
-      _isLoadMoreLoading = false;
-      notifyListeners();
+    }();
+
+    // Aguarda a resolução de ambas concorrentemente
+    if (isRefresh) {
+      await Future.wait([transactionsFuture, summaryFuture]).catchError((err) {
+        debugPrint('Erro em alguma das requisições paralelas: $err');
+        return [];
+      });
+    } else {
+      await transactionsFuture.catchError((err) {
+        debugPrint('Erro na paginação de transações: $err');
+      });
     }
   }
 
   Future<void> loadNextPage({VoidCallback? onUnauthorized}) async {
-    if (_isLoadMoreLoading || !_hasMore || _isLoading) return;
+    if (_isLoadMoreLoading || !_hasMore || _isLoadingTransactions) return;
     _currentPage++;
     await loadTransactions(isRefresh: false, onUnauthorized: onUnauthorized);
   }
@@ -109,20 +145,19 @@ class HomeViewModel extends ChangeNotifier {
       // Remove a transação localmente
       _transactions.removeWhere((tx) => tx.id == id);
 
-      // Recalcula agregados (receitas, despesas, saldo total)
-      double calculatedIncome = 0.0;
-      double calculatedExpenses = 0.0;
-      for (final tx in _transactions) {
-        if (tx.amount > 0) {
-          calculatedIncome += tx.amount;
-        } else {
-          calculatedExpenses += tx.amount.abs();
-        }
-      }
+      // Busca o resumo mensal atualizado diretamente do backend para garantir precisão
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
-      _income = calculatedIncome;
-      _expenses = calculatedExpenses;
-      _balance = calculatedIncome - calculatedExpenses;
+      final summary = await _transactionRepository.fetchMonthlySummary(
+        startDate: firstDayOfMonth.toIso8601String(),
+        endDate: lastDayOfMonth.toIso8601String(),
+      );
+
+      _income = summary['income'];
+      _expenses = summary['expenses'];
+      _balance = summary['balance'];
       
       notifyListeners();
     } on HttpException catch (e) {

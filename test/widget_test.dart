@@ -21,6 +21,13 @@ void main() {
     locator.reset();
 
     final defaultMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions/summary') {
+        return http.Response(
+          json.encode({'income': 4500.0, 'expenses': 0.0, 'balance': 4500.0}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
       if (request.url.path == '/transactions') {
         return http.Response(
           json.encode([
@@ -203,6 +210,13 @@ void main() {
     // Custom mock client that handles both GET and DELETE
     bool deleteCalled = false;
     final customMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions/summary') {
+        return http.Response(
+          json.encode({'income': 4500.0, 'expenses': 0.0, 'balance': 4500.0}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
       if (request.url.path == '/transactions/1' && request.method == 'DELETE') {
         deleteCalled = true;
         return http.Response('', 200);
@@ -288,6 +302,13 @@ void main() {
 
     // Custom mock client that returns 500 Internal Server Error on DELETE
     final customMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions/summary') {
+        return http.Response(
+          json.encode({'income': 4500.0, 'expenses': 0.0, 'balance': 4500.0}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
       if (request.url.path == '/transactions/1' && request.method == 'DELETE') {
         return http.Response('Internal Server Error', 500);
       }

@@ -300,4 +300,43 @@ class TransactionRepository {
       rethrow;
     }
   }
+
+  /// Busca o resumo mensal precalculado no servidor
+  Future<Map<String, dynamic>> fetchMonthlySummary({
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      final String? token = await SecureStorageManager.readToken();
+
+      if (token != null && ApiService.isTokenExpired(token)) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      }
+
+      final response = await _apiService
+          .get('/transactions/summary?startDate=$startDate&endDate=$endDate')
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return {
+          'income': (data['income'] as num).toDouble(),
+          'expenses': (data['expenses'] as num).toDouble(),
+          'balance': (data['balance'] as num).toDouble(),
+        };
+      } else if (response.statusCode == 401) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      } else {
+        throw HttpException('Failed to load summary: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is HttpException && e.message == 'Unauthorized') {
+        rethrow;
+      }
+      debugPrint('Erro ao carregar resumo mensal: $e');
+      return {'income': 0.0, 'expenses': 0.0, 'balance': 0.0};
+    }
+  }
 }

@@ -335,4 +335,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get categoryDeleteSuccess => 'Categoria excluída com sucesso!';
+
+  @override
+  String get deleteTransaction => 'Excluir Transação';
+
+  @override
+  String get deleteTransactionConfirm =>
+      'Deseja realmente excluir esta transação? Esta ação não pode ser desfeita.';
+
+  @override
+  String get transactionDeleteSuccess => 'Transação excluída com sucesso!';
+
+  @override
+  String get transactionDeleteError => 'Erro ao excluir transação.';
 }

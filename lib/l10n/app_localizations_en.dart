@@ -335,4 +335,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDeleteSuccess => 'Category deleted successfully!';
+
+  @override
+  String get deleteTransaction => 'Delete Transaction';
+
+  @override
+  String get deleteTransactionConfirm =>
+      'Are you sure you want to delete this transaction? This action cannot be undone.';
+
+  @override
+  String get transactionDeleteSuccess => 'Transaction deleted successfully!';
+
+  @override
+  String get transactionDeleteError => 'Error deleting transaction.';
 }

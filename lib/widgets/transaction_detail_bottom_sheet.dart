@@ -1,17 +1,31 @@
 import 'package:flutter/material.dart';
 import '../models/transaction.dart';
+import '../theme/app_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/app_localizations_extension.dart';
 import '../utils/transaction_ui_extension.dart';
 import '../utils/currency_formatter.dart';
+import 'custom_toast.dart';
 
-class TransactionDetailBottomSheet extends StatelessWidget {
+class TransactionDetailBottomSheet extends StatefulWidget {
   final Transaction transaction;
+  final Future<void> Function()? onDelete;
 
   const TransactionDetailBottomSheet({
     super.key,
     required this.transaction,
+    this.onDelete,
   });
+
+  @override
+  State<TransactionDetailBottomSheet> createState() => _TransactionDetailBottomSheetState();
+}
+
+class _TransactionDetailBottomSheetState extends State<TransactionDetailBottomSheet> {
+  bool _isDeleting = false;
+
+  Transaction get transaction => widget.transaction;
+  Future<void> Function()? get onDelete => widget.onDelete;
 
   String _getCategoryTranslation(String category, AppLocalizations l10n) {
     switch (category.toLowerCase()) {
@@ -27,6 +41,135 @@ class TransactionDetailBottomSheet extends StatelessWidget {
       default:
         return category;
     }
+  }
+
+  Future<bool> _showConfirmDeleteDialog(BuildContext context, AppLocalizations l10n) async {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    
+    final Color modalBgColor = isDark ? AppColors.darkCard : Colors.white;
+    final Color textColor = isDark ? Colors.white : AppColors.darkSlate;
+    final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600;
+
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Container(
+          decoration: BoxDecoration(
+            color: modalBgColor,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Circular icon header
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF3F1B1F) : AppColors.redBg,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_sweep_rounded,
+                  color: AppColors.redAccent,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Title
+              Text(
+                l10n.deleteTransaction,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Message Body
+              Text(
+                l10n.deleteTransactionConfirm,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: subTextColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Action Buttons Row
+              Row(
+                children: [
+                  // Cancel button
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.cancel,
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Confirm Delete button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.redAccent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.delete,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ) ?? false;
   }
 
   @override
@@ -336,6 +479,71 @@ class TransactionDetailBottomSheet extends StatelessWidget {
               );
             }(),
           ),
+          if (onDelete != null) ...[
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isDeleting
+                  ? null
+                  : () async {
+                      final confirm = await _showConfirmDeleteDialog(context, l10n);
+                      if (confirm && context.mounted) {
+                        setState(() {
+                          _isDeleting = true;
+                        });
+                        try {
+                          await onDelete!();
+                          if (context.mounted) {
+                            Navigator.pop(context); // Close bottom sheet
+                            CustomToast.showSuccess(
+                              context,
+                              l10n.transactionDeleteSuccess,
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            Navigator.pop(context); // Close bottom sheet first so the error toast is visible on the home screen
+                            CustomToast.showError(
+                              context,
+                              l10n.transactionDeleteError,
+                            );
+                          }
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: _isDeleting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.delete_forever_rounded, color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.deleteTransaction,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
         ],
       ),
     ),

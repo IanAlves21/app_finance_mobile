@@ -90,4 +90,41 @@ class HomeViewModel extends ChangeNotifier {
     _currentPage++;
     await loadTransactions(isRefresh: false, onUnauthorized: onUnauthorized);
   }
+
+  /// Exclui uma transação e atualiza o estado local de forma imediata
+  Future<void> deleteTransaction(String id, {VoidCallback? onUnauthorized}) async {
+    try {
+      await _transactionRepository.deleteTransaction(id);
+      
+      // Remove a transação localmente
+      _transactions.removeWhere((tx) => tx.id == id);
+
+      // Recalcula agregados (receitas, despesas, saldo total)
+      double calculatedIncome = 0.0;
+      double calculatedExpenses = 0.0;
+      for (final tx in _transactions) {
+        if (tx.amount > 0) {
+          calculatedIncome += tx.amount;
+        } else {
+          calculatedExpenses += tx.amount.abs();
+        }
+      }
+
+      _income = calculatedIncome;
+      _expenses = calculatedExpenses;
+      _balance = calculatedIncome - calculatedExpenses;
+      
+      notifyListeners();
+    } on HttpException catch (e) {
+      if (e.message == 'Unauthorized') {
+        if (onUnauthorized != null) {
+          onUnauthorized();
+        }
+      }
+      rethrow;
+    } catch (e) {
+      debugPrint('Error deleting transaction in HomeViewModel: $e');
+      rethrow;
+    }
+  }
 }

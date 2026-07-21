@@ -433,7 +433,19 @@ class _HomeTabState extends State<HomeTab> {
                                             const SizedBox(height: 12),
                                         itemBuilder: (context, index) {
                                           final tx = filteredTx[index];
-                                          return TransactionCard(transaction: tx);
+                                          return TransactionCard(
+                                            transaction: tx,
+                                            onDelete: () => _viewModel.deleteTransaction(
+                                              tx.id,
+                                              onUnauthorized: () {
+                                                if (!mounted) return;
+                                                final localizations = AppLocalizations.of(context);
+                                                if (localizations != null) {
+                                                  CustomToast.showError(context, localizations.sessionExpiredMessage);
+                                                }
+                                              },
+                                            ),
+                                          );
                                         },
                                       ),
                                       if (_viewModel.isLoadMoreLoading)

@@ -108,5 +108,9 @@
   "deleteCategoryConfirm": "Are you sure you want to delete the category \"{name}\"?",
   "delete": "Delete",
   "cancel": "Cancel",
-  "categoryDeleteSuccess": "Category deleted successfully!"
+  "categoryDeleteSuccess": "Category deleted successfully!",
+  "deleteTransaction": "Delete Transaction",
+  "deleteTransactionConfirm": "Are you sure you want to delete this transaction? This action cannot be undone.",
+  "transactionDeleteSuccess": "Transaction deleted successfully!",
+  "transactionDeleteError": "Error deleting transaction."
 }

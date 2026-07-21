@@ -745,6 +745,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Category deleted successfully!'**
   String get categoryDeleteSuccess;
+
+  /// No description provided for @deleteTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Transaction'**
+  String get deleteTransaction;
+
+  /// No description provided for @deleteTransactionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this transaction? This action cannot be undone.'**
+  String get deleteTransactionConfirm;
+
+  /// No description provided for @transactionDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction deleted successfully!'**
+  String get transactionDeleteSuccess;
+
+  /// No description provided for @transactionDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error deleting transaction.'**
+  String get transactionDeleteError;
 }
 
 class _AppLocalizationsDelegate

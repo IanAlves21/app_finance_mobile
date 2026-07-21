@@ -108,5 +108,9 @@
   "deleteCategoryConfirm": "Deseja realmente excluir a categoria \"{name}\"?",
   "delete": "Excluir",
   "cancel": "Cancelar",
-  "categoryDeleteSuccess": "Categoria excluída com sucesso!"
+  "categoryDeleteSuccess": "Categoria excluída com sucesso!",
+  "deleteTransaction": "Excluir Transação",
+  "deleteTransactionConfirm": "Deseja realmente excluir esta transação? Esta ação não pode ser desfeita.",
+  "transactionDeleteSuccess": "Transação excluída com sucesso!",
+  "transactionDeleteError": "Erro ao excluir transação."
 }

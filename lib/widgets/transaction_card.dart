@@ -10,10 +10,12 @@ import '../l10n/app_localizations_extension.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
+  final Future<void> Function()? onDelete;
 
   const TransactionCard({
     super.key,
     required this.transaction,
+    this.onDelete,
   });
 
   @override
@@ -35,6 +37,7 @@ class TransactionCard extends StatelessWidget {
           backgroundColor: Colors.transparent,
           builder: (context) => TransactionDetailBottomSheet(
             transaction: transaction,
+            onDelete: onDelete,
           ),
         );
       },

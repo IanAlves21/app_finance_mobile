@@ -248,4 +248,46 @@ class TransactionRepository {
       debugPrint('Erro ao sincronizar transações offline: $e');
     }
   }
+
+  /// Exclui uma transação online e atualiza o cache local
+  Future<void> deleteTransaction(String id) async {
+    try {
+      final String? token = await SecureStorageManager.readToken();
+
+      if (token != null && ApiService.isTokenExpired(token)) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      }
+
+      final response = await _apiService
+          .delete('/transactions/$id')
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Atualiza o cache local removendo a transação excluída
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final String? cachedData = prefs.getString('cached_transactions');
+          if (cachedData != null) {
+            final List<dynamic> cacheList = json.decode(cachedData);
+            cacheList.removeWhere((tx) => tx['id'] == id);
+            await prefs.setString('cached_transactions', json.encode(cacheList));
+          }
+        } catch (cacheError) {
+          debugPrint('Erro ao atualizar cache após exclusão: $cacheError');
+        }
+      } else if (response.statusCode == 401) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      } else {
+        throw HttpException('Failed to delete transaction: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is HttpException && e.message == 'Unauthorized') {
+        rethrow;
+      }
+      debugPrint('Erro ao excluir transação: $e');
+      rethrow;
+    }
+  }
 }

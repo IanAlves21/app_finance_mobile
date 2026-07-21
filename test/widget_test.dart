@@ -190,4 +190,167 @@ void main() {
     // Verify bottom sheet is dismissed
     expect(find.text('Detalhes da Transação'), findsNothing);
   });
+
+  testWidgets('App opens TransactionDetailBottomSheet and deletes a transaction', (WidgetTester tester) async {
+    // Force login state to bypass login screen in existing test flows
+    isLoggedInNotifier.value = true;
+
+    // Set locale to Portuguese
+    localeNotifier.value = const Locale('pt');
+
+    // Custom mock client that handles both GET and DELETE
+    bool deleteCalled = false;
+    final customMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions/1' && request.method == 'DELETE') {
+        deleteCalled = true;
+        return http.Response('', 200);
+      }
+      if (request.url.path == '/transactions') {
+        return http.Response(
+          json.encode([
+            {
+              'id': '1',
+              'description': 'Freelance Payment',
+              'type': 'INCOME',
+              'amount': '4500.0',
+              'date': '2026-07-05T12:00:00.000Z',
+              'category': {'name': 'Income'},
+              'paidBy': {'name': 'John Doe'},
+              'wallet': {'name': 'Shared Wallet Account'},
+              'note': 'Payment for design system deliverables',
+              'status': 'COMPLETED'
+            }
+          ]),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final customApiService = ApiService(client: customMockClient);
+    await locator.reset();
+    locator.registerSingleton<ApiService>(customApiService);
+    locator.registerSingleton<TransactionRepository>(TransactionRepository(apiService: customApiService));
+    locator.registerSingleton<CategoryRepository>(CategoryRepository(apiService: customApiService));
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify transaction is listed (translated under the hood to "Pagamento Freelance")
+    final transactionFinder = find.text('Pagamento Freelance');
+    expect(transactionFinder, findsOneWidget);
+
+    // Ensure the transaction widget is fully visible and scrollable in screen
+    await tester.ensureVisible(transactionFinder);
+    await tester.pumpAndSettle();
+
+    // Tap on the transaction to open the detail bottom sheet
+    await tester.tap(transactionFinder);
+    await tester.pumpAndSettle();
+
+    // Verify "Excluir Transação" button is visible
+    final deleteButtonFinder = find.text('Excluir Transação');
+    expect(deleteButtonFinder, findsOneWidget);
+
+    // Ensure the delete button is visible (since the bottom sheet may be scrollable)
+    await tester.ensureVisible(deleteButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Tap the delete button
+    await tester.tap(deleteButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Verify confirmation dialog is shown
+    expect(find.text('Deseja realmente excluir esta transação? Esta ação não pode ser desfeita.'), findsOneWidget);
+
+    // Tap "Excluir" on the dialog
+    final confirmBtnFinder = find.text('Excluir').last;
+    await tester.tap(confirmBtnFinder);
+    await tester.pumpAndSettle();
+
+    // Verify bottom sheet and dialog are closed, and delete was called on API
+    expect(deleteCalled, isTrue);
+    expect(find.text('Detalhes da Transação'), findsNothing);
+
+    // Verify transaction is removed from list
+    expect(find.text('Pagamento Freelance'), findsNothing);
+  });
+
+  testWidgets('App handles transaction deletion failure gracefully', (WidgetTester tester) async {
+    // Force login state to bypass login screen in existing test flows
+    isLoggedInNotifier.value = true;
+
+    // Set locale to Portuguese
+    localeNotifier.value = const Locale('pt');
+
+    // Custom mock client that returns 500 Internal Server Error on DELETE
+    final customMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions/1' && request.method == 'DELETE') {
+        return http.Response('Internal Server Error', 500);
+      }
+      if (request.url.path == '/transactions') {
+        return http.Response(
+          json.encode([
+            {
+              'id': '1',
+              'description': 'Freelance Payment',
+              'type': 'INCOME',
+              'amount': '4500.0',
+              'date': '2026-07-05T12:00:00.000Z',
+              'category': {'name': 'Income'},
+              'paidBy': {'name': 'John Doe'},
+              'wallet': {'name': 'Shared Wallet Account'},
+              'note': 'Payment for design system deliverables',
+              'status': 'COMPLETED'
+            }
+          ]),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final customApiService = ApiService(client: customMockClient);
+    await locator.reset();
+    locator.registerSingleton<ApiService>(customApiService);
+    locator.registerSingleton<TransactionRepository>(TransactionRepository(apiService: customApiService));
+    locator.registerSingleton<CategoryRepository>(CategoryRepository(apiService: customApiService));
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify transaction is listed
+    final transactionFinder = find.text('Pagamento Freelance');
+    expect(transactionFinder, findsOneWidget);
+
+    // Ensure the transaction widget is fully visible and scrollable in screen
+    await tester.ensureVisible(transactionFinder);
+    await tester.pumpAndSettle();
+
+    // Tap on the transaction to open the detail bottom sheet
+    await tester.tap(transactionFinder);
+    await tester.pumpAndSettle();
+
+    // Scroll the delete button into view
+    final deleteButtonFinder = find.text('Excluir Transação');
+    await tester.ensureVisible(deleteButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Tap the delete button
+    await tester.tap(deleteButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Tap "Excluir" on the dialog to confirm
+    final confirmBtnFinder = find.text('Excluir').last;
+    await tester.tap(confirmBtnFinder);
+    await tester.pumpAndSettle();
+
+    // Verify bottom sheet is dismissed
+    expect(find.text('Detalhes da Transação'), findsNothing);
+
+    // Verify transaction remains in the list (since deletion failed)
+    expect(find.text('Pagamento Freelance'), findsOneWidget);
+  });
 }

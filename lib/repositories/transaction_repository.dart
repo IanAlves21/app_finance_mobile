@@ -17,6 +17,7 @@ class TransactionRepository {
     int limit = 15,
     String? startDate,
     String? endDate,
+    String? categoryId,
   }) async {
     try {
       final String? token = await SecureStorageManager.readToken();
@@ -38,6 +39,9 @@ class TransactionRepository {
       }
       if (endDate != null) {
         queryPath += '&endDate=$endDate';
+      }
+      if (categoryId != null) {
+        queryPath += '&categoryId=$categoryId';
       }
 
       final response = await _apiService
@@ -337,6 +341,73 @@ class TransactionRepository {
       }
       debugPrint('Erro ao carregar resumo mensal: $e');
       return {'income': 0.0, 'expenses': 0.0, 'balance': 0.0};
+    }
+  }
+
+  /// Busca os dados de gastos mensais históricos
+  /// Busca os dados de gastos históricos (semanal, mensal ou anual)
+  Future<List<Map<String, dynamic>>> fetchMonthlySpending({
+    int limit = 6,
+    String timeframe = 'MONTHLY',
+  }) async {
+    try {
+      final String? token = await SecureStorageManager.readToken();
+
+      if (token != null && ApiService.isTokenExpired(token)) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      }
+
+      final response = await _apiService
+          .get('/transactions/monthly-spending?limit=$limit&timeframe=$timeframe')
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((item) => Map<String, dynamic>.from(item)).toList();
+      } else if (response.statusCode == 401) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      } else {
+        throw HttpException('Failed to load monthly spending: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is HttpException && e.message == 'Unauthorized') {
+        rethrow;
+      }
+      debugPrint('Erro ao carregar gastos históricos do servidor ($timeframe): $e');
+      
+      // Fallback local para estabilidade offline
+      final DateTime now = DateTime.now();
+      final List<Map<String, dynamic>> fallbackData = [];
+      for (int i = limit - 1; i >= 0; i--) {
+        if (timeframe == 'YEARLY') {
+          fallbackData.add({
+            'year': now.year - i,
+            'income': 0.0,
+            'expense': 0.0,
+          });
+        } else if (timeframe == 'WEEKLY') {
+          final currentWeekStart = DateTime(now.year, now.month, now.day - now.weekday);
+          final d = currentWeekStart.subtract(Duration(days: i * 7));
+          fallbackData.add({
+            'year': d.year,
+            'month': d.month,
+            'day': d.day,
+            'income': 0.0,
+            'expense': 0.0,
+          });
+        } else {
+          final d = DateTime(now.year, now.month - i, 1);
+          fallbackData.add({
+            'year': d.year,
+            'month': d.month,
+            'income': 0.0,
+            'expense': 0.0,
+          });
+        }
+      }
+      return fallbackData;
     }
   }
 }

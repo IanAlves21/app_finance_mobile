@@ -8,17 +8,18 @@ import 'package:app_finance_mobile/services/service_locator.dart';
 import 'package:app_finance_mobile/repositories/transaction_repository.dart';
 import 'package:app_finance_mobile/repositories/category_repository.dart';
 import 'package:app_finance_mobile/viewmodels/login_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/analytics_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
-  setUp(() {
+  setUp(() async {
     SecureStorageManager.useMock = true;
     SecureStorageManager.mockToken = 'mocked_jwt_token';
 
     // Reset GetIt and register default services for testing
-    locator.reset();
+    await locator.reset();
 
     final defaultMockClient = MockClient((request) async {
       if (request.url.path == '/transactions/summary') {
@@ -375,5 +376,101 @@ void main() {
 
     // Verify transaction remains in the list (since deletion failed)
     expect(find.text('Pagamento Freelance'), findsOneWidget);
+  });
+
+  test('AnalyticsViewModel loads data, scales chart values, and localizes months correctly', () async {
+    final mockClient = MockClient((request) async {
+      if (request.url.path.contains('/transactions/monthly-spending')) {
+        return http.Response(
+          json.encode([
+            { 'year': 2026, 'month': 1, 'income': 1000.0, 'expense': 500.0 },
+            { 'year': 2026, 'month': 2, 'income': 2000.0, 'expense': 1000.0 }
+          ]),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final apiService = ApiService(client: mockClient);
+    final transactionRepository = TransactionRepository(apiService: apiService);
+    await locator.reset();
+    locator.registerSingleton<ApiService>(apiService);
+    locator.registerSingleton<TransactionRepository>(transactionRepository);
+
+    final viewModel = AnalyticsViewModel();
+    final future = viewModel.loadMonthlySpending(locale: 'en');
+    expect(viewModel.isLoading, isTrue);
+
+    await future;
+    
+    expect(viewModel.isLoading, isFalse);
+    expect(viewModel.chartExpenses.length, 6);
+    expect(viewModel.chartExpenses.sublist(4), [500.0, 1000.0]);
+    expect(viewModel.chartMonths.length, 6);
+    expect(viewModel.chartMonths.sublist(4), ['Jan', 'Feb']);
+    expect(viewModel.chartValues.length, 6);
+    expect(viewModel.chartValues.sublist(4), [0.5, 1.0]);
+    expect(viewModel.activeBarIndex, 5);
+    expect(viewModel.activeExpense, 1000.0);
+    expect(viewModel.activeMonth, 'Feb');
+    expect(viewModel.activeComparison['text'], '+100,0%');
+    expect(viewModel.activeComparison['isIncrease'], isTrue);
+
+    // Verify activeStartDate and activeEndDate for MONTHLY
+    expect(viewModel.activeStartDate, DateTime(2026, 2, 1));
+    expect(viewModel.activeEndDate, DateTime(2026, 3, 1).subtract(const Duration(seconds: 1)));
+
+    // Test Portuguese localization
+    await viewModel.loadMonthlySpending(locale: 'pt');
+    expect(viewModel.chartMonths.sublist(4), ['Jan', 'Fev']);
+  });
+
+  test('AnalyticsViewModel activeStartDate and activeEndDate work for Weekly and Yearly timeframes', () async {
+    final mockClient = MockClient((request) async {
+      if (request.url.path.contains('/transactions/monthly-spending')) {
+        if (request.url.query.contains('timeframe=YEARLY')) {
+          return http.Response(
+            json.encode([
+              { 'year': 2025, 'income': 10000.0, 'expense': 5000.0 },
+              { 'year': 2026, 'income': 12000.0, 'expense': 6000.0 }
+            ]),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        } else if (request.url.query.contains('timeframe=WEEKLY')) {
+          return http.Response(
+            json.encode([
+              { 'year': 2026, 'month': 7, 'day': 20, 'income': 500.0, 'expense': 300.0 },
+              { 'year': 2026, 'month': 7, 'day': 27, 'income': 600.0, 'expense': 400.0 }
+            ]),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final apiService = ApiService(client: mockClient);
+    final transactionRepository = TransactionRepository(apiService: apiService);
+    await locator.reset();
+    locator.registerSingleton<ApiService>(apiService);
+    locator.registerSingleton<TransactionRepository>(transactionRepository);
+
+    final viewModel = AnalyticsViewModel();
+
+    // Test YEARLY
+    viewModel.setActiveFilter('Yearly');
+    await viewModel.loadMonthlySpending(locale: 'en');
+    expect(viewModel.activeStartDate, DateTime(2026, 1, 1));
+    expect(viewModel.activeEndDate, DateTime(2026, 12, 31, 23, 59, 59));
+
+    // Test WEEKLY
+    viewModel.setActiveFilter('Weekly');
+    await viewModel.loadMonthlySpending(locale: 'en');
+    expect(viewModel.activeStartDate, DateTime(2026, 7, 27));
+    expect(viewModel.activeEndDate, DateTime(2026, 7, 27).add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59)));
   });
 }

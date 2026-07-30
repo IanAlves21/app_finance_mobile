@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
-import '../repositories/category_repository.dart';
-import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
+import '../utils/ui_utils.dart';
 import '../widgets/add_category_bottom_sheet.dart';
+import '../viewmodels/category_list_view_model.dart';
 
 class CategoryListScreen extends StatefulWidget {
   const CategoryListScreen({super.key});
@@ -15,82 +15,26 @@ class CategoryListScreen extends StatefulWidget {
 
 class _CategoryListScreenState extends State<CategoryListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final CategoryRepository _categoryRepository = locator<CategoryRepository>();
-  List<Category> _categories = [];
-  bool _isLoading = true;
+  late final CategoryListViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
+    _viewModel = CategoryListViewModel();
     _tabController = TabController(length: 2, vsync: this);
     _loadCategories();
   }
 
   Future<void> _loadCategories() async {
-    setState(() => _isLoading = true);
     try {
-      final cats = await _categoryRepository.fetchCategories();
-      setState(() {
-        _categories = cats;
-        _isLoading = false;
-      });
+      await _viewModel.loadCategories();
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${l10n.categoryLoadError}: $e')),
         );
       }
-    }
-  }
-
-  Color _parseHexColor(String hexStr) {
-    try {
-      final String cleanHex = hexStr.replaceAll('#', '').trim();
-      if (cleanHex.length == 6) {
-        return Color(int.parse('FF$cleanHex', radix: 16));
-      }
-      return Color(int.parse(cleanHex, radix: 16));
-    } catch (_) {
-      return AppColors.primarySeed;
-    }
-  }
-
-  IconData _getIconData(String? iconName) {
-    switch (iconName?.toLowerCase()) {
-      case 'briefcase':
-      case 'savings':
-        return Icons.savings_rounded;
-      case 'shopping-cart':
-      case 'food':
-        return Icons.shopping_cart_outlined;
-      case 'restaurant':
-      case 'dining':
-        return Icons.restaurant_rounded;
-      case 'directions-car':
-      case 'transport':
-        return Icons.directions_car_rounded;
-      case 'money':
-      case 'monetization-on':
-        return Icons.monetization_on_outlined;
-      case 'subscriptions':
-      case 'streaming':
-        return Icons.subscriptions_rounded;
-      case 'home':
-      case 'rent':
-        return Icons.home_outlined;
-      case 'medical':
-      case 'health':
-        return Icons.medical_services_outlined;
-      case 'school':
-      case 'education':
-        return Icons.school_outlined;
-      case 'pets':
-      case 'pet':
-        return Icons.pets_rounded;
-      default:
-        return Icons.category_rounded;
     }
   }
 
@@ -136,17 +80,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
 
   Future<void> _executeDeleteCategory(String categoryId) async {
     final l10n = AppLocalizations.of(context)!;
-    setState(() => _isLoading = true);
     try {
-      await _categoryRepository.deleteCategory(categoryId);
+      await _viewModel.deleteCategory(categoryId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.categoryDeleteSuccess)),
         );
       }
-      _loadCategories();
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
         final cleanMsg = e.toString().replaceAll('HttpException: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +104,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
   }
 
   Widget _buildCategoryList(String type) {
-    final filtered = _categories.where((cat) => cat.type == type).toList();
+    final filtered = _viewModel.categories.where((cat) => cat.type == type).toList();
     final l10n = AppLocalizations.of(context)!;
 
     if (filtered.isEmpty) {
@@ -209,7 +150,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final category = filtered[index];
-        final Color catColor = _parseHexColor(category.color);
+        final Color catColor = UIUtils.parseHexColor(category.color);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -233,7 +174,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _getIconData(category.icon),
+                UIUtils.getIconData(category.icon),
                 color: catColor,
                 size: 20,
               ),
@@ -353,19 +294,24 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
           ],
         ),
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.accentOrange,
-              ),
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildCategoryList('EXPENSE'),
-                _buildCategoryList('INCOME'),
-              ],
-            ),
+      body: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, _) {
+          return _viewModel.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.accentOrange,
+                  ),
+                )
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildCategoryList('EXPENSE'),
+                    _buildCategoryList('INCOME'),
+                  ],
+                );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.accentOrange,
         onPressed: () async {

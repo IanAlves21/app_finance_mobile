@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:custom_date_range_picker/custom_date_range_picker.dart';
-import '../models/transaction.dart';
-import '../repositories/transaction_repository.dart';
-import '../services/service_locator.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../widgets/transaction_card.dart';
 import '../widgets/transaction_skeleton.dart';
 import '../widgets/custom_toast.dart';
+import '../viewmodels/transaction_history_view_model.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -18,28 +17,15 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  final TransactionRepository _transactionRepository = locator<TransactionRepository>();
-  final List<Transaction> _transactions = [];
-  bool _isLoading = true;
-  DateTimeRange? _selectedDateRange;
-
-  // Pagination states
-  int _currentPage = 1;
-  bool _hasMore = true;
-  bool _isLoadMoreLoading = false;
+  late final TransactionHistoryViewModel _viewModel;
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    // Default to the current month's boundaries
-    final now = DateTime.now();
-    _selectedDateRange = DateTimeRange(
-      start: DateTime(now.year, now.month, 1),
-      end: DateTime(now.year, now.month + 1, 0, 23, 59, 59),
-    );
+    _viewModel = TransactionHistoryViewModel();
     _scrollController.addListener(_onScroll);
-    _loadTransactions(isRefresh: true);
+    _initLoad();
   }
 
   @override
@@ -51,66 +37,24 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      _loadNextPage();
+      _viewModel.loadNextPage().catchError((e) {
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          CustomToast.showError(context, l10n.errorLoadingTransactions);
+        }
+      });
     }
   }
 
-  Future<void> _loadTransactions({bool isRefresh = true}) async {
-    if (isRefresh) {
-      setState(() {
-        _isLoading = true;
-        _currentPage = 1;
-        _hasMore = true;
-        _transactions.clear();
-      });
-    } else {
-      setState(() {
-        _isLoadMoreLoading = true;
-      });
-    }
-
+  Future<void> _initLoad() async {
     try {
-      final startIso = _selectedDateRange?.start.toIso8601String();
-      final endIso = _selectedDateRange?.end.toIso8601String();
-
-      final fetched = await _transactionRepository.fetchTransactions(
-        page: _currentPage,
-        limit: 15, // Dynamic small paging
-        startDate: startIso,
-        endDate: endIso,
-      );
-
-      if (fetched.length < 15) {
-        _hasMore = false;
-      }
-
-      setState(() {
-        _transactions.addAll(fetched);
-        _isLoading = false;
-        _isLoadMoreLoading = false;
-      });
+      await _viewModel.loadTransactions(isRefresh: true);
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _isLoadMoreLoading = false;
-      });
       if (mounted) {
-        CustomToast.showError(
-          context,
-          Localizations.localeOf(context).languageCode == 'pt'
-              ? 'Erro ao carregar transações.'
-              : 'Error loading transactions.',
-        );
+        final l10n = AppLocalizations.of(context)!;
+        CustomToast.showError(context, l10n.errorLoadingTransactions);
       }
     }
-  }
-
-  Future<void> _loadNextPage() async {
-    if (_isLoadMoreLoading || !_hasMore || _isLoading) return;
-    setState(() {
-      _currentPage++;
-    });
-    await _loadTransactions(isRefresh: false);
   }
 
   Future<void> _selectCustomRange() async {
@@ -128,22 +72,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           child: CustomDateRangePicker(
             minimumDate: DateTime(2020),
             maximumDate: DateTime(2030),
-            initialStartDate: _selectedDateRange?.start,
-            initialEndDate: _selectedDateRange?.end,
+            initialStartDate: _viewModel.selectedDateRange?.start,
+            initialEndDate: _viewModel.selectedDateRange?.end,
             backgroundColor: isDark ? AppColors.darkCard : Colors.white,
             primaryColor: AppColors.accentOrange,
             onApplyClick: (start, end) {
-              setState(() {
-                _selectedDateRange = DateTimeRange(
-                  start: start,
-                  end: DateTime(end.year, end.month, end.day, 23, 59, 59),
-                );
-              });
-              Navigator.pop(context); // Close dialog
-              _loadTransactions(isRefresh: true);
+              _viewModel.setDateRange(DateTimeRange(
+                start: start,
+                end: DateTime(end.year, end.month, end.day, 23, 59, 59),
+              ));
             },
             onCancelClick: () {
-              Navigator.pop(context); // Close dialog on cancel
+              // No pop needed here either, the package widget handles it internally
             },
           ),
         );
@@ -164,18 +104,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   String _formatDateRange() {
-    if (_selectedDateRange == null) return '';
+    if (_viewModel.selectedDateRange == null) return '';
     final locale = Localizations.localeOf(context).languageCode;
     final DateFormat formatter = DateFormat('dd/MM/yyyy', locale);
-    return '${formatter.format(_selectedDateRange!.start)} - ${formatter.format(_selectedDateRange!.end)}';
+    return '${formatter.format(_viewModel.selectedDateRange!.start)} - ${formatter.format(_viewModel.selectedDateRange!.end)}';
   }
 
   Future<void> _deleteTransaction(String id) async {
     try {
-      await _transactionRepository.deleteTransaction(id);
-      setState(() {
-        _transactions.removeWhere((tx) => tx.id == id);
-      });
+      await _viewModel.deleteTransaction(id);
     } catch (e) {
       debugPrint('Error deleting transaction in history: $e');
       rethrow;
@@ -188,6 +125,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final bool isDark = theme.brightness == Brightness.dark;
     final Color textColor = theme.colorScheme.onSurface;
     final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkScaffold : AppColors.lightScaffold,
@@ -211,9 +149,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         ),
         centerTitle: true,
         title: Text(
-          Localizations.localeOf(context).languageCode == 'pt'
-              ? 'Histórico de Transações'
-              : 'Transaction History',
+          l10n.transactionHistory,
           style: TextStyle(
             color: textColor,
             fontSize: 18,
@@ -224,127 +160,128 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       body: SafeArea(
         top: false,
         bottom: true,
-        child: Column(
-          children: [
-          // Filter Pill Card
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: InkWell(
-              onTap: _selectCustomRange,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.darkSlate.withValues(alpha: isDark ? 0.2 : 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_month_rounded,
-                      color: AppColors.accentOrange,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListenableBuilder(
+          listenable: _viewModel,
+          builder: (context, _) {
+            return Column(
+              children: [
+                // Filter Pill Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: InkWell(
+                    onTap: _selectCustomRange,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkCard : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.2 : 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            Localizations.localeOf(context).languageCode == 'pt'
-                                ? 'PERÍODO SELECIONADO'
-                                : 'SELECTED PERIOD',
-                            style: TextStyle(
-                              color: subTextColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
+                          const Icon(
+                            Icons.calendar_month_rounded,
+                            color: AppColors.accentOrange,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.selectedPeriod,
+                                  style: TextStyle(
+                                    color: subTextColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _formatDateRange(),
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _formatDateRange(),
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: subTextColor,
                           ),
                         ],
                       ),
                     ),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: subTextColor,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ),
 
-          // Transactions List Area
-          Expanded(
-            child: _isLoading
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: TransactionSkeleton(itemCount: 5),
-                  )
-                : _transactions.isEmpty
-                    ? Center(
-                        child: Text(
-                          Localizations.localeOf(context).languageCode == 'pt'
-                              ? 'Nenhuma transação neste período'
-                              : 'No transactions found in this period',
-                          style: TextStyle(
-                            color: subTextColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
-                    : ListView.separated(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: BouncingScrollPhysics(),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        itemCount: _transactions.length + (_hasMore ? 1 : 0),
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          if (index == _transactions.length) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentOrange),
-                                  ),
+                // Transactions List Area
+                Expanded(
+                  child: _viewModel.isLoading
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          child: TransactionSkeleton(itemCount: 5),
+                        )
+                      : _viewModel.transactions.isEmpty
+                          ? Center(
+                              child: Text(
+                                l10n.noTransactionsInPeriod,
+                                style: TextStyle(
+                                  color: subTextColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            );
-                          }
-                          final tx = _transactions[index];
-                          return TransactionCard(
-                            transaction: tx,
-                            onDelete: () => _deleteTransaction(tx.id),
-                          );
-                        },
-                      ),
-          ),
-        ],
+                            )
+                          : ListView.separated(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics(),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              itemCount: _viewModel.transactions.length + (_viewModel.hasMore ? 1 : 0),
+                              separatorBuilder: (context, index) => const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                if (index == _viewModel.transactions.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 16),
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentOrange),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final tx = _viewModel.transactions[index];
+                                return TransactionCard(
+                                  transaction: tx,
+                                  onDelete: () => _deleteTransaction(tx.id),
+                                );
+                              },
+                            ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
-    ),
     );
   }
 }

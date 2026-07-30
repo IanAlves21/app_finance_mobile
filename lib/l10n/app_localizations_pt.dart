@@ -348,4 +348,28 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get transactionDeleteError => 'Erro ao excluir transação.';
+
+  @override
+  String get errorLoadingTransactions => 'Erro ao carregar transações.';
+
+  @override
+  String get transactionHistory => 'Histórico de Transações';
+
+  @override
+  String get selectedPeriod => 'PERÍODO SELECIONADO';
+
+  @override
+  String get noTransactionsInPeriod => 'Nenhuma transação neste período';
+
+  @override
+  String get familySpendingDivision => 'Divisão de Gastos da Família';
+
+  @override
+  String get transactionsInPeriod => 'Lançamentos registrados neste período';
+
+  @override
+  String get tryAgain => 'Tentar Novamente';
+
+  @override
+  String get noTransactionsFound => 'Nenhuma transação encontrada';
 }

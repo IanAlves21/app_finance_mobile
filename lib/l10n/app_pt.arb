@@ -112,5 +112,13 @@
   "deleteTransaction": "Excluir Transação",
   "deleteTransactionConfirm": "Deseja realmente excluir esta transação? Esta ação não pode ser desfeita.",
   "transactionDeleteSuccess": "Transação excluída com sucesso!",
-  "transactionDeleteError": "Erro ao excluir transação."
+  "transactionDeleteError": "Erro ao excluir transação.",
+  "errorLoadingTransactions": "Erro ao carregar transações.",
+  "transactionHistory": "Histórico de Transações",
+  "selectedPeriod": "PERÍODO SELECIONADO",
+  "noTransactionsInPeriod": "Nenhuma transação neste período",
+  "familySpendingDivision": "Divisão de Gastos da Família",
+  "transactionsInPeriod": "Lançamentos registrados neste período",
+  "tryAgain": "Tentar Novamente",
+  "noTransactionsFound": "Nenhuma transação encontrada"
 }

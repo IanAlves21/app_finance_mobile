@@ -769,6 +769,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error deleting transaction.'**
   String get transactionDeleteError;
+
+  /// No description provided for @errorLoadingTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading transactions.'**
+  String get errorLoadingTransactions;
+
+  /// No description provided for @transactionHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction History'**
+  String get transactionHistory;
+
+  /// No description provided for @selectedPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECTED PERIOD'**
+  String get selectedPeriod;
+
+  /// No description provided for @noTransactionsInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found in this period'**
+  String get noTransactionsInPeriod;
+
+  /// No description provided for @familySpendingDivision.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Spending Division'**
+  String get familySpendingDivision;
+
+  /// No description provided for @transactionsInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions registered in this period'**
+  String get transactionsInPeriod;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @noTransactionsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found'**
+  String get noTransactionsFound;
 }
 
 class _AppLocalizationsDelegate

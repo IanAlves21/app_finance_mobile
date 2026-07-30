@@ -348,4 +348,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionDeleteError => 'Error deleting transaction.';
+
+  @override
+  String get errorLoadingTransactions => 'Error loading transactions.';
+
+  @override
+  String get transactionHistory => 'Transaction History';
+
+  @override
+  String get selectedPeriod => 'SELECTED PERIOD';
+
+  @override
+  String get noTransactionsInPeriod => 'No transactions found in this period';
+
+  @override
+  String get familySpendingDivision => 'Family Spending Division';
+
+  @override
+  String get transactionsInPeriod => 'Transactions registered in this period';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get noTransactionsFound => 'No transactions found';
 }

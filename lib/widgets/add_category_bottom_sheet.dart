@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../repositories/category_repository.dart';
 import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
+import '../utils/ui_utils.dart';
 import 'interactive_card.dart';
 import 'custom_toast.dart';
 
@@ -66,15 +67,6 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
     '#7C3AED', // Purple
     '#0284C7', // Sky Blue
   ];
-
-  Color _parseHexColor(String hexStr) {
-    try {
-      final String cleanHex = hexStr.replaceAll('#', '').trim();
-      return Color(int.parse('FF$cleanHex', radix: 16));
-    } catch (_) {
-      return AppColors.primarySeed;
-    }
-  }
 
   Future<void> _saveCategory() async {
     final String name = _nameController.text.trim();
@@ -294,12 +286,12 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isSelected ? _parseHexColor(_selectedColor) : inputFillColor,
+                          color: isSelected ? UIUtils.parseHexColor(_selectedColor) : inputFillColor,
                           shape: BoxShape.circle,
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: _parseHexColor(_selectedColor).withValues(alpha: 0.3),
+                                    color: UIUtils.parseHexColor(_selectedColor).withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   )
@@ -329,7 +321,7 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: _availableColors.map((colorHex) {
                 final bool isSelected = _selectedColor == colorHex;
-                final Color color = _parseHexColor(colorHex);
+                final Color color = UIUtils.parseHexColor(colorHex);
                 return GestureDetector(
                   onTap: () => setState(() => _selectedColor = colorHex),
                   child: Container(

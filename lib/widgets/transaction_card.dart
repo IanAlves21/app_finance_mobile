@@ -11,11 +11,13 @@ import '../l10n/app_localizations_extension.dart';
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
   final Future<void> Function()? onDelete;
+  final String? badgeText;
 
   const TransactionCard({
     super.key,
     required this.transaction,
     this.onDelete,
+    this.badgeText,
   });
 
   @override
@@ -85,13 +87,35 @@ class TransactionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    transaction.date,
-                    style: TextStyle(
-                      color: subTextColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        transaction.date,
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (badgeText != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkInterfaceColor : AppColors.slate100,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            badgeText!,
+                            style: TextStyle(
+                              color: isDark ? AppColors.slate300 : AppColors.slate700,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

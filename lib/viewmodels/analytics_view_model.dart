@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 import '../repositories/transaction_repository.dart';
 import '../services/service_locator.dart';
 
@@ -9,6 +13,7 @@ class AnalyticsViewModel extends ChangeNotifier {
   int _activeBarIndex = 0;
   String _activeFilter = 'Monthly';
   bool _isLoading = false;
+  bool _isGeneratingPdf = false;
 
   final List<double> _chartValues = [];
   final List<String> _chartMonths = [];
@@ -18,6 +23,7 @@ class AnalyticsViewModel extends ChangeNotifier {
   int get activeBarIndex => _activeBarIndex;
   String get activeFilter => _activeFilter;
   bool get isLoading => _isLoading;
+  bool get isGeneratingPdf => _isGeneratingPdf;
   List<double> get chartValues => _chartValues;
   List<String> get chartMonths => _chartMonths;
   List<double> get chartExpenses => _chartExpenses;
@@ -25,6 +31,28 @@ class AnalyticsViewModel extends ChangeNotifier {
   double get activeExpense => _chartExpenses.isNotEmpty && _activeBarIndex < _chartExpenses.length
       ? _chartExpenses[_activeBarIndex]
       : 0.0;
+
+  double get activeIncome {
+    if (_rawSpendingData.isEmpty || _activeBarIndex < 0) {
+      return 0.0;
+    }
+    final int rawIndex = _activeBarIndex + 1;
+    if (rawIndex >= _rawSpendingData.length) {
+      return 0.0;
+    }
+    final interval = _rawSpendingData[rawIndex];
+    return (interval['income'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  double get activeSavings => activeIncome - activeExpense;
+
+  double get savingsRate {
+    final income = activeIncome;
+    if (income <= 0.0) {
+      return 0.0;
+    }
+    return (activeSavings / income) * 100.0;
+  }
 
   String get activeMonth => _chartMonths.isNotEmpty && _activeBarIndex < _chartMonths.length
       ? _chartMonths[_activeBarIndex]
@@ -299,9 +327,37 @@ class AnalyticsViewModel extends ChangeNotifier {
         _chartValues.add(expense > 0 ? (val < 0.1 ? 0.1 : val) : 0.0);
       }
 
-      // Define como ativo o intervalo mais recente (último do array cronológico)
+      // Define como ativo o intervalo atual (mês, semana ou ano atual) de forma inteligente
       if (_chartExpenses.isNotEmpty) {
-        _activeBarIndex = _chartExpenses.length - 1;
+        _activeBarIndex = _chartExpenses.length - 1; // default fallback (mais recente)
+        final DateTime now = DateTime.now();
+
+        for (int i = 0; i < displayData.length; i++) {
+          if (timeframe == 'YEARLY') {
+            if (displayData[i]['year'] == now.year) {
+              _activeBarIndex = i;
+              break;
+            }
+          } else if (timeframe == 'WEEKLY') {
+            final currentWeekStart = DateTime(now.year, now.month, now.day - now.weekday);
+            final int year = displayData[i]['year'] as int;
+            final int month = displayData[i]['month'] as int;
+            final int day = displayData[i]['day'] as int;
+            final date = DateTime(year, month, day);
+            if (date.year == currentWeekStart.year &&
+                date.month == currentWeekStart.month &&
+                date.day == currentWeekStart.day) {
+              _activeBarIndex = i;
+              break;
+            }
+          } else {
+            // MONTHLY
+            if (displayData[i]['year'] == now.year && displayData[i]['month'] == now.month) {
+              _activeBarIndex = i;
+              break;
+            }
+          }
+        }
       } else {
         _activeBarIndex = 0;
       }
@@ -323,5 +379,44 @@ class AnalyticsViewModel extends ChangeNotifier {
   void setActiveFilter(String filter, {String locale = 'en'}) {
     _activeFilter = filter;
     loadMonthlySpending(locale: locale);
+  }
+
+  Future<void> generatePdfReport({
+    required DateTime startDate,
+    required DateTime endDate,
+    required VoidCallback onUnauthorized,
+  }) async {
+    _isGeneratingPdf = true;
+    notifyListeners();
+
+    try {
+      final String startDateStr = startDate.toIso8601String().substring(0, 10);
+      final String endDateStr = endDate.toIso8601String().substring(0, 10);
+
+      final Uint8List pdfBytes = await _transactionRepository.fetchReportPdf(
+        startDate: startDateStr,
+        endDate: endDateStr,
+      );
+
+      // Salva o PDF localmente na pasta temporária do dispositivo
+      final tempDir = await getTemporaryDirectory();
+      final String fileName = 'Relatorio_Financeiro_${startDateStr}_$endDateStr.pdf';
+      final File file = File('${tempDir.path}/$fileName');
+      
+      await file.writeAsBytes(pdfBytes, flush: true);
+
+      // Abre o PDF nativamente
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      if (e is HttpException && e.message == 'Unauthorized') {
+        onUnauthorized();
+        return;
+      }
+      debugPrint('Erro ao gerar relatório em PDF no ViewModel: $e');
+      rethrow;
+    } finally {
+      _isGeneratingPdf = false;
+      notifyListeners();
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../theme/app_colors.dart';
+import '../services/service_locator.dart';
 import '../viewmodels/wallets_view_model.dart';
 import '../widgets/quick_action_item.dart';
 
@@ -22,7 +23,7 @@ class _WalletsTabState extends State<WalletsTab> {
   @override
   void initState() {
     super.initState();
-    _viewModel = WalletsViewModel();
+    _viewModel = locator<WalletsViewModel>();
   }
 
   @override

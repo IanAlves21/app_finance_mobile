@@ -120,5 +120,7 @@
   "familySpendingDivision": "Family Spending Division",
   "transactionsInPeriod": "Transactions registered in this period",
   "tryAgain": "Try Again",
-  "noTransactionsFound": "No transactions found"
+  "noTransactionsFound": "No transactions found",
+  "monthlyBudgetLimitOptional": "Monthly Budget Limit (Optional)",
+  "budgetHint": "e.g. 500"
 }

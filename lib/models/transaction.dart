@@ -12,6 +12,7 @@ class Transaction {
   final String status;
   final String? categoryIcon;
   final String? categoryColor;
+  final String? paymentMethod;
 
   const Transaction({
     required this.id,
@@ -25,6 +26,7 @@ class Transaction {
     this.status = "Completed",
     this.categoryIcon,
     this.categoryColor,
+    this.paymentMethod,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -84,6 +86,7 @@ class Transaction {
 
     final String? categoryIcon = json['category'] != null ? json['category']['icon']?.toString() : null;
     final String? categoryColor = json['category'] != null ? json['category']['color']?.toString() : null;
+    final String? paymentMethod = json['paymentMethod']?.toString();
 
     return Transaction(
       id: id,
@@ -97,6 +100,7 @@ class Transaction {
       status: status,
       categoryIcon: categoryIcon,
       categoryColor: categoryColor,
+      paymentMethod: paymentMethod,
     );
   }
 

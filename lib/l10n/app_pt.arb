@@ -120,5 +120,7 @@
   "familySpendingDivision": "Divisão de Gastos da Família",
   "transactionsInPeriod": "Lançamentos registrados neste período",
   "tryAgain": "Tentar Novamente",
-  "noTransactionsFound": "Nenhuma transação encontrada"
+  "noTransactionsFound": "Nenhuma transação encontrada",
+  "monthlyBudgetLimitOptional": "Limite de Orçamento Mensal (Opcional)",
+  "budgetHint": "Ex: 500"
 }

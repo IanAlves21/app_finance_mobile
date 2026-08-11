@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../theme/app_colors.dart';
+import '../services/service_locator.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/add_category_bottom_sheet.dart';
 import '../viewmodels/category_list_view_model.dart';
@@ -20,7 +21,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
   @override
   void initState() {
     super.initState();
-    _viewModel = CategoryListViewModel();
+    _viewModel = locator<CategoryListViewModel>();
     _tabController = TabController(length: 2, vsync: this);
     _loadCategories();
   }

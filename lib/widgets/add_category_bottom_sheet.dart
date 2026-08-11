@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../repositories/category_repository.dart';
+import '../repositories/budget_repository.dart';
 import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
 import '../utils/ui_utils.dart';
@@ -19,6 +20,7 @@ class AddCategoryBottomSheet extends StatefulWidget {
 
 class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
   final _nameController = TextEditingController();
+  final _budgetController = TextEditingController();
   String _selectedType = 'EXPENSE';
   String _selectedIcon = 'category';
   String _selectedColor = '#1A2D5A'; // Default Primary Blue
@@ -33,7 +35,32 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
       _selectedType = widget.categoryToEdit!.type;
       _selectedIcon = widget.categoryToEdit!.icon ?? 'category';
       _selectedColor = widget.categoryToEdit!.color;
+      _loadExistingBudget();
     }
+  }
+
+  Future<void> _loadExistingBudget() async {
+    try {
+      final now = DateTime.now();
+      final budgets = await locator<BudgetRepository>().fetchBudgets(now.month, now.year);
+      final match = budgets.where((b) => b.categoryId == widget.categoryToEdit!.id);
+      if (match.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _budgetController.text = match.first.amount.toStringAsFixed(0).replaceAll('.00', '');
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading existing category budget: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _budgetController.dispose();
+    super.dispose();
   }
 
   List<Map<String, dynamic>> get _currentAvailableIcons {
@@ -79,21 +106,38 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
     setState(() => _isLoading = true);
 
     try {
+      String categoryId;
       if (widget.categoryToEdit != null) {
+        categoryId = widget.categoryToEdit!.id;
         await _categoryRepository.updateCategory(
-          id: widget.categoryToEdit!.id,
+          id: categoryId,
           name: name,
           type: _selectedType,
           icon: _selectedIcon,
           color: _selectedColor,
         );
       } else {
-        await _categoryRepository.createCategory(
+        final Category newCat = await _categoryRepository.createCategory(
           name: name,
           type: _selectedType,
           icon: _selectedIcon,
           color: _selectedColor,
         );
+        categoryId = newCat.id;
+      }
+
+      // Se for uma despesa e o limite do orçamento estiver preenchido, salva o orçamento
+      if (_selectedType == 'EXPENSE' && _budgetController.text.trim().isNotEmpty) {
+        final double? budgetLimit = double.tryParse(_budgetController.text.trim());
+        if (budgetLimit != null && budgetLimit > 0) {
+          final now = DateTime.now();
+          await locator<BudgetRepository>().upsertBudget(
+            amount: budgetLimit,
+            month: now.month,
+            year: now.year,
+            categoryId: categoryId,
+          );
+        }
       }
 
       if (mounted) {
@@ -116,12 +160,6 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
         );
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
   }
 
   @override
@@ -264,6 +302,31 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
+
+            if (_selectedType == 'EXPENSE') ...[
+              const SizedBox(height: 18),
+              Text(
+                l10n.monthlyBudgetLimitOptional,
+                style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _budgetController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  hintText: l10n.budgetHint,
+                  hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
+                  filled: true,
+                  fillColor: inputFillColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
+            ],
             const SizedBox(height: 18),
 
             // Icon Picker

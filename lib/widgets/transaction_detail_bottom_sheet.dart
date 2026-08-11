@@ -43,6 +43,36 @@ class _TransactionDetailBottomSheetState extends State<TransactionDetailBottomSh
     }
   }
 
+  String _getPaymentMethodTranslation(String? method) {
+    switch (method) {
+      case 'CREDIT':
+        return 'Cartão de Crédito';
+      case 'DEBIT':
+        return 'Cartão de Débito';
+      case 'PIX':
+        return 'Pix';
+      case 'CASH':
+        return 'Dinheiro';
+      default:
+        return 'Outro';
+    }
+  }
+
+  IconData _getPaymentMethodIcon(String? method) {
+    switch (method) {
+      case 'CREDIT':
+        return Icons.credit_card_rounded;
+      case 'DEBIT':
+        return Icons.credit_card_outlined;
+      case 'PIX':
+        return Icons.qr_code_rounded;
+      case 'CASH':
+        return Icons.payments_rounded;
+      default:
+        return Icons.payments_rounded;
+    }
+  }
+
   Future<bool> _showConfirmDeleteDialog(BuildContext context, AppLocalizations l10n) async {
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
@@ -190,6 +220,25 @@ class _TransactionDetailBottomSheetState extends State<TransactionDetailBottomSh
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final bool isPositive = transaction.amount > 0;
 
+    // Lógica para detectar e formatar parcelas com regex (ex: "Compra (1/3)")
+    final regex = RegExp(r'\((\d+)\/(\d+)\)');
+    final match = regex.firstMatch(transaction.name);
+    String? installmentValue;
+    String? totalPurchaseValue;
+
+    if (match != null) {
+      final current = int.parse(match.group(1)!);
+      final total = int.parse(match.group(2)!);
+      installmentValue = '$current de $total';
+
+      // Estima o valor total original da compra multiplicando o valor absoluto pela quantidade de parcelas
+      final double absoluteAmount = transaction.amount.abs();
+      final double totalOriginalAmount = absoluteAmount * total;
+      final double signedTotalAmount = transaction.amount > 0 ? totalOriginalAmount : -totalOriginalAmount;
+      
+      totalPurchaseValue = CurrencyFormatter.formatBalanceParts(signedTotalAmount).join();
+    }
+
     // Define detail rows mapping
     final List<Map<String, dynamic>> detailRows = [
       {
@@ -212,6 +261,24 @@ class _TransactionDetailBottomSheetState extends State<TransactionDetailBottomSh
         'label': l10n.accountLabel,
         'value': transaction.account,
       },
+      if (transaction.paymentMethod != null)
+        {
+          'icon': _getPaymentMethodIcon(transaction.paymentMethod),
+          'label': 'Forma de Pagamento',
+          'value': _getPaymentMethodTranslation(transaction.paymentMethod),
+        },
+      if (installmentValue != null) ...[
+        {
+          'icon': Icons.layers_rounded,
+          'label': 'Parcela',
+          'value': installmentValue,
+        },
+        {
+          'icon': Icons.shopping_bag_rounded,
+          'label': 'Valor Total da Compra',
+          'value': totalPurchaseValue ?? '',
+        },
+      ],
       if (transaction.note.trim().isNotEmpty && transaction.note != 'Standard shared transaction')
         {
           'icon': Icons.description_rounded,

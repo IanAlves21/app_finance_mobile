@@ -9,6 +9,12 @@ import 'package:app_finance_mobile/repositories/transaction_repository.dart';
 import 'package:app_finance_mobile/repositories/category_repository.dart';
 import 'package:app_finance_mobile/viewmodels/login_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/analytics_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/home_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/category_list_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/add_transaction_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/settings_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/transaction_history_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/wallets_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -56,6 +62,8 @@ void main() {
     locator.registerSingleton<ApiService>(defaultApiService);
     locator.registerSingleton<TransactionRepository>(TransactionRepository(apiService: defaultApiService));
     locator.registerSingleton<CategoryRepository>(CategoryRepository(apiService: defaultApiService));
+
+    _registerTestViewModels();
 
     SharedPreferences.setMockInitialValues({
       'cached_transactions': json.encode([
@@ -250,6 +258,7 @@ void main() {
     locator.registerSingleton<ApiService>(customApiService);
     locator.registerSingleton<TransactionRepository>(TransactionRepository(apiService: customApiService));
     locator.registerSingleton<CategoryRepository>(CategoryRepository(apiService: customApiService));
+    _registerTestViewModels();
 
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -341,6 +350,7 @@ void main() {
     locator.registerSingleton<ApiService>(customApiService);
     locator.registerSingleton<TransactionRepository>(TransactionRepository(apiService: customApiService));
     locator.registerSingleton<CategoryRepository>(CategoryRepository(apiService: customApiService));
+    _registerTestViewModels();
 
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -380,7 +390,7 @@ void main() {
 
   test('AnalyticsViewModel loads data, scales chart values, and localizes months correctly', () async {
     final mockClient = MockClient((request) async {
-      if (request.url.path.contains('/transactions/monthly-spending')) {
+      if (request.url.path.contains('/analytics/monthly-spending')) {
         return http.Response(
           json.encode([
             { 'year': 2026, 'month': 1, 'income': 1000.0, 'expense': 500.0 },
@@ -429,7 +439,7 @@ void main() {
 
   test('AnalyticsViewModel activeStartDate and activeEndDate work for Weekly and Yearly timeframes', () async {
     final mockClient = MockClient((request) async {
-      if (request.url.path.contains('/transactions/monthly-spending')) {
+      if (request.url.path.contains('/analytics/monthly-spending')) {
         if (request.url.query.contains('timeframe=YEARLY')) {
           return http.Response(
             json.encode([
@@ -473,4 +483,15 @@ void main() {
     expect(viewModel.activeStartDate, DateTime(2026, 7, 27));
     expect(viewModel.activeEndDate, DateTime(2026, 7, 27).add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59)));
   });
+}
+
+void _registerTestViewModels() {
+  locator.registerFactory<AddTransactionViewModel>(() => AddTransactionViewModel());
+  locator.registerFactory<AnalyticsViewModel>(() => AnalyticsViewModel());
+  locator.registerFactory<CategoryListViewModel>(() => CategoryListViewModel());
+  locator.registerFactory<HomeViewModel>(() => HomeViewModel());
+  locator.registerFactory<LoginViewModel>(() => LoginViewModel());
+  locator.registerFactory<SettingsViewModel>(() => SettingsViewModel());
+  locator.registerFactory<TransactionHistoryViewModel>(() => TransactionHistoryViewModel());
+  locator.registerFactory<WalletsViewModel>(() => WalletsViewModel());
 }

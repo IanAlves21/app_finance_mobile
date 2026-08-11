@@ -45,7 +45,7 @@ class SummaryCard extends StatelessWidget {
           color: cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? badgeColor : Colors.transparent,
+            color: isSelected ? iconColor : Colors.transparent,
             width: 2,
           ),
           boxShadow: [

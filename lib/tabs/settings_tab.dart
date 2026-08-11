@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../main.dart';
+import '../services/service_locator.dart';
 import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../viewmodels/settings_view_model.dart';
@@ -22,7 +23,7 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   void initState() {
     super.initState();
-    _viewModel = SettingsViewModel();
+    _viewModel = locator<SettingsViewModel>();
   }
 
   @override

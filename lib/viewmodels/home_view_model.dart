@@ -18,6 +18,10 @@ class HomeViewModel extends ChangeNotifier {
   double _income = 0.0;
   double _expenses = 0.0;
 
+  double _prevIncome = 0.0;
+  double _prevExpenses = 0.0;
+  double _prevBalance = 0.0;
+
   // Pagination states
   int _currentPage = 1;
   bool _hasMore = true;
@@ -30,6 +34,49 @@ class HomeViewModel extends ChangeNotifier {
   double get balance => _balance;
   double get income => _income;
   double get expenses => _expenses;
+
+  double get prevIncome => _prevIncome;
+  double get prevExpenses => _prevExpenses;
+  double get prevBalance => _prevBalance;
+
+  double get incomeChangePercentage {
+    if (_prevIncome == 0.0) {
+      return _income == 0.0 ? 0.0 : (_income > 0 ? 100.0 : -100.0);
+    }
+    return ((_income - _prevIncome) / _prevIncome) * 100;
+  }
+
+  double get expensesChangePercentage {
+    if (_prevExpenses == 0.0) {
+      return _expenses == 0.0 ? 0.0 : (_expenses > 0 ? 100.0 : -100.0);
+    }
+    return ((_expenses - _prevExpenses) / _prevExpenses) * 100;
+  }
+
+  double get balanceChangePercentage {
+    if (_prevBalance == 0.0) {
+      return _balance == 0.0 ? 0.0 : (_balance > 0 ? 100.0 : -100.0);
+    }
+    return ((_balance - _prevBalance) / _prevBalance.abs()) * 100;
+  }
+
+  String get incomeComparisonText {
+    final pct = incomeChangePercentage;
+    final sign = pct >= 0 ? '+' : '';
+    return '$sign${pct.toStringAsFixed(0)}%';
+  }
+
+  String get expensesComparisonText {
+    final pct = expensesChangePercentage;
+    final sign = pct >= 0 ? '+' : '';
+    return '$sign${pct.toStringAsFixed(0)}%';
+  }
+
+  String get balanceComparisonText {
+    final pct = balanceChangePercentage;
+    final sign = pct >= 0 ? '+' : '';
+    return '$sign${pct.toStringAsFixed(1)}%';
+  }
   
   int get currentPage => _currentPage;
   bool get hasMore => _hasMore;
@@ -102,6 +149,20 @@ class HomeViewModel extends ChangeNotifier {
         _income = summary['income'];
         _expenses = summary['expenses'];
         _balance = summary['balance'];
+
+        // Carrega também o resumo do mês anterior
+        final prevMonthDate = DateTime(now.year, now.month - 1, 1);
+        final firstDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month, 1);
+        final lastDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month + 1, 0, 23, 59, 59);
+
+        final prevSummary = await _transactionRepository.fetchMonthlySummary(
+          startDate: firstDayOfPrevMonth.toIso8601String(),
+          endDate: lastDayOfPrevMonth.toIso8601String(),
+        );
+
+        _prevIncome = prevSummary['income'];
+        _prevExpenses = prevSummary['expenses'];
+        _prevBalance = prevSummary['balance'];
       } on HttpException catch (e) {
         if (e.message == 'Unauthorized') {
           if (onUnauthorized != null) {

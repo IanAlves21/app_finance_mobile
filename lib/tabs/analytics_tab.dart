@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
+import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
 import '../viewmodels/analytics_view_model.dart';
 import '../widgets/shimmer_loading.dart';
@@ -27,7 +28,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
   @override
   void initState() {
     super.initState();
-    _viewModel = AnalyticsViewModel();
+    _viewModel = locator<AnalyticsViewModel>();
   }
 
   @override
@@ -95,13 +96,26 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.analytics,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.analytics,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.picture_as_pdf_rounded,
+                          color: AppColors.accentOrange,
+                          size: 26,
+                        ),
+                        onPressed: () => _selectAndGenerateReport(context),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -131,6 +145,11 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                       }
                     },
                   ),
+                  const SizedBox(height: 24),
+
+                  // Savings Rate Card
+                  _buildSavingsRateCard(context, isDark, textColor, subTextColor, cardColor),
+
                   const SizedBox(height: 32),
 
                   // Spending Division by Partner Section
@@ -455,99 +474,103 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                     ),
                                   ),
                                 )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: List.generate(
-                                    _viewModel.chartValues.length,
-                                    (index) {
-                                      final bool isActive =
-                                          _viewModel.activeBarIndex == index;
-                                      final double percentage =
-                                          _viewModel.chartValues[index];
+                              : SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: List.generate(
+                                      _viewModel.chartValues.length,
+                                      (index) {
+                                        final bool isActive =
+                                            _viewModel.activeBarIndex == index;
+                                        final double percentage =
+                                            _viewModel.chartValues[index];
 
-                                      return Expanded(
-                                        child: GestureDetector(
-                                          onTap: () =>
-                                              _viewModel.setActiveBarIndex(index),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: [
-                                              Expanded(
-                                                child: Align(
-                                                  alignment: Alignment.bottomCenter,
-                                                  child: AnimatedContainer(
-                                                    duration: const Duration(
-                                                      milliseconds: 250,
-                                                    ),
-                                                    curve: Curves.easeOutCubic,
-                                                    width: 26,
-                                                    height: 150 * percentage,
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(8),
-                                                      gradient: LinearGradient(
-                                                        colors: isActive
-                                                            ? [
-                                                                AppColors
-                                                                    .accentOrangeLight,
-                                                                AppColors
-                                                                    .accentOrange,
-                                                              ]
-                                                            : (isDark
-                                                                  ? [
-                                                                      AppColors
-                                                                          .darkBarBg,
-                                                                      AppColors
-                                                                          .darkBarFg,
-                                                                    ]
-                                                                  : [
-                                                                      AppColors
-                                                                          .slate200,
-                                                                      AppColors
-                                                                          .slate300,
-                                                                    ]),
-                                                        begin: Alignment.topCenter,
-                                                        end: Alignment.bottomCenter,
+                                        return SizedBox(
+                                          width: 58,
+                                          child: GestureDetector(
+                                            onTap: () =>
+                                                _viewModel.setActiveBarIndex(index),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              children: [
+                                                Expanded(
+                                                  child: Align(
+                                                    alignment: Alignment.bottomCenter,
+                                                    child: AnimatedContainer(
+                                                      duration: const Duration(
+                                                        milliseconds: 250,
                                                       ),
-                                                      boxShadow: isActive
-                                                          ? [
-                                                              BoxShadow(
-                                                                color: AppColors
-                                                                    .accentOrange
-                                                                    .withValues(
-                                                                      alpha: 0.3,
-                                                                    ),
-                                                                blurRadius: 8,
-                                                                offset: const Offset(
-                                                                  0,
-                                                                  4,
+                                                      curve: Curves.easeOutCubic,
+                                                      width: 26,
+                                                      height: 150 * percentage,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.circular(8),
+                                                        gradient: LinearGradient(
+                                                          colors: isActive
+                                                              ? [
+                                                                  AppColors
+                                                                      .accentOrangeLight,
+                                                                  AppColors
+                                                                      .accentOrange,
+                                                                ]
+                                                              : (isDark
+                                                                    ? [
+                                                                        AppColors
+                                                                            .darkBarBg,
+                                                                        AppColors
+                                                                            .darkBarFg,
+                                                                      ]
+                                                                    : [
+                                                                        AppColors
+                                                                            .slate200,
+                                                                        AppColors
+                                                                            .slate300,
+                                                                      ]),
+                                                          begin: Alignment.topCenter,
+                                                          end: Alignment.bottomCenter,
+                                                        ),
+                                                        boxShadow: isActive
+                                                            ? [
+                                                                BoxShadow(
+                                                                  color: AppColors
+                                                                      .accentOrange
+                                                                      .withValues(
+                                                                        alpha: 0.3,
+                                                                      ),
+                                                                  blurRadius: 8,
+                                                                  offset: const Offset(
+                                                                    0,
+                                                                    4,
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            ]
-                                                          : [],
+                                                              ]
+                                                            : [],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Text(
-                                                _viewModel.chartMonths[index],
-                                                style: TextStyle(
-                                                  color: isActive
-                                                      ? textColor
-                                                      : subTextColor,
-                                                  fontSize: 12,
-                                                  fontWeight: isActive
-                                                      ? FontWeight.bold
-                                                      : FontWeight.w600,
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  _viewModel.chartMonths[index],
+                                                  style: TextStyle(
+                                                    color: isActive
+                                                        ? textColor
+                                                        : subTextColor,
+                                                    fontSize: 12,
+                                                    fontWeight: isActive
+                                                        ? FontWeight.bold
+                                                        : FontWeight.w600,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                         ),
@@ -630,6 +653,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                       final String categoryName = cat['name'] as String;
                       final String iconStr = cat['icon'] as String;
                       final String colorStr = cat['color'] as String;
+                      final double? budgetAmount = cat['budgetAmount'] != null ? (cat['budgetAmount'] as num).toDouble() : null;
 
                       // Traduz os nomes das categorias padrão caso o locale seja pt ou en
                       String localizedName = categoryName;
@@ -642,6 +666,14 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                       } else if (categoryName.toLowerCase() == 'others' || categoryName.toLowerCase() == 'outros') {
                         localizedName = l10n.others;
                       }
+
+                      final double displayPercentage = budgetAmount != null && budgetAmount > 0
+                          ? (amount / budgetAmount)
+                          : percentage;
+
+                      final String displayAmountText = budgetAmount != null
+                          ? "${CurrencyFormatter.formatBalanceParts(amount).join()} / ${CurrencyFormatter.formatBalanceParts(budgetAmount).join()}"
+                          : CurrencyFormatter.formatBalanceParts(amount).join();
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 14.0),
@@ -661,8 +693,8 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                           },
                           child: ProgressBarCard(
                             title: localizedName,
-                            amount: CurrencyFormatter.formatBalanceParts(amount).join(),
-                            percentage: percentage,
+                            amount: displayAmountText,
+                            percentage: displayPercentage,
                             color: UIUtils.parseHexColor(colorStr),
                             icon: UIUtils.getIconData(iconStr),
                           ),
@@ -675,6 +707,228 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
           ),
         );
       },
+    );
+  }
+
+  void _showLoadingDialog(BuildContext context) {
+    final bool isPt = Localizations.localeOf(context).languageCode == 'pt';
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            backgroundColor: Theme.of(context).cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            content: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentOrange),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    isPt ? 'Gerando Relatório PDF...' : 'Generating PDF Report...',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isPt ? 'Por favor, aguarde alguns instantes.' : 'Please wait a moment.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectAndGenerateReport(BuildContext context) async {
+    final bool isPt = Localizations.localeOf(context).languageCode == 'pt';
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2025, 1, 1),
+      lastDate: DateTime(2027, 12, 31),
+      currentDate: DateTime.now(),
+      saveText: isPt ? 'Gerar' : 'Generate',
+      helpText: isPt ? 'Selecionar Período' : 'Select Period',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: AppColors.accentOrange,
+              onPrimary: Colors.white,
+              surface: isDark ? AppColors.darkCard : Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      if (!mounted) return;
+      _showLoadingDialog(context);
+      try {
+        await _viewModel.generatePdfReport(
+          startDate: picked.start,
+          endDate: picked.end,
+          onUnauthorized: () {
+            Navigator.of(context).pop(); // Fecha dialog de carregamento
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(context, '/login');
+          },
+        );
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Fecha dialog de carregamento
+      } catch (e) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Fecha dialog de carregamento
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isPt
+                  ? 'Falha ao gerar relatório PDF. Tente novamente.'
+                  : 'Failed to generate PDF report. Try again.',
+            ),
+            backgroundColor: AppColors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildSavingsRateCard(
+    BuildContext context,
+    bool isDark,
+    Color textColor,
+    Color subTextColor,
+    Color cardColor,
+  ) {
+    if (_viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.only(bottom: 8.0),
+        child: SkeletonContainer(
+          width: double.infinity,
+          height: 85,
+          borderRadius: 24,
+        ),
+      );
+    }
+
+    final double income = _viewModel.activeIncome;
+    final double savings = _viewModel.activeSavings;
+    final double rate = _viewModel.savingsRate;
+    final bool isPt = Localizations.localeOf(context).languageCode == 'pt';
+
+    final bool hasSavings = savings >= 0;
+    
+    // Configurações visuais dependendo de haver economia ou déficit
+    final Color accentColor = hasSavings ? AppColors.greenAccent : AppColors.redAccent;
+    final Color accentBg = hasSavings ? AppColors.greenBg : AppColors.redBg;
+    final IconData icon = hasSavings ? Icons.savings_rounded : Icons.trending_down_rounded;
+
+    final String titleText = isPt ? 'Taxa de Poupança' : 'Savings Rate';
+    
+    final String savingsStr = CurrencyFormatter.formatBalanceParts(savings.abs()).join();
+    final String subtitleText = hasSavings
+        ? (isPt ? 'Vocês economizaram $savingsStr' : 'You saved $savingsStr')
+        : (isPt ? 'Déficit de $savingsStr' : 'Deficit of $savingsStr');
+
+    final String percentageText = '${rate.abs().toStringAsFixed(1).replaceAll('.', ',')}%';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.20 : 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: accentBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: accentColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titleText,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitleText,
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: accentBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              percentageText,
+              style: TextStyle(
+                color: accentColor,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

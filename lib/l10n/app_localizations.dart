@@ -817,6 +817,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No transactions found'**
   String get noTransactionsFound;
+
+  /// No description provided for @monthlyBudgetLimitOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Budget Limit (Optional)'**
+  String get monthlyBudgetLimitOptional;
+
+  /// No description provided for @budgetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 500'**
+  String get budgetHint;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/transaction.dart';
@@ -96,6 +97,8 @@ class TransactionRepository {
     required String type, // 'INCOME' ou 'EXPENSE'
     required String date, // ISO string
     String? categoryId,
+    String? paymentMethod,
+    int? installments,
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -108,7 +111,9 @@ class TransactionRepository {
               'amount': amount,
               'type': type,
               'date': date,
-              'categoryId': ?categoryId,
+              if (categoryId != null) 'categoryId': categoryId,
+              if (paymentMethod != null) 'paymentMethod': paymentMethod,
+              if (installments != null) 'installments': installments,
             },
           )
           .timeout(const Duration(seconds: 5));
@@ -161,7 +166,9 @@ class TransactionRepository {
         'amount': amount,
         'type': type,
         'date': date,
-        'categoryId': ?categoryId,
+        if (categoryId != null) 'categoryId': categoryId,
+        if (paymentMethod != null) 'paymentMethod': paymentMethod,
+        if (installments != null) 'installments': installments,
       };
 
       try {
@@ -188,7 +195,8 @@ class TransactionRepository {
           'type': type,
           'amount': amount.toString(),
           'date': date,
-          'categoryId': ?categoryId,
+          if (categoryId != null) 'categoryId': categoryId,
+          if (paymentMethod != null) 'paymentMethod': paymentMethod,
           'paidBy': {'name': prefs.getString('user_name') ?? 'Me'},
           'wallet': {'name': 'Shared Wallet Account'},
           'note': 'Sincronização pendente',
@@ -234,6 +242,8 @@ class TransactionRepository {
                 'type': txMap['type'],
                 'date': txMap['date'],
                 if (txMap.containsKey('categoryId')) 'categoryId': txMap['categoryId'],
+                if (txMap.containsKey('paymentMethod')) 'paymentMethod': txMap['paymentMethod'],
+                if (txMap.containsKey('installments')) 'installments': txMap['installments'],
               })
               .timeout(const Duration(seconds: 5));
 
@@ -359,8 +369,8 @@ class TransactionRepository {
       }
 
       final response = await _apiService
-          .get('/transactions/monthly-spending?limit=$limit&timeframe=$timeframe')
-          .timeout(const Duration(seconds: 5));
+         .get('/analytics/monthly-spending?limit=$limit&timeframe=$timeframe')
+         .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -408,6 +418,40 @@ class TransactionRepository {
         }
       }
       return fallbackData;
+    }
+  }
+
+  /// Realiza o download do relatório em PDF para o período selecionado
+  Future<Uint8List> fetchReportPdf({
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      final String? token = await SecureStorageManager.readToken();
+
+      if (token != null && ApiService.isTokenExpired(token)) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      }
+
+      final response = await _apiService
+          .get('/analytics/report/pdf?startDate=$startDate&endDate=$endDate')
+          .timeout(const Duration(seconds: 10)); // 10 seconds timeout for report compilation
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else if (response.statusCode == 401) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      } else {
+        throw HttpException('Failed to generate report: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is HttpException && e.message == 'Unauthorized') {
+        rethrow;
+      }
+      debugPrint('Erro ao obter relatório PDF do servidor: $e');
+      rethrow;
     }
   }
 }

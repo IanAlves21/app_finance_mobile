@@ -8,6 +8,7 @@ import '../widgets/transaction_card.dart';
 import '../widgets/transaction_skeleton.dart';
 import '../widgets/custom_toast.dart';
 import '../viewmodels/transaction_history_view_model.dart';
+import '../services/service_locator.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -23,7 +24,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = TransactionHistoryViewModel();
+    _viewModel = locator<TransactionHistoryViewModel>();
     _scrollController.addListener(_onScroll);
     _initLoad();
   }

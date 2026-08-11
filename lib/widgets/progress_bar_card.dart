@@ -23,6 +23,11 @@ class ProgressBarCard extends StatelessWidget {
     final Color cardColor = Theme.of(context).cardColor;
     final Color textColor = Theme.of(context).colorScheme.onSurface;
 
+    final bool isBudgetExceeded = percentage > 1.0;
+    final bool isNearOrExceededLimit = percentage > 0.8;
+    final Color barColor = isNearOrExceededLimit ? AppColors.redAccent : color;
+    final double progressValue = percentage.clamp(0.0, 1.0);
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -42,19 +47,23 @@ class ProgressBarCard extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 18),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text(
-                amount,
+                '$amount (${(percentage * 100).toStringAsFixed(0)}%)',
                 style: TextStyle(
-                  color: textColor,
+                  color: isBudgetExceeded ? AppColors.redAccent : textColor,
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),
@@ -65,12 +74,12 @@ class ProgressBarCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: percentage,
+              value: progressValue,
               minHeight: 8,
               backgroundColor: isDark
                   ? AppColors.darkInterfaceColor
                   : AppColors.slate100,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
             ),
           ),
         ],

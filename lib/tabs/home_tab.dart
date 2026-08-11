@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../main.dart';
+import '../services/service_locator.dart';
 import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../utils/currency_formatter.dart';
@@ -46,7 +47,7 @@ class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-    _viewModel = HomeViewModel();
+    _viewModel = locator<HomeViewModel>();
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -298,35 +299,41 @@ class _HomeTabState extends State<HomeTab> {
                                         height: 32,
                                         child: Opacity(
                                           opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 6,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withValues(alpha: 0.08),
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(
-                                                  Icons.north_east_rounded,
-                                                  color: AppColors.greenGrowth,
-                                                  size: 14,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  '+8.2% ${l10n.vsLastMonth}',
-                                                  style: const TextStyle(
-                                                    color: AppColors.greenGrowth,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
+                                          child: () {
+                                            final bool isBalancePositive = _viewModel.balanceChangePercentage >= 0.0;
+                                            final Color balanceBadgeColor = isBalancePositive ? AppColors.greenGrowth : const Color(0xFFF87171);
+                                            final IconData balanceBadgeIcon = isBalancePositive ? Icons.north_east_rounded : Icons.south_west_rounded;
+
+                                            return Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(alpha: 0.08),
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    balanceBadgeIcon,
+                                                    color: balanceBadgeColor,
+                                                    size: 14,
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '${_viewModel.balanceComparisonText} ${l10n.vsLastMonth}',
+                                                    style: TextStyle(
+                                                      color: balanceBadgeColor,
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }(),
                                         ),
                                       ),
                                     ),
@@ -358,47 +365,59 @@ class _HomeTabState extends State<HomeTab> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              // Income Card
-                              Expanded(
-                                child: SummaryCard(
-                                  title: l10n.monthlyIncome,
-                                  value: CurrencyFormatter.formatSummaryValue(
-                                    _viewModel.income,
+                          (() {
+                            final bool isIncomePositive = _viewModel.incomeChangePercentage >= 0.0;
+                            final String incomeBadgeText = _viewModel.incomeComparisonText;
+                            final Color incomeBadgeColor = isIncomePositive ? AppColors.greenAccent : AppColors.redAccent;
+                            final Color incomeBadgeBg = isIncomePositive ? AppColors.greenBg : AppColors.redBg;
+
+                            final bool isExpenseSavings = _viewModel.expensesChangePercentage <= 0.0;
+                            final String expenseBadgeText = _viewModel.expensesComparisonText;
+                            final Color expenseBadgeColor = isExpenseSavings ? AppColors.greenAccent : AppColors.redAccent;
+                            final Color expenseBadgeBg = isExpenseSavings ? AppColors.greenBg : AppColors.redBg;
+
+                            return Row(
+                              children: [
+                                // Income Card
+                                Expanded(
+                                  child: SummaryCard(
+                                    title: l10n.monthlyIncome,
+                                    value: CurrencyFormatter.formatSummaryValue(
+                                      _viewModel.income,
+                                    ),
+                                    badgeText: incomeBadgeText,
+                                    badgeColor: incomeBadgeColor,
+                                    badgeBg: incomeBadgeBg,
+                                    icon: Icons.trending_up_rounded,
+                                    iconColor: AppColors.greenAccent,
+                                    iconBg: AppColors.greenBg,
+                                    isSelected: _activeFilter == 'INCOME',
+                                    onTap: () => setState(() => _activeFilter = _activeFilter == 'INCOME' ? null : 'INCOME'),
+                                    isLoading: _viewModel.isLoadingSummary,
                                   ),
-                                  badgeText: '+12%',
-                                  badgeColor: AppColors.greenAccent,
-                                  badgeBg: AppColors.greenBg,
-                                  icon: Icons.trending_up_rounded,
-                                  iconColor: AppColors.greenAccent,
-                                  iconBg: AppColors.greenBg,
-                                  isSelected: _activeFilter == 'INCOME',
-                                  onTap: () => setState(() => _activeFilter = _activeFilter == 'INCOME' ? null : 'INCOME'),
-                                  isLoading: _viewModel.isLoadingSummary,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              // Expense Card
-                              Expanded(
-                                child: SummaryCard(
-                                  title: l10n.monthlyExpenses,
-                                  value: CurrencyFormatter.formatSummaryValue(
-                                    _viewModel.expenses,
+                                const SizedBox(width: 12),
+                                // Expense Card
+                                Expanded(
+                                  child: SummaryCard(
+                                    title: l10n.monthlyExpenses,
+                                    value: CurrencyFormatter.formatSummaryValue(
+                                      _viewModel.expenses,
+                                    ),
+                                    badgeText: expenseBadgeText,
+                                    badgeColor: expenseBadgeColor,
+                                    badgeBg: expenseBadgeBg,
+                                    icon: Icons.trending_down_rounded,
+                                    iconColor: AppColors.redAccent,
+                                    iconBg: AppColors.redBg,
+                                    isSelected: _activeFilter == 'EXPENSE',
+                                    onTap: () => setState(() => _activeFilter = _activeFilter == 'EXPENSE' ? null : 'EXPENSE'),
+                                    isLoading: _viewModel.isLoadingSummary,
                                   ),
-                                  badgeText: '-5%',
-                                  badgeColor: AppColors.redAccent,
-                                  badgeBg: AppColors.redBg,
-                                  icon: Icons.trending_down_rounded,
-                                  iconColor: AppColors.redAccent,
-                                  iconBg: AppColors.redBg,
-                                  isSelected: _activeFilter == 'EXPENSE',
-                                  onTap: () => setState(() => _activeFilter = _activeFilter == 'EXPENSE' ? null : 'EXPENSE'),
-                                  isLoading: _viewModel.isLoadingSummary,
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+                          }()),
                           const SizedBox(height: 32),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

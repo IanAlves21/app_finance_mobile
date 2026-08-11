@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import '../services/service_locator.dart';
 import '../widgets/custom_toast.dart';
 import '../viewmodels/login_view_model.dart';
 import '../widgets/interactive_card.dart';
@@ -25,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = widget.viewModel ?? LoginViewModel();
+    _viewModel = widget.viewModel ?? locator<LoginViewModel>();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _emailFocusNode = FocusNode();

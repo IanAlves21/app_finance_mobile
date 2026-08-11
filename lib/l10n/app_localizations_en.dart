@@ -372,4 +372,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noTransactionsFound => 'No transactions found';
+
+  @override
+  String get monthlyBudgetLimitOptional => 'Monthly Budget Limit (Optional)';
+
+  @override
+  String get budgetHint => 'e.g. 500';
 }

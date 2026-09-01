@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../services/service_locator.dart';
@@ -133,9 +134,13 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                     filters: [l10n.weekly, l10n.monthly, l10n.yearly],
                     activeFilter: _viewModel.activeFilter == 'Weekly'
                         ? l10n.weekly
-                        : (_viewModel.activeFilter == 'Yearly' ? l10n.yearly : l10n.monthly),
+                        : (_viewModel.activeFilter == 'Yearly'
+                              ? l10n.yearly
+                              : l10n.monthly),
                     onFilterSelected: (filter) {
-                      final String langCode = Localizations.localeOf(context).languageCode;
+                      final String langCode = Localizations.localeOf(
+                        context,
+                      ).languageCode;
                       if (filter == l10n.weekly) {
                         _viewModel.setActiveFilter('Weekly', locale: langCode);
                       } else if (filter == l10n.monthly) {
@@ -148,7 +153,13 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                   const SizedBox(height: 24),
 
                   // Savings Rate Card
-                  _buildSavingsRateCard(context, isDark, textColor, subTextColor, cardColor),
+                  _buildSavingsRateCard(
+                    context,
+                    isDark,
+                    textColor,
+                    subTextColor,
+                    cardColor,
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -192,26 +203,35 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                 height: 100,
                                 child: DonutChart(
                                   strokeWidth: 12,
-                                  sections: _viewModel.activeUserBreakdown.asMap().entries.map((entry) {
-                                    final int index = entry.key;
-                                    final Map<String, dynamic> uData = entry.value;
-                                    final double percentage = (uData['percentage'] as num).toDouble();
-                                    
-                                    final List<Color> partnerColors = [
-                                      AppColors.accentViolet,
-                                      AppColors.accentOrange,
-                                      AppColors.greenAccent,
-                                      AppColors.purpleAccent,
-                                    ];
-                                    return DonutChartSection(
-                                      percentage: percentage,
-                                      color: partnerColors[index % partnerColors.length],
-                                    );
-                                  }).toList(),
+                                  sections: _viewModel.activeUserBreakdown
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                        final int index = entry.key;
+                                        final Map<String, dynamic> uData =
+                                            entry.value;
+                                        final double percentage =
+                                            (uData['percentage'] as num)
+                                                .toDouble();
+
+                                        final List<Color> partnerColors = [
+                                          AppColors.accentViolet,
+                                          AppColors.accentOrange,
+                                          AppColors.greenAccent,
+                                          AppColors.purpleAccent,
+                                        ];
+                                        return DonutChartSection(
+                                          percentage: percentage,
+                                          color:
+                                              partnerColors[index %
+                                                  partnerColors.length],
+                                        );
+                                      })
+                                      .toList(),
                                 ),
                               ),
                         const SizedBox(width: 24),
-                        
+
                         // Partners spending breakdown list on the right
                         Expanded(
                           child: Column(
@@ -220,103 +240,150 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                 ? List.generate(
                                     2,
                                     (index) => const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 6.0),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 6.0,
+                                      ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
-                                              SkeletonContainer(width: 70, height: 12, borderRadius: 4),
+                                              SkeletonContainer(
+                                                width: 70,
+                                                height: 12,
+                                                borderRadius: 4,
+                                              ),
                                               Spacer(),
-                                              SkeletonContainer(width: 50, height: 12, borderRadius: 4),
+                                              SkeletonContainer(
+                                                width: 50,
+                                                height: 12,
+                                                borderRadius: 4,
+                                              ),
                                             ],
                                           ),
                                           SizedBox(height: 6),
-                                          SkeletonContainer(width: double.infinity, height: 6, borderRadius: 3),
+                                          SkeletonContainer(
+                                            width: double.infinity,
+                                            height: 6,
+                                            borderRadius: 3,
+                                          ),
                                         ],
                                       ),
                                     ),
                                   )
                                 : (_viewModel.activeUserBreakdown.isEmpty
-                                    ? [
-                                        Text(
-                                          Localizations.localeOf(context).languageCode == 'pt'
-                                              ? 'Nenhum lançamento registrado'
-                                              : 'No entries registered',
-                                          style: TextStyle(
-                                            color: subTextColor,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
+                                      ? [
+                                          Text(
+                                            Localizations.localeOf(
+                                                      context,
+                                                    ).languageCode ==
+                                                    'pt'
+                                                ? 'Nenhum lançamento registrado'
+                                                : 'No entries registered',
+                                            style: TextStyle(
+                                              color: subTextColor,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
-                                        )
-                                      ]
-                                    : _viewModel.activeUserBreakdown.asMap().entries.map((entry) {
-                                        final int index = entry.key;
-                                        final Map<String, dynamic> uData = entry.value;
+                                        ]
+                                      : _viewModel.activeUserBreakdown
+                                            .asMap()
+                                            .entries
+                                            .map((entry) {
+                                              final int index = entry.key;
+                                              final Map<String, dynamic> uData =
+                                                  entry.value;
 
-                                        final String name = uData['name'] as String;
-                                        final double amount = (uData['amount'] as num).toDouble();
-                                        final double percentage = (uData['percentage'] as num).toDouble();
+                                              final String name =
+                                                  uData['name'] as String;
+                                              final double amount =
+                                                  (uData['amount'] as num)
+                                                      .toDouble();
+                                              final double percentage =
+                                                  (uData['percentage'] as num)
+                                                      .toDouble();
 
-                                        final List<Color> partnerColors = [
-                                          AppColors.accentViolet,
-                                          AppColors.accentOrange,
-                                          AppColors.greenAccent,
-                                          AppColors.purpleAccent,
-                                        ];
-                                        final Color barColor = partnerColors[index % partnerColors.length];
+                                              final List<Color> partnerColors =
+                                                  [
+                                                    AppColors.accentViolet,
+                                                    AppColors.accentOrange,
+                                                    AppColors.greenAccent,
+                                                    AppColors.purpleAccent,
+                                                  ];
+                                              final Color barColor =
+                                                  partnerColors[index %
+                                                      partnerColors.length];
 
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    width: 8,
-                                                    height: 8,
-                                                    decoration: BoxDecoration(
-                                                      color: barColor,
-                                                      shape: BoxShape.circle,
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 8.0,
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Expanded(
-                                                    child: Text(
-                                                      name,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          width: 8,
+                                                          height: 8,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                color: barColor,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 6,
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            name,
+                                                            style: TextStyle(
+                                                              color: textColor,
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          '${(percentage * 100).toStringAsFixed(0)}%',
+                                                          style: TextStyle(
+                                                            color: textColor,
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      CurrencyFormatter.formatBalanceParts(
+                                                        amount,
+                                                      ).join(),
                                                       style: TextStyle(
-                                                        color: textColor,
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.bold,
+                                                        color: subTextColor,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
                                                     ),
-                                                  ),
-                                                  Text(
-                                                    '${(percentage * 100).toStringAsFixed(0)}%',
-                                                    style: TextStyle(
-                                                      color: textColor,
-                                                      fontSize: 13,
-                                                      fontWeight: FontWeight.w800,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                CurrencyFormatter.formatBalanceParts(amount).join(),
-                                                style: TextStyle(
-                                                  color: subTextColor,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
+                                                  ],
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList()),
+                                              );
+                                            })
+                                            .toList()),
                           ),
                         ),
                       ],
@@ -363,7 +430,9 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                 const SizedBox(height: 4),
                                 _viewModel.isLoading
                                     ? const Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 4.0),
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 4.0,
+                                        ),
                                         child: SkeletonContainer(
                                           width: 120,
                                           height: 24,
@@ -372,9 +441,10 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                       )
                                     : RichText(
                                         text: TextSpan(
-                                          text: CurrencyFormatter.formatBalanceParts(
-                                            _viewModel.activeExpense,
-                                          )[0],
+                                          text:
+                                              CurrencyFormatter.formatBalanceParts(
+                                                _viewModel.activeExpense,
+                                              )[0],
                                           style: TextStyle(
                                             color: textColor,
                                             fontSize: 24,
@@ -382,9 +452,10 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                           ),
                                           children: [
                                             TextSpan(
-                                              text: CurrencyFormatter.formatBalanceParts(
-                                                _viewModel.activeExpense,
-                                              )[1],
+                                              text:
+                                                  CurrencyFormatter.formatBalanceParts(
+                                                    _viewModel.activeExpense,
+                                                  )[1],
                                               style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w700,
@@ -398,16 +469,24 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                             if (!_viewModel.isLoading)
                               (() {
                                 final comparison = _viewModel.activeComparison;
-                                final bool isNeutral = comparison['isNeutral'] == true;
-                                final bool isIncrease = comparison['isIncrease'] == true;
+                                final bool isNeutral =
+                                    comparison['isNeutral'] == true;
+                                final bool isIncrease =
+                                    comparison['isIncrease'] == true;
 
                                 final Color bg = isNeutral
-                                    ? (isDark ? AppColors.darkInterfaceColor : AppColors.slate100)
-                                    : (isIncrease ? AppColors.redBg : AppColors.greenBg);
+                                    ? (isDark
+                                          ? AppColors.darkInterfaceColor
+                                          : AppColors.slate100)
+                                    : (isIncrease
+                                          ? AppColors.redBg
+                                          : AppColors.greenBg);
 
                                 final Color fg = isNeutral
                                     ? subTextColor
-                                    : (isIncrease ? AppColors.redAccent : AppColors.greenAccent);
+                                    : (isIncrease
+                                          ? AppColors.redAccent
+                                          : AppColors.greenAccent);
 
                                 return Container(
                                   padding: const EdgeInsets.symmetric(
@@ -447,15 +526,19 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                           height: 180,
                           child: _viewModel.isLoading
                               ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: List.generate(
                                     6,
                                     (index) => const Expanded(
                                       child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10.0,
+                                        ),
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
                                           children: [
                                             SkeletonContainer(
                                               width: 26,
@@ -479,98 +562,105 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                                   physics: const BouncingScrollPhysics(),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: List.generate(
-                                      _viewModel.chartValues.length,
-                                      (index) {
-                                        final bool isActive =
-                                            _viewModel.activeBarIndex == index;
-                                        final double percentage =
-                                            _viewModel.chartValues[index];
+                                    children: List.generate(_viewModel.chartValues.length, (
+                                      index,
+                                    ) {
+                                      final bool isActive =
+                                          _viewModel.activeBarIndex == index;
+                                      final double percentage =
+                                          _viewModel.chartValues[index];
 
-                                        return SizedBox(
-                                          width: 58,
-                                          child: GestureDetector(
-                                            onTap: () =>
-                                                _viewModel.setActiveBarIndex(index),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.end,
-                                              children: [
-                                                Expanded(
-                                                  child: Align(
-                                                    alignment: Alignment.bottomCenter,
-                                                    child: AnimatedContainer(
-                                                      duration: const Duration(
-                                                        milliseconds: 250,
-                                                      ),
-                                                      curve: Curves.easeOutCubic,
-                                                      width: 26,
-                                                      height: 150 * percentage,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(8),
-                                                        gradient: LinearGradient(
-                                                          colors: isActive
-                                                              ? [
-                                                                  AppColors
-                                                                      .accentOrangeLight,
-                                                                  AppColors
-                                                                      .accentOrange,
-                                                                ]
-                                                              : (isDark
-                                                                    ? [
-                                                                        AppColors
-                                                                            .darkBarBg,
-                                                                        AppColors
-                                                                            .darkBarFg,
-                                                                      ]
-                                                                    : [
-                                                                        AppColors
-                                                                            .slate200,
-                                                                        AppColors
-                                                                            .slate300,
-                                                                      ]),
-                                                          begin: Alignment.topCenter,
-                                                          end: Alignment.bottomCenter,
-                                                        ),
-                                                        boxShadow: isActive
+                                      return SizedBox(
+                                        width: 58,
+                                        child: GestureDetector(
+                                          onTap: () => _viewModel
+                                              .setActiveBarIndex(index),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Expanded(
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.bottomCenter,
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 250,
+                                                    ),
+                                                    curve: Curves.easeOutCubic,
+                                                    width: 26,
+                                                    height: 150 * percentage,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      gradient: LinearGradient(
+                                                        colors: isActive
                                                             ? [
-                                                                BoxShadow(
-                                                                  color: AppColors
-                                                                      .accentOrange
-                                                                      .withValues(
-                                                                        alpha: 0.3,
-                                                                      ),
-                                                                  blurRadius: 8,
-                                                                  offset: const Offset(
-                                                                    0,
-                                                                    4,
-                                                                  ),
-                                                                ),
+                                                                AppColors
+                                                                    .accentOrangeLight,
+                                                                AppColors
+                                                                    .accentOrange,
                                                               ]
-                                                            : [],
+                                                            : (isDark
+                                                                  ? [
+                                                                      AppColors
+                                                                          .darkBarBg,
+                                                                      AppColors
+                                                                          .darkBarFg,
+                                                                    ]
+                                                                  : [
+                                                                      AppColors
+                                                                          .slate200,
+                                                                      AppColors
+                                                                          .slate300,
+                                                                    ]),
+                                                        begin:
+                                                            Alignment.topCenter,
+                                                        end: Alignment
+                                                            .bottomCenter,
                                                       ),
+                                                      boxShadow: isActive
+                                                          ? [
+                                                              BoxShadow(
+                                                                color: AppColors
+                                                                    .accentOrange
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    ),
+                                                                blurRadius: 8,
+                                                                offset:
+                                                                    const Offset(
+                                                                      0,
+                                                                      4,
+                                                                    ),
+                                                              ),
+                                                            ]
+                                                          : [],
                                                     ),
                                                   ),
                                                 ),
-                                                const SizedBox(height: 10),
-                                                Text(
-                                                  _viewModel.chartMonths[index],
-                                                  style: TextStyle(
-                                                    color: isActive
-                                                        ? textColor
-                                                        : subTextColor,
-                                                    fontSize: 12,
-                                                    fontWeight: isActive
-                                                        ? FontWeight.bold
-                                                        : FontWeight.w600,
-                                                  ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                _viewModel.chartMonths[index],
+                                                style: TextStyle(
+                                                  color: isActive
+                                                      ? textColor
+                                                      : subTextColor,
+                                                  fontSize: 12,
+                                                  fontWeight: isActive
+                                                      ? FontWeight.bold
+                                                      : FontWeight.w600,
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
-                                        );
-                                      },
-                                    ),
+                                        ),
+                                      );
+                                    }),
                                   ),
                                 ),
                         ),
@@ -605,15 +695,31 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                             children: [
                               Row(
                                 children: [
-                                  SkeletonContainer(width: 18, height: 18, borderRadius: 4),
+                                  SkeletonContainer(
+                                    width: 18,
+                                    height: 18,
+                                    borderRadius: 4,
+                                  ),
                                   SizedBox(width: 8),
-                                  SkeletonContainer(width: 100, height: 14, borderRadius: 4),
+                                  SkeletonContainer(
+                                    width: 100,
+                                    height: 14,
+                                    borderRadius: 4,
+                                  ),
                                   Spacer(),
-                                  SkeletonContainer(width: 70, height: 14, borderRadius: 4),
+                                  SkeletonContainer(
+                                    width: 70,
+                                    height: 14,
+                                    borderRadius: 4,
+                                  ),
                                 ],
                               ),
                               SizedBox(height: 12),
-                              SkeletonContainer(width: double.infinity, height: 8, borderRadius: 4),
+                              SkeletonContainer(
+                                width: double.infinity,
+                                height: 8,
+                                borderRadius: 4,
+                              ),
                             ],
                           ),
                         ),
@@ -633,7 +739,8 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              Localizations.localeOf(context).languageCode == 'pt'
+                              Localizations.localeOf(context).languageCode ==
+                                      'pt'
                                   ? 'Nenhum gasto registrado neste período'
                                   : 'No spending registered in this period',
                               style: TextStyle(
@@ -649,25 +756,36 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                   else
                     ..._viewModel.activeCategories.map((cat) {
                       final double amount = (cat['amount'] as num).toDouble();
-                      final double percentage = (cat['percentage'] as num).toDouble();
+                      final double percentage = (cat['percentage'] as num)
+                          .toDouble();
                       final String categoryName = cat['name'] as String;
                       final String iconStr = cat['icon'] as String;
                       final String colorStr = cat['color'] as String;
-                      final double? budgetAmount = cat['budgetAmount'] != null ? (cat['budgetAmount'] as num).toDouble() : null;
+                      final double? budgetAmount = cat['budgetAmount'] != null
+                          ? (cat['budgetAmount'] as num).toDouble()
+                          : null;
 
                       // Traduz os nomes das categorias padrão caso o locale seja pt ou en
                       String localizedName = categoryName;
-                      if (categoryName.toLowerCase() == 'shopping' || categoryName.toLowerCase() == 'compras') {
+                      if (categoryName.toLowerCase() == 'shopping' ||
+                          categoryName.toLowerCase() == 'compras') {
                         localizedName = l10n.shopping;
-                      } else if (categoryName.toLowerCase() == 'food & dining' || categoryName.toLowerCase() == 'comida & jantar' || categoryName.toLowerCase() == 'comida') {
+                      } else if (categoryName.toLowerCase() ==
+                              'food & dining' ||
+                          categoryName.toLowerCase() == 'comida & jantar' ||
+                          categoryName.toLowerCase() == 'comida') {
                         localizedName = l10n.foodDining;
-                      } else if (categoryName.toLowerCase() == 'transportation' || categoryName.toLowerCase() == 'transporte') {
+                      } else if (categoryName.toLowerCase() ==
+                              'transportation' ||
+                          categoryName.toLowerCase() == 'transporte') {
                         localizedName = l10n.transportation;
-                      } else if (categoryName.toLowerCase() == 'others' || categoryName.toLowerCase() == 'outros') {
+                      } else if (categoryName.toLowerCase() == 'others' ||
+                          categoryName.toLowerCase() == 'outros') {
                         localizedName = l10n.others;
                       }
 
-                      final double displayPercentage = budgetAmount != null && budgetAmount > 0
+                      final double displayPercentage =
+                          budgetAmount != null && budgetAmount > 0
                           ? (amount / budgetAmount)
                           : percentage;
 
@@ -683,12 +801,13 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                               context: context,
                               isScrollControlled: true,
                               backgroundColor: Colors.transparent,
-                              builder: (context) => CategoryTransactionsBottomSheet(
-                                categoryId: cat['id'] as String,
-                                categoryName: localizedName,
-                                startDate: _viewModel.activeStartDate,
-                                endDate: _viewModel.activeEndDate,
-                              ),
+                              builder: (context) =>
+                                  CategoryTransactionsBottomSheet(
+                                    categoryId: cat['id'] as String,
+                                    categoryName: localizedName,
+                                    startDate: _viewModel.activeStartDate,
+                                    endDate: _viewModel.activeEndDate,
+                                  ),
                             );
                           },
                           child: ProgressBarCard(
@@ -724,16 +843,23 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
               borderRadius: BorderRadius.circular(20),
             ),
             content: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 8.0,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentOrange),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.accentOrange,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    isPt ? 'Gerando Relatório PDF...' : 'Generating PDF Report...',
+                    isPt
+                        ? 'Gerando Relatório PDF...'
+                        : 'Generating PDF Report...',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
@@ -742,9 +868,13 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isPt ? 'Por favor, aguarde alguns instantes.' : 'Please wait a moment.',
+                    isPt
+                        ? 'Por favor, aguarde alguns instantes.'
+                        : 'Please wait a moment.',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 12,
                     ),
                   ),
@@ -761,56 +891,73 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
     final bool isPt = Localizations.localeOf(context).languageCode == 'pt';
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final DateTimeRange? picked = await showDateRangePicker(
+    await showGeneralDialog<DateTimeRange>(
       context: context,
-      firstDate: DateTime(2025, 1, 1),
-      lastDate: DateTime(2027, 12, 31),
-      currentDate: DateTime.now(),
-      saveText: isPt ? 'Gerar' : 'Generate',
-      helpText: isPt ? 'Selecionar Período' : 'Select Period',
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppColors.accentOrange,
-              onPrimary: Colors.white,
-              surface: isDark ? AppColors.darkCard : Colors.white,
-            ),
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black.withValues(alpha: isDark ? 0.6 : 0.4),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.center,
+          child: CustomDateRangePicker(
+            minimumDate: DateTime(2025, 1, 1),
+            maximumDate: DateTime(2027, 12, 31),
+            backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+            primaryColor: AppColors.accentOrange,
+            onApplyClick: (start, end) {
+              Future.delayed(const Duration(milliseconds: 300), () {
+                _generateReportForRange(context, start, end, isPt);
+              });
+            },
+            onCancelClick: () {
+              // Handled internally by CustomDateRangePicker
+            },
           ),
-          child: child!,
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
     );
+  }
 
-    if (picked != null) {
+  Future<void> _generateReportForRange(
+    BuildContext context,
+    DateTime start,
+    DateTime end,
+    bool isPt,
+  ) async {
+    if (!mounted) return;
+    _showLoadingDialog(context);
+    try {
+      await _viewModel.generatePdfReport(
+        startDate: start,
+        endDate: end,
+        onUnauthorized: () {
+          Navigator.of(context).pop(); // Fecha dialog de carregamento
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/login');
+        },
+      );
       if (!mounted) return;
-      _showLoadingDialog(context);
-      try {
-        await _viewModel.generatePdfReport(
-          startDate: picked.start,
-          endDate: picked.end,
-          onUnauthorized: () {
-            Navigator.of(context).pop(); // Fecha dialog de carregamento
-            if (!mounted) return;
-            Navigator.pushReplacementNamed(context, '/login');
-          },
-        );
-        if (!mounted) return;
-        Navigator.of(context).pop(); // Fecha dialog de carregamento
-      } catch (e) {
-        if (!mounted) return;
-        Navigator.of(context).pop(); // Fecha dialog de carregamento
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isPt
-                  ? 'Falha ao gerar relatório PDF. Tente novamente.'
-                  : 'Failed to generate PDF report. Try again.',
-            ),
-            backgroundColor: AppColors.redAccent,
+      Navigator.of(context).pop(); // Fecha dialog de carregamento
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Fecha dialog de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isPt
+                ? 'Falha ao gerar relatório PDF. Tente novamente.'
+                : 'Failed to generate PDF report. Try again.',
           ),
-        );
-      }
+          backgroundColor: AppColors.redAccent,
+        ),
+      );
     }
   }
 
@@ -832,26 +979,32 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
       );
     }
 
-    final double income = _viewModel.activeIncome;
     final double savings = _viewModel.activeSavings;
     final double rate = _viewModel.savingsRate;
     final bool isPt = Localizations.localeOf(context).languageCode == 'pt';
 
     final bool hasSavings = savings >= 0;
-    
+
     // Configurações visuais dependendo de haver economia ou déficit
-    final Color accentColor = hasSavings ? AppColors.greenAccent : AppColors.redAccent;
+    final Color accentColor = hasSavings
+        ? AppColors.greenAccent
+        : AppColors.redAccent;
     final Color accentBg = hasSavings ? AppColors.greenBg : AppColors.redBg;
-    final IconData icon = hasSavings ? Icons.savings_rounded : Icons.trending_down_rounded;
+    final IconData icon = hasSavings
+        ? Icons.savings_rounded
+        : Icons.trending_down_rounded;
 
     final String titleText = isPt ? 'Taxa de Poupança' : 'Savings Rate';
-    
-    final String savingsStr = CurrencyFormatter.formatBalanceParts(savings.abs()).join();
+
+    final String savingsStr = CurrencyFormatter.formatBalanceParts(
+      savings.abs(),
+    ).join();
     final String subtitleText = hasSavings
         ? (isPt ? 'Vocês economizaram $savingsStr' : 'You saved $savingsStr')
         : (isPt ? 'Déficit de $savingsStr' : 'Deficit of $savingsStr');
 
-    final String percentageText = '${rate.abs().toStringAsFixed(1).replaceAll('.', ',')}%';
+    final String percentageText =
+        '${rate.abs().toStringAsFixed(1).replaceAll('.', ',')}%';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -871,15 +1024,8 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
           Container(
             width: 44,
             height: 44,
-            decoration: BoxDecoration(
-              color: accentBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: accentColor,
-              size: 20,
-            ),
+            decoration: BoxDecoration(color: accentBg, shape: BoxShape.circle),
+            child: Icon(icon, color: accentColor, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(

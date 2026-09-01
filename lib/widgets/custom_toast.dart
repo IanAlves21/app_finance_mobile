@@ -10,7 +10,11 @@ class CustomToast {
     _show(context, message, isError: false);
   }
 
-  static void _show(BuildContext context, String message, {required bool isError}) {
+  static void _show(
+    BuildContext context,
+    String message, {
+    required bool isError,
+  }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -22,12 +26,22 @@ class CustomToast {
         : (isDark ? const Color(0xFF101B15) : const Color(0xFFF2FDF5));
 
     final Color borderColor = isError
-        ? (isDark ? AppColors.redAccent.withValues(alpha: 0.4) : const Color(0xFFFEE2E2))
-        : (isDark ? AppColors.greenAccent.withValues(alpha: 0.4) : const Color(0xFFDCFCE7));
+        ? (isDark
+              ? AppColors.redAccent.withValues(alpha: 0.4)
+              : const Color(0xFFFEE2E2))
+        : (isDark
+              ? AppColors.greenAccent.withValues(alpha: 0.4)
+              : const Color(0xFFDCFCE7));
 
-    final Color iconColor = isError ? AppColors.redAccent : AppColors.greenAccent;
-    final IconData icon = isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded;
-    final Color textColor = isDark ? const Color(0xFFF1F5F9) : AppColors.darkSlate;
+    final Color iconColor = isError
+        ? AppColors.redAccent
+        : AppColors.greenAccent;
+    final IconData icon = isError
+        ? Icons.error_outline_rounded
+        : Icons.check_circle_outline_rounded;
+    final Color textColor = isDark
+        ? const Color(0xFFF1F5F9)
+        : AppColors.darkSlate;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

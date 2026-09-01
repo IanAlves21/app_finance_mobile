@@ -5,10 +5,7 @@ class DonutChartSection {
   final double percentage; // Valor entre 0.0 e 1.0
   final Color color;
 
-  DonutChartSection({
-    required this.percentage,
-    required this.color,
-  });
+  DonutChartSection({required this.percentage, required this.color});
 }
 
 class DonutChart extends StatelessWidget {
@@ -25,10 +22,7 @@ class DonutChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: const Size(100, 100),
-      painter: _DonutChartPainter(
-        sections: sections,
-        strokeWidth: strokeWidth,
-      ),
+      painter: _DonutChartPainter(sections: sections, strokeWidth: strokeWidth),
     );
   }
 }
@@ -37,21 +31,18 @@ class _DonutChartPainter extends CustomPainter {
   final List<DonutChartSection> sections;
   final double strokeWidth;
 
-  _DonutChartPainter({
-    required this.sections,
-    required this.strokeWidth,
-  });
+  _DonutChartPainter({required this.sections, required this.strokeWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
     final double radius = math.min(size.width, size.height) / 2;
     final Offset center = Offset(size.width / 2, size.height / 2);
-    
+
     final Paint bgPaint = Paint()
       ..color = Colors.grey.withValues(alpha: 0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
-      
+
     // Desenha o trilho circular de fundo
     canvas.drawCircle(center, radius - strokeWidth / 2, bgPaint);
 
@@ -61,9 +52,9 @@ class _DonutChartPainter extends CustomPainter {
 
     for (final section in sections) {
       if (section.percentage <= 0) continue;
-      
+
       final double sweepAngle = section.percentage * 2 * math.pi;
-      
+
       final Paint sectionPaint = Paint()
         ..color = section.color
         ..style = PaintingStyle.stroke
@@ -71,7 +62,9 @@ class _DonutChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round;
 
       // Espaço/gap sutil entre as fatias se houver mais de uma
-      final double finalSweep = sections.length > 1 ? sweepAngle - 0.05 : sweepAngle;
+      final double finalSweep = sections.length > 1
+          ? sweepAngle - 0.05
+          : sweepAngle;
 
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius - strokeWidth / 2),
@@ -87,6 +80,7 @@ class _DonutChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DonutChartPainter oldDelegate) {
-    return oldDelegate.sections != sections || oldDelegate.strokeWidth != strokeWidth;
+    return oldDelegate.sections != sections ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }

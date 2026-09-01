@@ -4,7 +4,8 @@ import '../repositories/transaction_repository.dart';
 import '../services/service_locator.dart';
 
 class TransactionHistoryViewModel extends ChangeNotifier {
-  final TransactionRepository _transactionRepository = locator<TransactionRepository>();
+  final TransactionRepository _transactionRepository =
+      locator<TransactionRepository>();
   final List<Transaction> _transactions = [];
   bool _isLoading = true;
   bool _isLoadMoreLoading = false;

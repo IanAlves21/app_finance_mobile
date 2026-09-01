@@ -42,12 +42,19 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
   Future<void> _loadExistingBudget() async {
     try {
       final now = DateTime.now();
-      final budgets = await locator<BudgetRepository>().fetchBudgets(now.month, now.year);
-      final match = budgets.where((b) => b.categoryId == widget.categoryToEdit!.id);
+      final budgets = await locator<BudgetRepository>().fetchBudgets(
+        now.month,
+        now.year,
+      );
+      final match = budgets.where(
+        (b) => b.categoryId == widget.categoryToEdit!.id,
+      );
       if (match.isNotEmpty) {
         if (mounted) {
           setState(() {
-            _budgetController.text = match.first.amount.toStringAsFixed(0).replaceAll('.00', '');
+            _budgetController.text = match.first.amount
+                .toStringAsFixed(0)
+                .replaceAll('.00', '');
           });
         }
       }
@@ -127,8 +134,11 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
       }
 
       // Se for uma despesa e o limite do orçamento estiver preenchido, salva o orçamento
-      if (_selectedType == 'EXPENSE' && _budgetController.text.trim().isNotEmpty) {
-        final double? budgetLimit = double.tryParse(_budgetController.text.trim());
+      if (_selectedType == 'EXPENSE' &&
+          _budgetController.text.trim().isNotEmpty) {
+        final double? budgetLimit = double.tryParse(
+          _budgetController.text.trim(),
+        );
         if (budgetLimit != null && budgetLimit > 0) {
           final now = DateTime.now();
           await locator<BudgetRepository>().upsertBudget(
@@ -169,11 +179,15 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
 
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99);
+    final Color subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF6B7A99);
     final Color cardColor = theme.cardColor;
-    final Color inputFillColor = isDark ? const Color(0xFF222E45) : const Color(0xFFF1F5F9);
+    final Color inputFillColor = isDark
+        ? const Color(0xFF222E45)
+        : const Color(0xFFF1F5F9);
 
     final l10n = AppLocalizations.of(context)!;
 
@@ -202,7 +216,9 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF222E45) : const Color(0xFFE2E8F0),
+                  color: isDark
+                      ? const Color(0xFF222E45)
+                      : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
@@ -211,7 +227,9 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
 
             // Form Title
             Text(
-              widget.categoryToEdit != null ? l10n.editCategory : l10n.newCategory,
+              widget.categoryToEdit != null
+                  ? l10n.editCategory
+                  : l10n.newCategory,
               style: TextStyle(
                 color: textColor,
                 fontSize: 18,
@@ -242,7 +260,9 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                       child: Text(
                         l10n.expense.toUpperCase(),
                         style: TextStyle(
-                          color: _selectedType == 'EXPENSE' ? Colors.white : subTextColor,
+                          color: _selectedType == 'EXPENSE'
+                              ? Colors.white
+                              : subTextColor,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -269,7 +289,9 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                       child: Text(
                         l10n.income.toUpperCase(),
                         style: TextStyle(
-                          color: _selectedType == 'INCOME' ? Colors.white : subTextColor,
+                          color: _selectedType == 'INCOME'
+                              ? Colors.white
+                              : subTextColor,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -284,7 +306,11 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
             // Category Name Field
             Text(
               l10n.categoryName,
-              style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -292,14 +318,19 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: l10n.categoryNameHint,
-                hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                  color: subTextColor.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: inputFillColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
 
@@ -307,23 +338,34 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
               const SizedBox(height: 18),
               Text(
                 l10n.monthlyBudgetLimitOptional,
-                style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: subTextColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 6),
               TextField(
                 controller: _budgetController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
                   hintText: l10n.budgetHint,
-                  hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
+                  hintStyle: TextStyle(
+                    color: subTextColor.withValues(alpha: 0.5),
+                  ),
                   filled: true,
                   fillColor: inputFillColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ],
@@ -332,7 +374,11 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
             // Icon Picker
             Text(
               l10n.categoryIconLabel,
-              style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
             SingleChildScrollView(
@@ -349,15 +395,19 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isSelected ? UIUtils.parseHexColor(_selectedColor) : inputFillColor,
+                          color: isSelected
+                              ? UIUtils.parseHexColor(_selectedColor)
+                              : inputFillColor,
                           shape: BoxShape.circle,
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: UIUtils.parseHexColor(_selectedColor).withValues(alpha: 0.3),
+                                    color: UIUtils.parseHexColor(
+                                      _selectedColor,
+                                    ).withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
-                                  )
+                                  ),
                                 ]
                               : null,
                         ),
@@ -377,7 +427,11 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
             // Color Picker
             Text(
               l10n.categoryColorLabel,
-              style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
             Row(
@@ -395,7 +449,9 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
                       shape: BoxShape.circle,
                       border: isSelected
                           ? Border.all(
-                              color: isDark ? Colors.white : AppColors.darkSlate,
+                              color: isDark
+                                  ? Colors.white
+                                  : AppColors.darkSlate,
                               width: 3,
                             )
                           : null,

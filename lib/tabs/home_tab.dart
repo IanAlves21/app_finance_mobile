@@ -66,7 +66,10 @@ class _HomeTabState extends State<HomeTab> {
               if (!mounted) return;
               final localizations = AppLocalizations.of(context);
               if (localizations != null) {
-                CustomToast.showError(context, localizations.sessionExpiredMessage);
+                CustomToast.showError(
+                  context,
+                  localizations.sessionExpiredMessage,
+                );
               }
             },
           );
@@ -110,428 +113,521 @@ class _HomeTabState extends State<HomeTab> {
           isLoading: _viewModel.isLoading,
           child: AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle.light.copyWith(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-            statusBarBrightness: Brightness.dark,
-            systemNavigationBarColor: isDark
-                ? AppColors.darkCard
-                : Colors.white,
-            systemNavigationBarIconBrightness: isDark
-                ? Brightness.light
-                : Brightness.dark,
-            systemNavigationBarContrastEnforced: false,
-          ),
-          child: Column(
-            children: [
-              // ── DYNAMIC COLLAPSING GRADIENT HEADER (Isolated rebuilds via ValueListenableBuilder) ──
-              ValueListenableBuilder<double>(
-                valueListenable: _scrollOffsetNotifier,
-                builder: (context, scrollOffset, _) {
-                  final double t = scrollOffset / 150.0;
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
+              statusBarBrightness: Brightness.dark,
+              systemNavigationBarColor: isDark
+                  ? AppColors.darkCard
+                  : Colors.white,
+              systemNavigationBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              systemNavigationBarContrastEnforced: false,
+            ),
+            child: Column(
+              children: [
+                // ── DYNAMIC COLLAPSING GRADIENT HEADER (Isolated rebuilds via ValueListenableBuilder) ──
+                ValueListenableBuilder<double>(
+                  valueListenable: _scrollOffsetNotifier,
+                  builder: (context, scrollOffset, _) {
+                    final double t = scrollOffset / 150.0;
 
-                  return Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.primarySeed, AppColors.darkSlate],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                    return Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primarySeed, AppColors.darkSlate],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(32),
+                          bottomRight: Radius.circular(32),
+                        ),
                       ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
+                      padding: EdgeInsets.only(
+                        top: 60.0 - (t * 15.0),
+                        left: 24,
+                        right: 24,
+                        bottom: 36.0 - (t * 26.0),
                       ),
-                    ),
-                    padding: EdgeInsets.only(
-                      top: 60.0 - (t * 15.0),
-                      left: 24,
-                      right: 24,
-                      bottom: 36.0 - (t * 26.0),
-                    ),
-                    child: Column(
-                      children: [
-                        // Greeting row & avatars
-                        SizedBox(
-                          height: 48.0 * (1.0 - t),
-                          child: SingleChildScrollView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            child: SizedBox(
-                              height: 48,
-                              child: Opacity(
-                                opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _viewModel.isLoadingSummary
-                                        ? const Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SkeletonContainer(width: 80, height: 12, borderRadius: 4),
-                                              SizedBox(height: 6),
-                                              SkeletonContainer(width: 140, height: 18, borderRadius: 4),
-                                            ],
-                                          )
-                                        : Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                l10n.goodMorning,
-                                                style: TextStyle(
-                                                  color: Colors.white.withValues(
-                                                    alpha: 0.55,
-                                                  ),
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.8,
+                      child: Column(
+                        children: [
+                          // Greeting row & avatars
+                          SizedBox(
+                            height: 48.0 * (1.0 - t),
+                            child: SingleChildScrollView(
+                              physics: const NeverScrollableScrollPhysics(),
+                              child: SizedBox(
+                                height: 48,
+                                child: Opacity(
+                                  opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _viewModel.isLoadingSummary
+                                          ? const Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                SkeletonContainer(
+                                                  width: 80,
+                                                  height: 12,
+                                                  borderRadius: 4,
                                                 ),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              ValueListenableBuilder<User?>(
-                                                valueListenable: currentUserNotifier,
-                                                builder: (context, user, _) {
-                                                  return Text(
-                                                    user?.name ?? 'Lucas & Mariana',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 20,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                    // Shared overlapping avatars
-                                    SharedAvatars(isLoading: _viewModel.isLoadingSummary),
-                                  ],
+                                                SizedBox(height: 6),
+                                                SkeletonContainer(
+                                                  width: 140,
+                                                  height: 18,
+                                                  borderRadius: 4,
+                                                ),
+                                              ],
+                                            )
+                                          : Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  l10n.goodMorning,
+                                                  style: TextStyle(
+                                                    color: Colors.white
+                                                        .withValues(
+                                                          alpha: 0.55,
+                                                        ),
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 0.8,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                ValueListenableBuilder<User?>(
+                                                  valueListenable:
+                                                      currentUserNotifier,
+                                                  builder: (context, user, _) {
+                                                    return Text(
+                                                      user?.name ??
+                                                          'Lucas & Mariana',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                      // Shared overlapping avatars
+                                      SharedAvatars(
+                                        isLoading: _viewModel.isLoadingSummary,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 32.0 * (1.0 - t)),
+                          SizedBox(height: 32.0 * (1.0 - t)),
 
-                        _viewModel.isLoadingSummary
-                            ? SizedBox(
-                                height: 98.0 * (1.0 - t),
-                                child: const SingleChildScrollView(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  child: SizedBox(
-                                    height: 98,
-                                    child: Column(
-                                      children: [
-                                        SkeletonContainer(width: 140, height: 11, borderRadius: 4),
-                                        SizedBox(height: 12),
-                                        SkeletonContainer(width: 200, height: 32, borderRadius: 10),
-                                        SizedBox(height: 14),
-                                        SkeletonContainer(width: 110, height: 22, borderRadius: 12),
-                                      ],
+                          _viewModel.isLoadingSummary
+                              ? SizedBox(
+                                  height: 98.0 * (1.0 - t),
+                                  child: const SingleChildScrollView(
+                                    physics: NeverScrollableScrollPhysics(),
+                                    child: SizedBox(
+                                      height: 98,
+                                      child: Column(
+                                        children: [
+                                          SkeletonContainer(
+                                            width: 140,
+                                            height: 11,
+                                            borderRadius: 4,
+                                          ),
+                                          SizedBox(height: 12),
+                                          SkeletonContainer(
+                                            width: 200,
+                                            height: 32,
+                                            borderRadius: 10,
+                                          ),
+                                          SizedBox(height: 14),
+                                          SkeletonContainer(
+                                            width: 110,
+                                            height: 22,
+                                            borderRadius: 12,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              )
-                            : Column(
-                                children: [
-                                  // SHARED TOTAL BALANCE Label
-                                  SizedBox(
-                                    height: 16.0 * (1.0 - t),
-                                    child: SingleChildScrollView(
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      child: SizedBox(
-                                        height: 16,
-                                        child: Opacity(
-                                          opacity: (1.0 - (t * 2.5)).clamp(0.0, 1.0),
-                                          child: Text(
-                                            l10n.sharedTotalBalance,
-                                            style: TextStyle(
-                                              color: Colors.white.withValues(alpha: 0.5),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 1.0,
+                                )
+                              : Column(
+                                  children: [
+                                    // SHARED TOTAL BALANCE Label
+                                    SizedBox(
+                                      height: 16.0 * (1.0 - t),
+                                      child: SingleChildScrollView(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        child: SizedBox(
+                                          height: 16,
+                                          child: Opacity(
+                                            opacity: (1.0 - (t * 2.5)).clamp(
+                                              0.0,
+                                              1.0,
+                                            ),
+                                            child: Text(
+                                              l10n.sharedTotalBalance,
+                                              style: TextStyle(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 1.0,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(height: 6.0 * (1.0 - t)),
+                                    SizedBox(height: 6.0 * (1.0 - t)),
 
-                                  // Dynamic Resizing Balance Amount
-                                  RichText(
-                                    text: TextSpan(
-                                      text: CurrencyFormatter.formatBalanceParts(
-                                        _viewModel.balance,
-                                      )[0],
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 42.0 - (t * 18.0),
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: -0.5,
+                                    // Dynamic Resizing Balance Amount
+                                    RichText(
+                                      text: TextSpan(
+                                        text:
+                                            CurrencyFormatter.formatBalanceParts(
+                                              _viewModel.balance,
+                                            )[0],
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 42.0 - (t * 18.0),
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.5,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text:
+                                                CurrencyFormatter.formatBalanceParts(
+                                                  _viewModel.balance,
+                                                )[1],
+                                            style: TextStyle(
+                                              fontSize: 28.0 - (t * 12.0),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      children: [
-                                        TextSpan(
-                                          text: CurrencyFormatter.formatBalanceParts(
-                                            _viewModel.balance,
-                                          )[1],
-                                          style: TextStyle(
-                                            fontSize: 28.0 - (t * 12.0),
-                                            fontWeight: FontWeight.w700,
+                                    ),
+                                    SizedBox(height: 12.0 * (1.0 - t)),
+
+                                    // Trend Growth Badge
+                                    SizedBox(
+                                      height: 32.0 * (1.0 - t),
+                                      child: SingleChildScrollView(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        child: SizedBox(
+                                          height: 32,
+                                          child: Opacity(
+                                            opacity: (1.0 - (t * 2.0)).clamp(
+                                              0.0,
+                                              1.0,
+                                            ),
+                                            child: () {
+                                              final bool isBalancePositive =
+                                                  _viewModel
+                                                      .balanceChangePercentage >=
+                                                  0.0;
+                                              final Color balanceBadgeColor =
+                                                  isBalancePositive
+                                                  ? AppColors.greenGrowth
+                                                  : const Color(0xFFF87171);
+                                              final IconData balanceBadgeIcon =
+                                                  isBalancePositive
+                                                  ? Icons.north_east_rounded
+                                                  : Icons.south_west_rounded;
+
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 6,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.08),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      balanceBadgeIcon,
+                                                      color: balanceBadgeColor,
+                                                      size: 14,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      '${_viewModel.balanceComparisonText} ${l10n.vsLastMonth}',
+                                                      style: TextStyle(
+                                                        color:
+                                                            balanceBadgeColor,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }(),
                                           ),
                                         ),
-                                      ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                // ── SCROLLABLE BODY CONTENT ──
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _loadData,
+                    color: AppColors.accentOrange,
+                    backgroundColor: isDark ? AppColors.slate800 : Colors.white,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 24,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            (() {
+                              final bool isIncomePositive =
+                                  _viewModel.incomeChangePercentage >= 0.0;
+                              final String incomeBadgeText =
+                                  _viewModel.incomeComparisonText;
+                              final Color incomeBadgeColor = isIncomePositive
+                                  ? AppColors.greenAccent
+                                  : AppColors.redAccent;
+                              final Color incomeBadgeBg = isIncomePositive
+                                  ? AppColors.greenBg
+                                  : AppColors.redBg;
+
+                              final bool isExpenseSavings =
+                                  _viewModel.expensesChangePercentage <= 0.0;
+                              final String expenseBadgeText =
+                                  _viewModel.expensesComparisonText;
+                              final Color expenseBadgeColor = isExpenseSavings
+                                  ? AppColors.greenAccent
+                                  : AppColors.redAccent;
+                              final Color expenseBadgeBg = isExpenseSavings
+                                  ? AppColors.greenBg
+                                  : AppColors.redBg;
+
+                              return Row(
+                                children: [
+                                  // Income Card
+                                  Expanded(
+                                    child: SummaryCard(
+                                      title: l10n.monthlyIncome,
+                                      value:
+                                          CurrencyFormatter.formatSummaryValue(
+                                            _viewModel.income,
+                                          ),
+                                      badgeText: incomeBadgeText,
+                                      badgeColor: incomeBadgeColor,
+                                      badgeBg: incomeBadgeBg,
+                                      icon: Icons.trending_up_rounded,
+                                      iconColor: AppColors.greenAccent,
+                                      iconBg: AppColors.greenBg,
+                                      isSelected: _activeFilter == 'INCOME',
+                                      onTap: () => setState(
+                                        () => _activeFilter =
+                                            _activeFilter == 'INCOME'
+                                            ? null
+                                            : 'INCOME',
+                                      ),
+                                      isLoading: _viewModel.isLoadingSummary,
                                     ),
                                   ),
-                                  SizedBox(height: 12.0 * (1.0 - t)),
-
-                                  // Trend Growth Badge
-                                  SizedBox(
-                                    height: 32.0 * (1.0 - t),
-                                    child: SingleChildScrollView(
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      child: SizedBox(
-                                        height: 32,
-                                        child: Opacity(
-                                          opacity: (1.0 - (t * 2.0)).clamp(0.0, 1.0),
-                                          child: () {
-                                            final bool isBalancePositive = _viewModel.balanceChangePercentage >= 0.0;
-                                            final Color balanceBadgeColor = isBalancePositive ? AppColors.greenGrowth : const Color(0xFFF87171);
-                                            final IconData balanceBadgeIcon = isBalancePositive ? Icons.north_east_rounded : Icons.south_west_rounded;
-
-                                            return Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withValues(alpha: 0.08),
-                                                borderRadius: BorderRadius.circular(20),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    balanceBadgeIcon,
-                                                    color: balanceBadgeColor,
-                                                    size: 14,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '${_viewModel.balanceComparisonText} ${l10n.vsLastMonth}',
-                                                    style: TextStyle(
-                                                      color: balanceBadgeColor,
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }(),
-                                        ),
+                                  const SizedBox(width: 12),
+                                  // Expense Card
+                                  Expanded(
+                                    child: SummaryCard(
+                                      title: l10n.monthlyExpenses,
+                                      value:
+                                          CurrencyFormatter.formatSummaryValue(
+                                            _viewModel.expenses,
+                                          ),
+                                      badgeText: expenseBadgeText,
+                                      badgeColor: expenseBadgeColor,
+                                      badgeBg: expenseBadgeBg,
+                                      icon: Icons.trending_down_rounded,
+                                      iconColor: AppColors.redAccent,
+                                      iconBg: AppColors.redBg,
+                                      isSelected: _activeFilter == 'EXPENSE',
+                                      onTap: () => setState(
+                                        () => _activeFilter =
+                                            _activeFilter == 'EXPENSE'
+                                            ? null
+                                            : 'EXPENSE',
                                       ),
+                                      isLoading: _viewModel.isLoadingSummary,
                                     ),
                                   ),
                                 ],
-                              ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-
-              // ── SCROLLABLE BODY CONTENT ──
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: AppColors.accentOrange,
-                  backgroundColor: isDark ? AppColors.slate800 : Colors.white,
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 24,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          (() {
-                            final bool isIncomePositive = _viewModel.incomeChangePercentage >= 0.0;
-                            final String incomeBadgeText = _viewModel.incomeComparisonText;
-                            final Color incomeBadgeColor = isIncomePositive ? AppColors.greenAccent : AppColors.redAccent;
-                            final Color incomeBadgeBg = isIncomePositive ? AppColors.greenBg : AppColors.redBg;
-
-                            final bool isExpenseSavings = _viewModel.expensesChangePercentage <= 0.0;
-                            final String expenseBadgeText = _viewModel.expensesComparisonText;
-                            final Color expenseBadgeColor = isExpenseSavings ? AppColors.greenAccent : AppColors.redAccent;
-                            final Color expenseBadgeBg = isExpenseSavings ? AppColors.greenBg : AppColors.redBg;
-
-                            return Row(
+                              );
+                            }()),
+                            const SizedBox(height: 32),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Income Card
-                                Expanded(
-                                  child: SummaryCard(
-                                    title: l10n.monthlyIncome,
-                                    value: CurrencyFormatter.formatSummaryValue(
-                                      _viewModel.income,
-                                    ),
-                                    badgeText: incomeBadgeText,
-                                    badgeColor: incomeBadgeColor,
-                                    badgeBg: incomeBadgeBg,
-                                    icon: Icons.trending_up_rounded,
-                                    iconColor: AppColors.greenAccent,
-                                    iconBg: AppColors.greenBg,
-                                    isSelected: _activeFilter == 'INCOME',
-                                    onTap: () => setState(() => _activeFilter = _activeFilter == 'INCOME' ? null : 'INCOME'),
-                                    isLoading: _viewModel.isLoadingSummary,
+                                Text(
+                                  l10n.recentTransactions,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                // Expense Card
-                                Expanded(
-                                  child: SummaryCard(
-                                    title: l10n.monthlyExpenses,
-                                    value: CurrencyFormatter.formatSummaryValue(
-                                      _viewModel.expenses,
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TransactionHistoryScreen(),
+                                      ),
+                                    );
+                                  },
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    l10n.seeAll,
+                                    style: const TextStyle(
+                                      color: AppColors.accentOrange,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    badgeText: expenseBadgeText,
-                                    badgeColor: expenseBadgeColor,
-                                    badgeBg: expenseBadgeBg,
-                                    icon: Icons.trending_down_rounded,
-                                    iconColor: AppColors.redAccent,
-                                    iconBg: AppColors.redBg,
-                                    isSelected: _activeFilter == 'EXPENSE',
-                                    onTap: () => setState(() => _activeFilter = _activeFilter == 'EXPENSE' ? null : 'EXPENSE'),
-                                    isLoading: _viewModel.isLoadingSummary,
                                   ),
                                 ),
                               ],
-                            );
-                          }()),
-                          const SizedBox(height: 32),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.recentTransactions,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const TransactionHistoryScreen(),
-                                    ),
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(
-                                  l10n.seeAll,
-                                  style: const TextStyle(
-                                    color: AppColors.accentOrange,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          (() {
-                            final filteredTx = _viewModel.transactions.where((tx) {
-                              if (_activeFilter == 'INCOME') {
-                                return tx.amount > 0;
-                              } else if (_activeFilter == 'EXPENSE') {
-                                return tx.amount < 0;
-                              }
-                              return true;
-                            }).toList();
+                            ),
+                            const SizedBox(height: 14),
+                            (() {
+                              final filteredTx = _viewModel.transactions.where((
+                                tx,
+                              ) {
+                                if (_activeFilter == 'INCOME') {
+                                  return tx.amount > 0;
+                                } else if (_activeFilter == 'EXPENSE') {
+                                  return tx.amount < 0;
+                                }
+                                return true;
+                              }).toList();
 
-                            return _viewModel.isLoading
-                                ? const TransactionSkeleton(itemCount: 4)
-                                : filteredTx.isEmpty
-                                ? Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 40,
+                              return _viewModel.isLoading
+                                  ? const TransactionSkeleton(itemCount: 4)
+                                  : filteredTx.isEmpty
+                                  ? Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 40,
+                                        ),
+                                        child: Text(
+                                          'Nenhuma transação encontrada',
+                                          style: TextStyle(color: subTextColor),
+                                        ),
                                       ),
-                                      child: Text(
-                                        'Nenhuma transação encontrada',
-                                        style: TextStyle(color: subTextColor),
-                                      ),
-                                    ),
-                                  )
-                                : Column(
-                                    children: [
-                                      ListView.separated(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        padding: EdgeInsets.zero,
-                                        itemCount: filteredTx.length,
-                                        separatorBuilder: (context, index) =>
-                                            const SizedBox(height: 12),
-                                        itemBuilder: (context, index) {
-                                          final tx = filteredTx[index];
-                                          return TransactionCard(
-                                            transaction: tx,
-                                            onDelete: () => _viewModel.deleteTransaction(
-                                              tx.id,
-                                              onUnauthorized: () {
-                                                if (!mounted) return;
-                                                final localizations = AppLocalizations.of(context);
-                                                if (localizations != null) {
-                                                  CustomToast.showError(context, localizations.sessionExpiredMessage);
-                                                }
-                                              },
+                                    )
+                                  : Column(
+                                      children: [
+                                        ListView.separated(
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          padding: EdgeInsets.zero,
+                                          itemCount: filteredTx.length,
+                                          separatorBuilder: (context, index) =>
+                                              const SizedBox(height: 12),
+                                          itemBuilder: (context, index) {
+                                            final tx = filteredTx[index];
+                                            return TransactionCard(
+                                              transaction: tx,
+                                              onDelete: () =>
+                                                  _viewModel.deleteTransaction(
+                                                    tx.id,
+                                                    onUnauthorized: () {
+                                                      if (!mounted) return;
+                                                      final localizations =
+                                                          AppLocalizations.of(
+                                                            context,
+                                                          );
+                                                      if (localizations !=
+                                                          null) {
+                                                        CustomToast.showError(
+                                                          context,
+                                                          localizations
+                                                              .sessionExpiredMessage,
+                                                        );
+                                                      }
+                                                    },
+                                                  ),
+                                            );
+                                          },
+                                        ),
+                                        if (_viewModel.isLoadMoreLoading)
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 16,
                                             ),
-                                          );
-                                        },
-                                      ),
-                                      if (_viewModel.isLoadMoreLoading)
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 16),
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              valueColor: AlwaysStoppedAnimation<Color>(
-                                                AppColors.accentOrange,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(AppColors.accentOrange),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                    ],
-                                  );
-                          })(),
-                          SizedBox(height: totalBottomInset),
-                        ],
+                                      ],
+                                    );
+                            })(),
+                            SizedBox(height: totalBottomInset),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
+        );
       },
     );
   }

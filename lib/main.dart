@@ -27,19 +27,23 @@ final ValueNotifier<int> transactionRefreshNotifier = ValueNotifier<int>(0);
 final ValueNotifier<User?> currentUserNotifier = ValueNotifier<User?>(null);
 
 // Global Notifier for App Theme Mode
-final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(
+  ThemeMode.light,
+);
 
 // Global Notifier for App Locale - Dynamically follows system settings (defaults to 'en')
-final ValueNotifier<Locale> localeNotifier = ValueNotifier<Locale>(_getInitialLocale());
+final ValueNotifier<Locale> localeNotifier = ValueNotifier<Locale>(
+  _getInitialLocale(),
+);
 
 Locale _getInitialLocale() {
   final ui.Locale systemLocale = ui.PlatformDispatcher.instance.locale;
   final String languageCode = systemLocale.languageCode;
-  
+
   if (languageCode == 'pt') {
     return const Locale('pt');
   }
-  
+
   // Default to English
   return const Locale('en');
 }
@@ -48,12 +52,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator(); // Inicializa o GetIt DI Container
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  
+
+  // Sincroniza o idioma ativo com as requisições do ApiService
+  ApiService.languageCode = localeNotifier.value.languageCode;
+  localeNotifier.addListener(() {
+    ApiService.languageCode = localeNotifier.value.languageCode;
+  });
+
   // Load persistent login session before running the app
   try {
     final prefs = await SharedPreferences.getInstance();
     final String? token = await SecureStorageManager.readToken();
-    
+
     // Verifica se temos um token salvo e se ele ainda é válido (não expirou)
     if (token != null && !ApiService.isTokenExpired(token)) {
       isLoggedInNotifier.value = true;
@@ -64,14 +74,11 @@ void main() async {
         currentUserNotifier.value = User(id: id, name: name, email: email);
       }
     } else {
-      // Se expirou ou não existe, limpa localmente para forçar nova autenticação
+      // Se expirou ou não existe, limpa localmente para forçar nova autenticação de forma segura
       isLoggedInNotifier.value = false;
       currentUserNotifier.value = null;
-      await prefs.setBool('is_logged_in', false);
+      await prefs.clear();
       await SecureStorageManager.deleteToken();
-      await prefs.remove('user_id');
-      await prefs.remove('user_name');
-      await prefs.remove('user_email');
     }
   } catch (e) {
     debugPrint('Error loading persistent session: $e');
@@ -98,11 +105,10 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               themeMode: currentMode,
               locale: currentLocale, // Dynamic locale driven by notifier
-              
               // REGISTER OUR CUSTOM l10n DELEGATES
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              
+
               // LIGHT THEME (Clean corporate blue & grey)
               theme: ThemeData(
                 useMaterial3: true,
@@ -125,17 +131,20 @@ class MyApp extends StatelessWidget {
                 brightness: Brightness.dark,
                 fontFamily: 'Nunito',
                 cardColor: AppColors.darkCard, // Rich midnight navy card
-                scaffoldBackgroundColor: AppColors.darkScaffold, // Deep obsidian midnight background
+                scaffoldBackgroundColor:
+                    AppColors.darkScaffold, // Deep obsidian midnight background
                 colorScheme: ColorScheme.fromSeed(
                   seedColor: AppColors.primarySeed,
                   brightness: Brightness.dark,
                   primary: AppColors.accentOrange,
                   secondary: AppColors.accentVioletLight,
                   surface: AppColors.darkCard,
-                  onSurface: const Color(0xFFF1F5F9), // Gorgeous soft off-white text
+                  onSurface: const Color(
+                    0xFFF1F5F9,
+                  ), // Gorgeous soft off-white text
                 ),
               ),
-              
+
               home: ValueListenableBuilder<bool>(
                 valueListenable: isLoggedInNotifier,
                 builder: (context, isLoggedIn, _) {
@@ -144,34 +153,39 @@ class MyApp extends StatelessWidget {
                     switchInCurve: Curves.easeInOut,
                     switchOutCurve: Curves.easeInOut,
                     transitionBuilder: (Widget child, Animation<double> animation) {
-                      final bool isDashboard = child.key == const ValueKey('DashboardScreen');
+                      final bool isDashboard =
+                          child.key == const ValueKey('DashboardScreen');
                       // Dashboard (Painel) fica posicionado à direita (1.0, 0.0) e Login fica à esquerda (-1.0, 0.0).
                       // O próprio AnimatedSwitcher reverte a animação automaticamente na saída (exit), fazendo com que
                       // o fluxo seja 100% simétrico e livre de dependências de estado externo (isLoggedIn) no cache!
-                      final Offset beginOffset = isDashboard ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
+                      final Offset beginOffset = isDashboard
+                          ? const Offset(1.0, 0.0)
+                          : const Offset(-1.0, 0.0);
 
                       return SlideTransition(
                         position: Tween<Offset>(
                           begin: beginOffset,
                           end: Offset.zero,
                         ).animate(animation),
-                        child: FadeTransition(
-                          opacity: animation,
-                          child: child,
-                        ),
+                        child: FadeTransition(opacity: animation, child: child),
                       );
                     },
                     child: isLoggedIn
-                        ? const DashboardScreen(key: ValueKey('DashboardScreen'))
+                        ? const DashboardScreen(
+                            key: ValueKey('DashboardScreen'),
+                          )
                         : LoginScreen(
                             key: const ValueKey('LoginScreen'),
                             viewModel: loginViewModel,
                             onLogin: () async {
                               try {
-                                final prefs = await SharedPreferences.getInstance();
+                                final prefs =
+                                    await SharedPreferences.getInstance();
                                 await prefs.setBool('is_logged_in', true);
                               } catch (e) {
-                                debugPrint('Error saving persistent session: $e');
+                                debugPrint(
+                                  'Error saving persistent session: $e',
+                                );
                               }
                               isLoggedInNotifier.value = true;
                             },
@@ -225,7 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     // Resolve dynamic localization keys
     final AppLocalizations l10n = AppLocalizations.of(context)!;
 
@@ -234,7 +248,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: isDark ? const Color(0xFF151B2D) : Colors.white,
-      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness: isDark
+          ? Brightness.light
+          : Brightness.dark,
       systemNavigationBarDividerColor: Colors.transparent,
       systemNavigationBarContrastEnforced: false,
     );
@@ -248,9 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Scaffold(
           body: Stack(
             children: [
-              Positioned.fill(
-                child: _tabs[_currentIndex],
-              ),
+              Positioned.fill(child: _tabs[_currentIndex]),
               Positioned(
                 left: 0,
                 right: 0,
@@ -265,22 +279,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0F1B35).withValues(alpha: isDark ? 0.35 : 0.10),
+                        color: const Color(
+                          0xFF0F1B35,
+                        ).withValues(alpha: isDark ? 0.35 : 0.10),
                         blurRadius: 24,
                         offset: const Offset(0, -4),
                       ),
                     ],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 12 + bottomPadding, left: 8, right: 8),
+                    padding: EdgeInsets.only(
+                      bottom: 12 + bottomPadding,
+                      left: 8,
+                      right: 8,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildNavItem(0, Icons.home_rounded, l10n.homeNav, isDark),
-                        _buildNavItem(1, Icons.bar_chart_rounded, l10n.analyticsNav, isDark),
+                        _buildNavItem(
+                          0,
+                          Icons.home_rounded,
+                          l10n.homeNav,
+                          isDark,
+                        ),
+                        _buildNavItem(
+                          1,
+                          Icons.bar_chart_rounded,
+                          l10n.analyticsNav,
+                          isDark,
+                        ),
                         const SizedBox(width: 80),
-                        _buildNavItem(2, Icons.account_balance_wallet_rounded, l10n.walletsNav, isDark),
-                        _buildNavItem(3, Icons.settings_rounded, l10n.settingsNav, isDark),
+                        _buildNavItem(
+                          2,
+                          Icons.account_balance_wallet_rounded,
+                          l10n.walletsNav,
+                          isDark,
+                        ),
+                        _buildNavItem(
+                          3,
+                          Icons.settings_rounded,
+                          l10n.settingsNav,
+                          isDark,
+                        ),
                       ],
                     ),
                   ),
@@ -298,7 +338,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? const Color(0xFF0B0F19) : const Color(0xFFF4F5F8), 
+                        color: isDark
+                            ? const Color(0xFF0B0F19)
+                            : const Color(0xFFF4F5F8),
                         width: 4,
                       ),
                       gradient: const LinearGradient(
@@ -308,7 +350,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFF97316).withValues(alpha: 0.45),
+                          color: const Color(
+                            0xFFF97316,
+                          ).withValues(alpha: 0.45),
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
@@ -331,8 +375,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildNavItem(int index, IconData icon, String label, bool isDark) {
     final bool isActive = _currentIndex == index;
-    final Color color = isActive 
-        ? const Color(0xFFF97316) 
+    final Color color = isActive
+        ? const Color(0xFFF97316)
         : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99));
 
     return Expanded(
@@ -345,11 +389,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             AnimatedScale(
               scale: isActive ? 1.15 : 1.0,
               duration: const Duration(milliseconds: 150),
-              child: Icon(
-                icon,
-                color: color,
-                size: 22,
-              ),
+              child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(height: 4),
             Text(

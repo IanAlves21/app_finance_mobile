@@ -21,7 +21,8 @@ class FilterSegmentedControl extends StatelessWidget {
 
     return Row(
       children: filters.map((filter) {
-        final bool isSelected = activeFilter.toLowerCase() == filter.toLowerCase();
+        final bool isSelected =
+            activeFilter.toLowerCase() == filter.toLowerCase();
         return Expanded(
           child: GestureDetector(
             onTap: () => onFilterSelected(filter),

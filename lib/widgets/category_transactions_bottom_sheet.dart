@@ -23,11 +23,14 @@ class CategoryTransactionsBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<CategoryTransactionsBottomSheet> createState() => _CategoryTransactionsBottomSheetState();
+  State<CategoryTransactionsBottomSheet> createState() =>
+      _CategoryTransactionsBottomSheetState();
 }
 
-class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBottomSheet> {
-  final TransactionRepository _transactionRepository = locator<TransactionRepository>();
+class _CategoryTransactionsBottomSheetState
+    extends State<CategoryTransactionsBottomSheet> {
+  final TransactionRepository _transactionRepository =
+      locator<TransactionRepository>();
   List<Transaction> _transactions = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -87,7 +90,10 @@ class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBo
         top: 14,
         left: 24,
         right: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 24,
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            24,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -140,7 +146,11 @@ class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBo
     );
   }
 
-  Widget _buildContent(BuildContext context, Color subTextColor, AppLocalizations l10n) {
+  Widget _buildContent(
+    BuildContext context,
+    Color subTextColor,
+    AppLocalizations l10n,
+  ) {
     if (_isLoading) {
       return const SingleChildScrollView(
         child: TransactionSkeleton(itemCount: 3),
@@ -154,7 +164,11 @@ class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBo
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.redAccent, size: 36),
+              const Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.redAccent,
+                size: 36,
+              ),
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
@@ -182,7 +196,11 @@ class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBo
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.assignment_turned_in_outlined, size: 48, color: subTextColor.withValues(alpha: 0.5)),
+              Icon(
+                Icons.assignment_turned_in_outlined,
+                size: 48,
+                color: subTextColor.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 12),
               Text(
                 l10n.noTransactionsFound,
@@ -198,7 +216,10 @@ class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBo
       );
     }
 
-    final double totalAmount = _transactions.fold(0.0, (sum, item) => sum + item.amount.abs());
+    final double totalAmount = _transactions.fold(
+      0.0,
+      (sum, item) => sum + item.amount.abs(),
+    );
     final String localeCode = Localizations.localeOf(context).languageCode;
 
     return ListView.separated(
@@ -208,9 +229,13 @@ class _CategoryTransactionsBottomSheetState extends State<CategoryTransactionsBo
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = _transactions[index];
-        final double percentageOfTotal = totalAmount > 0 ? (tx.amount.abs() / totalAmount) * 100 : 0.0;
+        final double percentageOfTotal = totalAmount > 0
+            ? (tx.amount.abs() / totalAmount) * 100
+            : 0.0;
         final String percentageStr = percentageOfTotal.toStringAsFixed(1);
-        final String badgeText = localeCode == 'pt' ? '${percentageStr.replaceAll('.', ',')}%' : '$percentageStr%';
+        final String badgeText = localeCode == 'pt'
+            ? '${percentageStr.replaceAll('.', ',')}%'
+            : '$percentageStr%';
 
         return TransactionCard(
           transaction: tx,

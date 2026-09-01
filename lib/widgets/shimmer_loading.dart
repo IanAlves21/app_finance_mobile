@@ -34,7 +34,8 @@ class SkeletonContainer extends StatefulWidget {
   State<SkeletonContainer> createState() => _SkeletonContainerState();
 }
 
-class _SkeletonContainerState extends State<SkeletonContainer> with SingleTickerProviderStateMixin {
+class _SkeletonContainerState extends State<SkeletonContainer>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -46,11 +47,13 @@ class _SkeletonContainerState extends State<SkeletonContainer> with SingleTicker
     );
 
     // Prevent infinite loops in testing environments to avoid pumpAndSettle timeouts
-    final bool isTesting = kDebugMode && Platform.environment.containsKey('FLUTTER_TEST');
+    final bool isTesting =
+        kDebugMode && Platform.environment.containsKey('FLUTTER_TEST');
     if (!isTesting) {
       _controller.repeat();
     } else {
-      _controller.value = 0.5; // Stable state for static/deterministic UI testing
+      _controller.value =
+          0.5; // Stable state for static/deterministic UI testing
     }
   }
 
@@ -63,10 +66,14 @@ class _SkeletonContainerState extends State<SkeletonContainer> with SingleTicker
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Smooth grey-slate base colors for light and dark modes
-    final Color baseColor = isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
-    final Color highlightColor = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final Color baseColor = isDark
+        ? const Color(0xFF1E293B)
+        : const Color(0xFFE2E8F0);
+    final Color highlightColor = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFF1F5F9);
 
     return AnimatedBuilder(
       animation: _controller,
@@ -75,16 +82,8 @@ class _SkeletonContainerState extends State<SkeletonContainer> with SingleTicker
           blendMode: BlendMode.srcIn,
           shaderCallback: (bounds) {
             return LinearGradient(
-              colors: [
-                baseColor,
-                highlightColor,
-                baseColor,
-              ],
-              stops: const [
-                0.15,
-                0.5,
-                0.85,
-              ],
+              colors: [baseColor, highlightColor, baseColor],
+              stops: const [0.15, 0.5, 0.85],
               begin: Alignment(-2.5 + _controller.value * 5.0, -0.3),
               end: Alignment(-0.5 + _controller.value * 5.0, 0.3),
             ).createShader(bounds);

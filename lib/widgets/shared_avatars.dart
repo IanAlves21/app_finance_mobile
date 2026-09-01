@@ -66,10 +66,7 @@ class SharedAvatars extends StatelessWidget {
                       )
                     : null,
                 gradient: const LinearGradient(
-                  colors: [
-                    AppColors.accentOrange,
-                    AppColors.accentOrangeLight,
-                  ],
+                  colors: [AppColors.accentOrange, AppColors.accentOrangeLight],
                 ),
               ),
               alignment: Alignment.center,
@@ -97,10 +94,7 @@ class SharedAvatars extends StatelessWidget {
                       )
                     : null,
                 gradient: const LinearGradient(
-                  colors: [
-                    AppColors.accentViolet,
-                    AppColors.accentVioletLight,
-                  ],
+                  colors: [AppColors.accentViolet, AppColors.accentVioletLight],
                 ),
               ),
               alignment: Alignment.center,

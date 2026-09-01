@@ -9,15 +9,12 @@ class SessionManager {
   static Future<void> logout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_logged_in', false);
-      await SecureStorageManager.deleteToken();
-      await prefs.remove('user_id');
-      await prefs.remove('user_name');
-      await prefs.remove('user_email');
+      await prefs.clear(); // Limpa completamente o cache local (transações, categorias, pendências e sessão)
+      await SecureStorageManager.deleteToken(); // Remove o JWT de forma segura
     } catch (e) {
       debugPrint('Erro ao encerrar sessão: $e');
     }
-    
+
     // Atualiza reativamente os Notifiers da UI em um único local centralizado
     currentUserNotifier.value = null;
     isLoggedInNotifier.value = false;

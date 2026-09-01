@@ -11,8 +11,10 @@ class AddTransactionViewModel extends ChangeNotifier {
   AddTransactionViewModel({
     TransactionRepository? transactionRepository,
     CategoryRepository? categoryRepository,
-  })  : _transactionRepository = transactionRepository ?? locator<TransactionRepository>(),
-        _categoryRepository = categoryRepository ?? locator<CategoryRepository>();
+  }) : _transactionRepository =
+           transactionRepository ?? locator<TransactionRepository>(),
+       _categoryRepository =
+           categoryRepository ?? locator<CategoryRepository>();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;

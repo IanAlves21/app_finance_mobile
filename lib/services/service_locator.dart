@@ -8,6 +8,7 @@ import '../viewmodels/analytics_view_model.dart';
 import '../viewmodels/category_list_view_model.dart';
 import '../viewmodels/home_view_model.dart';
 import '../viewmodels/login_view_model.dart';
+import '../viewmodels/register_view_model.dart';
 import '../viewmodels/settings_view_model.dart';
 import '../viewmodels/transaction_history_view_model.dart';
 import '../viewmodels/wallets_view_model.dart';
@@ -31,12 +32,17 @@ void setupLocator() {
   );
 
   // Registra as ViewModels como Fábricas Transitórias (Instâncias novas a cada requisição)
-  locator.registerFactory<AddTransactionViewModel>(() => AddTransactionViewModel());
+  locator.registerFactory<AddTransactionViewModel>(
+    () => AddTransactionViewModel(),
+  );
   locator.registerFactory<AnalyticsViewModel>(() => AnalyticsViewModel());
   locator.registerFactory<CategoryListViewModel>(() => CategoryListViewModel());
   locator.registerFactory<HomeViewModel>(() => HomeViewModel());
   locator.registerFactory<LoginViewModel>(() => LoginViewModel());
+  locator.registerFactory<RegisterViewModel>(() => RegisterViewModel());
   locator.registerFactory<SettingsViewModel>(() => SettingsViewModel());
-  locator.registerFactory<TransactionHistoryViewModel>(() => TransactionHistoryViewModel());
+  locator.registerFactory<TransactionHistoryViewModel>(
+    () => TransactionHistoryViewModel(),
+  );
   locator.registerFactory<WalletsViewModel>(() => WalletsViewModel());
 }

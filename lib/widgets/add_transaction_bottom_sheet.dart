@@ -12,7 +12,8 @@ class AddTransactionBottomSheet extends StatefulWidget {
   const AddTransactionBottomSheet({super.key});
 
   @override
-  State<AddTransactionBottomSheet> createState() => _AddTransactionBottomSheetState();
+  State<AddTransactionBottomSheet> createState() =>
+      _AddTransactionBottomSheetState();
 }
 
 class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
@@ -42,10 +43,16 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   void _onViewModelChanged() {
     if (mounted) {
       final filtered = _viewModel.categories
-          .where((cat) => cat.type == _selectedType.toUpperCase() && !cat.id.startsWith('offline_cat_'))
+          .where(
+            (cat) =>
+                cat.type == _selectedType.toUpperCase() &&
+                !cat.id.startsWith('offline_cat_'),
+          )
           .toList();
-      
-      if (filtered.isNotEmpty && (_selectedCategory.isEmpty || !filtered.any((cat) => cat.id == _selectedCategory))) {
+
+      if (filtered.isNotEmpty &&
+          (_selectedCategory.isEmpty ||
+              !filtered.any((cat) => cat.id == _selectedCategory))) {
         _selectedCategory = filtered.first.id;
       }
       setState(() {});
@@ -103,8 +110,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
 
   Future<void> _saveTransaction() async {
     final String description = _nameController.text.trim();
-    final String cleanAmount = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
-    
+    final String cleanAmount = _amountController.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+
     final l10n = AppLocalizations.of(context)!;
 
     if (description.isEmpty) {
@@ -112,14 +122,19 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
       return;
     }
 
-    final double? amount = cleanAmount.isEmpty ? null : double.tryParse(cleanAmount)! / 100;
+    final double? amount = cleanAmount.isEmpty
+        ? null
+        : double.tryParse(cleanAmount)! / 100;
     if (amount == null || amount <= 0) {
       CustomToast.showError(context, 'Por favor, insira um valor válido');
       return;
     }
 
     if (_selectedType == 'Expense' && _selectedPaymentMethod == null) {
-      CustomToast.showError(context, 'Por favor, selecione uma forma de pagamento');
+      CustomToast.showError(
+        context,
+        'Por favor, selecione uma forma de pagamento',
+      );
       return;
     }
 
@@ -129,12 +144,17 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
         amount: amount,
         type: _selectedType.toUpperCase(), // 'INCOME' ou 'EXPENSE'
         categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
-        paymentMethod: _selectedType == 'Expense' ? _selectedPaymentMethod : null,
-        installments: _selectedType == 'Expense' && _selectedPaymentMethod == 'CREDIT' ? _installments : null,
+        paymentMethod: _selectedType == 'Expense'
+            ? _selectedPaymentMethod
+            : null,
+        installments:
+            _selectedType == 'Expense' && _selectedPaymentMethod == 'CREDIT'
+            ? _installments
+            : null,
       );
 
       if (!mounted) return;
-      
+
       Navigator.pop(context, true);
       CustomToast.showSuccess(context, l10n.transactionSaved);
     } catch (e) {
@@ -162,7 +182,9 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.accentOrange.withValues(alpha: 0.1) : inputFillColor,
+            color: isSelected
+                ? AppColors.accentOrange.withValues(alpha: 0.1)
+                : inputFillColor,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? AppColors.accentOrange : Colors.transparent,
@@ -194,9 +216,14 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   }
 
   String _getInstallmentPreview() {
-    final String cleanAmount = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final String cleanAmount = _amountController.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
     if (cleanAmount.isEmpty) return '';
-    final double? totalAmount = double.tryParse(cleanAmount) == null ? null : double.tryParse(cleanAmount)! / 100;
+    final double? totalAmount = double.tryParse(cleanAmount) == null
+        ? null
+        : double.tryParse(cleanAmount)! / 100;
     if (totalAmount == null || totalAmount <= 0) return '';
 
     final double installmentAmount = totalAmount / _installments;
@@ -220,7 +247,9 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isPending ? iconBgColor.withValues(alpha: 0.05) : iconBgColor,
+            color: isPending
+                ? iconBgColor.withValues(alpha: 0.05)
+                : iconBgColor,
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -284,11 +313,15 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     // Dynamic colors for Light/Dark Mode
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     final Color textColor = theme.colorScheme.onSurface;
-    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
+    final Color subTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF6B7A99); // Slate 400 vs Slate 600
     final Color cardColor = theme.cardColor;
-    final Color inputFillColor = isDark ? const Color(0xFF222E45) : const Color(0xFFF1F5F9); // Slate midnight input
+    final Color inputFillColor = isDark
+        ? const Color(0xFF222E45)
+        : const Color(0xFFF1F5F9); // Slate midnight input
 
     // Resolve localization translations
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -318,7 +351,9 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF222E45) : const Color(0xFFE2E8F0),
+                  color: isDark
+                      ? const Color(0xFF222E45)
+                      : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
@@ -340,7 +375,8 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             Row(
               children: [l10n.expense, l10n.income].map((type) {
                 final bool isExpense = type == l10n.expense;
-                final bool isSelected = (_selectedType == 'Expense' && isExpense) ||
+                final bool isSelected =
+                    (_selectedType == 'Expense' && isExpense) ||
                     (_selectedType == 'Income' && !isExpense);
                 return Expanded(
                   child: GestureDetector(
@@ -348,7 +384,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                       setState(() {
                         _selectedType = isExpense ? 'Expense' : 'Income';
                         final filtered = _viewModel.categories
-                            .where((cat) => cat.type == _selectedType.toUpperCase() && !cat.id.startsWith('offline_cat_'))
+                            .where(
+                              (cat) =>
+                                  cat.type == _selectedType.toUpperCase() &&
+                                  !cat.id.startsWith('offline_cat_'),
+                            )
                             .toList();
                         if (filtered.isNotEmpty) {
                           _selectedCategory = filtered.first.id;
@@ -361,8 +401,10 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected 
-                            ? (isExpense ? AppColors.redAccent : AppColors.greenAccent) 
+                        color: isSelected
+                            ? (isExpense
+                                  ? AppColors.redAccent
+                                  : AppColors.greenAccent)
                             : inputFillColor,
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -386,7 +428,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             if (_selectedType == 'Expense') ...[
               Text(
                 'Forma de Pagamento',
-                style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: subTextColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Column(
@@ -454,7 +500,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                             children: [
                               Text(
                                 'Quantidade de Parcelas',
-                                style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               if (_getInstallmentPreview().isNotEmpty) ...[
                                 const SizedBox(height: 4),
@@ -483,11 +533,15 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF151B2D) : Colors.white,
+                                    color: isDark
+                                        ? const Color(0xFF151B2D)
+                                        : Colors.white,
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.05),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.05,
+                                        ),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
@@ -522,11 +576,15 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF151B2D) : Colors.white,
+                                    color: isDark
+                                        ? const Color(0xFF151B2D)
+                                        : Colors.white,
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.05),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.05,
+                                        ),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
@@ -555,7 +613,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             // Transaction Name Field
             Text(
               l10n.description,
-              style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -563,14 +625,19 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: l10n.descriptionHint,
-                hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                  color: subTextColor.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: inputFillColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
             const SizedBox(height: 18),
@@ -578,7 +645,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             // Transaction Amount Field
             Text(
               l10n.amountLabel,
-              style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -591,14 +662,19 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'R\$ 0,00',
-                hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                  color: subTextColor.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: inputFillColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
             const SizedBox(height: 18),
@@ -606,14 +682,20 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             // Category Selector
             Text(
               l10n.categoryLabel,
-              style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               isExpanded: true,
               isDense: false,
               menuMaxHeight: 300,
-              initialValue: _selectedCategory.isNotEmpty ? _selectedCategory : null,
+              initialValue: _selectedCategory.isNotEmpty
+                  ? _selectedCategory
+                  : null,
               dropdownColor: cardColor,
               borderRadius: BorderRadius.circular(16),
               icon: Icon(
@@ -628,10 +710,15 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
               hint: Text(
-                _viewModel.isLoading ? 'Carregando... ⏳' : 'Selecione uma categoria',
+                _viewModel.isLoading
+                    ? 'Carregando... ⏳'
+                    : 'Selecione uma categoria',
                 style: TextStyle(
                   color: subTextColor.withValues(alpha: 0.5),
                   fontSize: 14,
@@ -641,21 +728,24 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
               items: _viewModel.categories
                   .where((cat) => cat.type == _selectedType.toUpperCase())
                   .map((category) {
-                final categoryColor = _parseHexColor(category.color);
-                final bool isPending = category.id.startsWith('offline_cat_');
-                return DropdownMenuItem<String>(
-                  value: category.id,
-                  enabled: !isPending,
-                  child: _buildDropdownItem(
-                    icon: _getIconData(category.icon),
-                    iconColor: categoryColor,
-                    iconBgColor: categoryColor.withValues(alpha: 0.15),
-                    label: category.name,
-                    textColor: textColor,
-                    isPending: isPending,
-                  ),
-                );
-              }).toList(),
+                    final categoryColor = _parseHexColor(category.color);
+                    final bool isPending = category.id.startsWith(
+                      'offline_cat_',
+                    );
+                    return DropdownMenuItem<String>(
+                      value: category.id,
+                      enabled: !isPending,
+                      child: _buildDropdownItem(
+                        icon: _getIconData(category.icon),
+                        iconColor: categoryColor,
+                        iconBgColor: categoryColor.withValues(alpha: 0.15),
+                        label: category.name,
+                        textColor: textColor,
+                        isPending: isPending,
+                      ),
+                    );
+                  })
+                  .toList(),
               onChanged: (v) => setState(() => _selectedCategory = v ?? ''),
             ),
             const SizedBox(height: 24),

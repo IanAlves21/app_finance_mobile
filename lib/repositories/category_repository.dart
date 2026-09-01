@@ -66,13 +66,17 @@ class CategoryRepository {
         await _apiService.logout();
         throw const HttpException('Unauthorized');
       } else {
-        throw HttpException('Failed to load categories: ${response.statusCode}');
+        throw HttpException(
+          'Failed to load categories: ${response.statusCode}',
+        );
       }
     } catch (e) {
       if (e is HttpException && e.message == 'Unauthorized') {
         rethrow;
       }
-      debugPrint('CategoryRepository error, carregando categorias do cache local: $e');
+      debugPrint(
+        'CategoryRepository error, carregando categorias do cache local: $e',
+      );
 
       try {
         final String? cachedData = prefs.getString('cached_categories');
@@ -99,15 +103,12 @@ class CategoryRepository {
 
     try {
       final response = await _apiService
-          .post(
-            '/transactions/categories',
-            {
-              'name': name,
-              'type': type,
-              'icon': icon,
-              'color': color,
-            },
-          )
+          .post('/transactions/categories', {
+            'name': name,
+            'type': type,
+            'icon': icon,
+            'color': color,
+          })
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -117,7 +118,9 @@ class CategoryRepository {
         // Atualiza o cache local de categorias
         try {
           final String? cachedData = prefs.getString('cached_categories');
-          final List<dynamic> currentCats = cachedData != null ? json.decode(cachedData) : [];
+          final List<dynamic> currentCats = cachedData != null
+              ? json.decode(cachedData)
+              : [];
           currentCats.add(data);
           await prefs.setString('cached_categories', json.encode(currentCats));
         } catch (_) {}
@@ -133,9 +136,12 @@ class CategoryRepository {
       if (e is HttpException && e.message == 'Unauthorized') {
         rethrow;
       }
-      debugPrint('CategoryRepository: Erro durante criação de categoria, enfileirando offline: $e');
+      debugPrint(
+        'CategoryRepository: Erro durante criação de categoria, enfileirando offline: $e',
+      );
 
-      final String localId = 'offline_cat_${DateTime.now().millisecondsSinceEpoch}';
+      final String localId =
+          'offline_cat_${DateTime.now().millisecondsSinceEpoch}';
       final localMockCat = {
         'id': localId,
         'name': name,
@@ -164,7 +170,9 @@ class CategoryRepository {
 
         // 2. Adiciona imediatamente ao cache de categorias para exibição instantânea
         final String? cachedData = prefs.getString('cached_categories');
-        final List<dynamic> currentCats = cachedData != null ? json.decode(cachedData) : [];
+        final List<dynamic> currentCats = cachedData != null
+            ? json.decode(cachedData)
+            : [];
         currentCats.add(localMockCat);
         await prefs.setString('cached_categories', json.encode(currentCats));
 
@@ -188,15 +196,12 @@ class CategoryRepository {
 
     try {
       final response = await _apiService
-          .patch(
-            '/transactions/categories/$id',
-            {
-              'name': ?name,
-              'type': ?type,
-              'icon': ?icon,
-              'color': ?color,
-            },
-          )
+          .patch('/transactions/categories/$id', {
+            'name': ?name,
+            'type': ?type,
+            'icon': ?icon,
+            'color': ?color,
+          })
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
@@ -211,7 +216,10 @@ class CategoryRepository {
             final int index = currentCats.indexWhere((cat) => cat['id'] == id);
             if (index != -1) {
               currentCats[index] = data;
-              await prefs.setString('cached_categories', json.encode(currentCats));
+              await prefs.setString(
+                'cached_categories',
+                json.encode(currentCats),
+              );
             }
           }
         } catch (_) {}
@@ -227,7 +235,9 @@ class CategoryRepository {
       if (e is HttpException && e.message == 'Unauthorized') {
         rethrow;
       }
-      debugPrint('CategoryRepository: Erro ao atualizar categoria, enfileirando offline: $e');
+      debugPrint(
+        'CategoryRepository: Erro ao atualizar categoria, enfileirando offline: $e',
+      );
 
       // 1. Cria uma representação do modelo atualizado localmente lendo o cache atual
       String currentName = name ?? '';
@@ -254,7 +264,10 @@ class CategoryRepository {
             existingCat['type'] = currentType;
             existingCat['icon'] = currentIcon;
             existingCat['color'] = currentColor;
-            await prefs.setString('cached_categories', json.encode(currentCats));
+            await prefs.setString(
+              'cached_categories',
+              json.encode(currentCats),
+            );
           }
         }
       } catch (_) {}
@@ -279,16 +292,23 @@ class CategoryRepository {
       try {
         // 2. Adiciona ao final da fila de atualizações pendentes
         final List<dynamic> pendingUpdatesList = [];
-        final String? existingPending = prefs.getString('pending_category_updates');
+        final String? existingPending = prefs.getString(
+          'pending_category_updates',
+        );
         if (existingPending != null && existingPending.isNotEmpty) {
           pendingUpdatesList.addAll(json.decode(existingPending));
         }
         pendingUpdatesList.add(pendingUpdate);
-        await prefs.setString('pending_category_updates', json.encode(pendingUpdatesList));
+        await prefs.setString(
+          'pending_category_updates',
+          json.encode(pendingUpdatesList),
+        );
 
         return Category.fromJson(localMockCat);
       } catch (cacheError) {
-        debugPrint('Erro ao enfileirar atualização offline de categoria: $cacheError');
+        debugPrint(
+          'Erro ao enfileirar atualização offline de categoria: $cacheError',
+        );
         rethrow;
       }
     }
@@ -310,7 +330,10 @@ class CategoryRepository {
           if (cachedData != null) {
             final List<dynamic> currentCats = json.decode(cachedData);
             currentCats.removeWhere((cat) => cat['id'] == id);
-            await prefs.setString('cached_categories', json.encode(currentCats));
+            await prefs.setString(
+              'cached_categories',
+              json.encode(currentCats),
+            );
           }
         } catch (_) {}
       } else if (response.statusCode == 401) {
@@ -351,12 +374,14 @@ class CategoryRepository {
 
       final List<dynamic> remainingPending = [];
 
-      debugPrint('CategoryRepository: Iniciando sincronização de ${pendingList.length} atualizações de categorias offline...');
+      debugPrint(
+        'CategoryRepository: Iniciando sincronização de ${pendingList.length} atualizações de categorias offline...',
+      );
 
       for (final updateMap in pendingList) {
         try {
           final String catId = updateMap['id'];
-          
+
           // Se o ID for provisório offline, não dá para atualizar no servidor diretamente!
           // Mas ele já será criado com os dados mais recentes na fila de criação.
           if (catId.startsWith('offline_cat_')) {
@@ -380,18 +405,29 @@ class CategoryRepository {
             remainingPending.add(updateMap);
           }
         } catch (e) {
-          remainingPending.addAll(pendingList.sublist(pendingList.indexOf(updateMap)));
-          debugPrint('CategoryRepository: Pausando sincronização de atualizações devido a erro de rede: $e');
+          remainingPending.addAll(
+            pendingList.sublist(pendingList.indexOf(updateMap)),
+          );
+          debugPrint(
+            'CategoryRepository: Pausando sincronização de atualizações devido a erro de rede: $e',
+          );
           break;
         }
       }
 
       if (remainingPending.isEmpty) {
         await prefs.remove('pending_category_updates');
-        debugPrint('CategoryRepository: Sincronização offline de atualizações de categorias concluída!');
+        debugPrint(
+          'CategoryRepository: Sincronização offline de atualizações de categorias concluída!',
+        );
       } else {
-        await prefs.setString('pending_category_updates', json.encode(remainingPending));
-        debugPrint('CategoryRepository: Sincronização de atualizações incompleta. ${remainingPending.length} restantes na fila.');
+        await prefs.setString(
+          'pending_category_updates',
+          json.encode(remainingPending),
+        );
+        debugPrint(
+          'CategoryRepository: Sincronização de atualizações incompleta. ${remainingPending.length} restantes na fila.',
+        );
       }
     } catch (e) {
       debugPrint('Erro ao sincronizar atualizações de categorias offline: $e');
@@ -418,7 +454,9 @@ class CategoryRepository {
 
       final List<dynamic> remainingPending = [];
 
-      debugPrint('CategoryRepository: Iniciando sincronização de ${pendingList.length} categorias offline...');
+      debugPrint(
+        'CategoryRepository: Iniciando sincronização de ${pendingList.length} categorias offline...',
+      );
 
       for (final catMap in pendingList) {
         try {
@@ -439,18 +477,29 @@ class CategoryRepository {
             remainingPending.add(catMap);
           }
         } catch (e) {
-          remainingPending.addAll(pendingList.sublist(pendingList.indexOf(catMap)));
-          debugPrint('CategoryRepository: Pausando sincronização de categorias devido a erro de rede: $e');
+          remainingPending.addAll(
+            pendingList.sublist(pendingList.indexOf(catMap)),
+          );
+          debugPrint(
+            'CategoryRepository: Pausando sincronização de categorias devido a erro de rede: $e',
+          );
           break;
         }
       }
 
       if (remainingPending.isEmpty) {
         await prefs.remove('pending_categories');
-        debugPrint('CategoryRepository: Sincronização offline de categorias concluída!');
+        debugPrint(
+          'CategoryRepository: Sincronização offline de categorias concluída!',
+        );
       } else {
-        await prefs.setString('pending_categories', json.encode(remainingPending));
-        debugPrint('CategoryRepository: Sincronização de categorias incompleta. ${remainingPending.length} restantes na fila.');
+        await prefs.setString(
+          'pending_categories',
+          json.encode(remainingPending),
+        );
+        debugPrint(
+          'CategoryRepository: Sincronização de categorias incompleta. ${remainingPending.length} restantes na fila.',
+        );
       }
     } catch (e) {
       debugPrint('Erro ao sincronizar categorias offline: $e');

@@ -24,7 +24,7 @@ class TransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    
+
     final Color textColor = theme.colorScheme.onSurface;
     final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600;
 
@@ -50,7 +50,9 @@ class TransactionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.05),
+              color: AppColors.darkSlate.withValues(
+                alpha: isDark ? 0.25 : 0.05,
+              ),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -77,7 +79,9 @@ class TransactionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.getTransactionName(transaction.name), // Dynamic Translation!
+                    l10n.getTransactionName(
+                      transaction.name,
+                    ), // Dynamic Translation!
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -100,15 +104,22 @@ class TransactionCard extends StatelessWidget {
                       if (badgeText != null) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkInterfaceColor : AppColors.slate100,
+                            color: isDark
+                                ? AppColors.darkInterfaceColor
+                                : AppColors.slate100,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             badgeText!,
                             style: TextStyle(
-                              color: isDark ? AppColors.slate300 : AppColors.slate700,
+                              color: isDark
+                                  ? AppColors.slate300
+                                  : AppColors.slate700,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                             ),
@@ -123,8 +134,12 @@ class TransactionCard extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  isPositive ? Icons.north_east_rounded : Icons.south_east_rounded,
-                  color: isPositive ? AppColors.greenAccent : AppColors.redAccent,
+                  isPositive
+                      ? Icons.north_east_rounded
+                      : Icons.south_east_rounded,
+                  color: isPositive
+                      ? AppColors.greenAccent
+                      : AppColors.redAccent,
                   size: 14,
                 ),
                 const SizedBox(width: 2),
@@ -133,7 +148,9 @@ class TransactionCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: isPositive ? AppColors.greenAccent : AppColors.redAccent,
+                    color: isPositive
+                        ? AppColors.greenAccent
+                        : AppColors.redAccent,
                   ),
                 ),
               ],

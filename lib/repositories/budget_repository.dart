@@ -47,15 +47,14 @@ class BudgetRepository {
       throw const HttpException('Unauthorized');
     }
 
-    final response = await _apiService.post(
-      '/budgets',
-      {
-        'amount': amount,
-        'month': month,
-        'year': year,
-        'categoryId': categoryId,
-      },
-    ).timeout(const Duration(seconds: 5));
+    final response = await _apiService
+        .post('/budgets', {
+          'amount': amount,
+          'month': month,
+          'year': year,
+          'categoryId': categoryId,
+        })
+        .timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);

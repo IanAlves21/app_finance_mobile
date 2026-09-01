@@ -278,7 +278,9 @@ class _SettingsTabState extends State<SettingsTab> {
                   _buildSettingTile(
                     Icons.logout_rounded,
                     _viewModel.isEnglish ? 'Sign Out' : 'Sair',
-                    _viewModel.isEnglish ? 'Disconnect from joint account' : 'Desconectar da conta conjunta',
+                    _viewModel.isEnglish
+                        ? 'Disconnect from joint account'
+                        : 'Desconectar da conta conjunta',
                     cardColor,
                     isDark ? AppColors.redAccent : Colors.red,
                     subTextColor,

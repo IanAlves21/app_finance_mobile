@@ -7,7 +7,7 @@ class CurrencyFormatter {
     final double absValue = value.abs();
     final String cents = (absValue % 1).toStringAsFixed(2).split('.')[1];
     final int integers = absValue.toInt();
-    
+
     // Format thousands separator
     final String integerStr = integers.toString();
     final StringBuffer buffer = StringBuffer();
@@ -17,7 +17,7 @@ class CurrencyFormatter {
       }
       buffer.write(integerStr[i]);
     }
-    
+
     return ['${sign}R\$ $buffer', ',$cents'];
   }
 
@@ -28,7 +28,7 @@ class CurrencyFormatter {
     final double absValue = value.abs();
     final String cents = (absValue % 1).toStringAsFixed(2).split('.')[1];
     final int integers = absValue.toInt();
-    
+
     // Format thousands separator
     final String integerStr = integers.toString();
     final StringBuffer buffer = StringBuffer();
@@ -38,7 +38,7 @@ class CurrencyFormatter {
       }
       buffer.write(integerStr[i]);
     }
-    
+
     if (cents == '00') {
       return 'R\$ $buffer';
     } else {

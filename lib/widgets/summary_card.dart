@@ -50,7 +50,9 @@ class SummaryCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkSlate.withValues(alpha: isDark ? 0.25 : 0.07),
+              color: AppColors.darkSlate.withValues(
+                alpha: isDark ? 0.25 : 0.07,
+              ),
               blurRadius: 12,
               offset: const Offset(0, 2),
             ),
@@ -84,7 +86,10 @@ class SummaryCard extends StatelessWidget {
                         borderRadius: 8,
                       )
                     : Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: badgeBg,
                           borderRadius: BorderRadius.circular(20),

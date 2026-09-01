@@ -8,7 +8,8 @@ import '../repositories/transaction_repository.dart';
 import '../services/service_locator.dart';
 
 class AnalyticsViewModel extends ChangeNotifier {
-  final TransactionRepository _transactionRepository = locator<TransactionRepository>();
+  final TransactionRepository _transactionRepository =
+      locator<TransactionRepository>();
 
   int _activeBarIndex = 0;
   String _activeFilter = 'Monthly';
@@ -28,7 +29,8 @@ class AnalyticsViewModel extends ChangeNotifier {
   List<String> get chartMonths => _chartMonths;
   List<double> get chartExpenses => _chartExpenses;
 
-  double get activeExpense => _chartExpenses.isNotEmpty && _activeBarIndex < _chartExpenses.length
+  double get activeExpense =>
+      _chartExpenses.isNotEmpty && _activeBarIndex < _chartExpenses.length
       ? _chartExpenses[_activeBarIndex]
       : 0.0;
 
@@ -54,12 +56,15 @@ class AnalyticsViewModel extends ChangeNotifier {
     return (activeSavings / income) * 100.0;
   }
 
-  String get activeMonth => _chartMonths.isNotEmpty && _activeBarIndex < _chartMonths.length
+  String get activeMonth =>
+      _chartMonths.isNotEmpty && _activeBarIndex < _chartMonths.length
       ? _chartMonths[_activeBarIndex]
       : '';
 
   DateTime get activeStartDate {
-    if (_rawSpendingData.isEmpty || _activeBarIndex < 0 || _activeBarIndex >= _rawSpendingData.length) {
+    if (_rawSpendingData.isEmpty ||
+        _activeBarIndex < 0 ||
+        _activeBarIndex >= _rawSpendingData.length) {
       return DateTime.now();
     }
     final int rawIndex = _activeBarIndex + 1;
@@ -86,7 +91,9 @@ class AnalyticsViewModel extends ChangeNotifier {
   }
 
   DateTime get activeEndDate {
-    if (_rawSpendingData.isEmpty || _activeBarIndex < 0 || _activeBarIndex >= _rawSpendingData.length) {
+    if (_rawSpendingData.isEmpty ||
+        _activeBarIndex < 0 ||
+        _activeBarIndex >= _rawSpendingData.length) {
       return DateTime.now();
     }
     final int rawIndex = _activeBarIndex + 1;
@@ -104,7 +111,9 @@ class AnalyticsViewModel extends ChangeNotifier {
       final int month = (interval['month'] as num).toInt();
       final int day = (interval['day'] as num).toInt();
       final start = DateTime(year, month, day);
-      return start.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+      return start.add(
+        const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
+      );
     } else {
       // MONTHLY
       final int year = (interval['year'] as num).toInt();
@@ -117,7 +126,9 @@ class AnalyticsViewModel extends ChangeNotifier {
 
   /// Retorna a lista de categorias agregadas para o intervalo atualmente selecionado.
   List<Map<String, dynamic>> get activeCategories {
-    if (_rawSpendingData.isEmpty || _activeBarIndex < 0 || _activeBarIndex >= _rawSpendingData.length) {
+    if (_rawSpendingData.isEmpty ||
+        _activeBarIndex < 0 ||
+        _activeBarIndex >= _rawSpendingData.length) {
       return [];
     }
 
@@ -133,13 +144,17 @@ class AnalyticsViewModel extends ChangeNotifier {
     }
 
     return List<Map<String, dynamic>>.from(
-      (interval['categories'] as List).map((item) => Map<String, dynamic>.from(item))
+      (interval['categories'] as List).map(
+        (item) => Map<String, dynamic>.from(item),
+      ),
     );
   }
 
   /// Retorna o breakdown de gastos por usuário (parceiro) para o intervalo selecionado.
   List<Map<String, dynamic>> get activeUserBreakdown {
-    if (_rawSpendingData.isEmpty || _activeBarIndex < 0 || _activeBarIndex >= _rawSpendingData.length) {
+    if (_rawSpendingData.isEmpty ||
+        _activeBarIndex < 0 ||
+        _activeBarIndex >= _rawSpendingData.length) {
       return [];
     }
 
@@ -154,13 +169,17 @@ class AnalyticsViewModel extends ChangeNotifier {
     }
 
     return List<Map<String, dynamic>>.from(
-      (interval['byUser'] as List).map((item) => Map<String, dynamic>.from(item))
+      (interval['byUser'] as List).map(
+        (item) => Map<String, dynamic>.from(item),
+      ),
     );
   }
 
   /// Retorna a porcentagem de variação de gastos do mês ativo comparado ao mês imediatamente anterior.
   Map<String, dynamic> get activeComparison {
-    if (_chartExpenses.isEmpty || _activeBarIndex < 0 || _activeBarIndex >= _chartExpenses.length) {
+    if (_chartExpenses.isEmpty ||
+        _activeBarIndex < 0 ||
+        _activeBarIndex >= _chartExpenses.length) {
       return {
         'text': '0,0%',
         'isIncrease': false,
@@ -190,8 +209,10 @@ class AnalyticsViewModel extends ChangeNotifier {
       };
     }
 
-    final double currentExpense = (_rawSpendingData[rawIndex]['expense'] as num).toDouble();
-    final double prevExpense = (_rawSpendingData[rawIndex - 1]['expense'] as num).toDouble();
+    final double currentExpense = (_rawSpendingData[rawIndex]['expense'] as num)
+        .toDouble();
+    final double prevExpense =
+        (_rawSpendingData[rawIndex - 1]['expense'] as num).toDouble();
 
     if (prevExpense == 0.0) {
       if (currentExpense == 0.0) {
@@ -211,14 +232,18 @@ class AnalyticsViewModel extends ChangeNotifier {
       }
     }
 
-    final double percentage = ((currentExpense - prevExpense) / prevExpense) * 100;
+    final double percentage =
+        ((currentExpense - prevExpense) / prevExpense) * 100;
     final String sign = percentage > 0 ? '+' : '';
-    final String formattedText = '$sign${percentage.toStringAsFixed(1).replaceAll('.', ',')}%';
+    final String formattedText =
+        '$sign${percentage.toStringAsFixed(1).replaceAll('.', ',')}%';
 
     return {
       'text': formattedText,
       'isIncrease': percentage > 0,
-      'icon': percentage > 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+      'icon': percentage > 0
+          ? Icons.trending_up_rounded
+          : Icons.trending_down_rounded,
       'isNeutral': percentage == 0.0,
     };
   }
@@ -228,11 +253,15 @@ class AnalyticsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final String timeframe = _activeFilter.toUpperCase(); // 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+      final String timeframe = _activeFilter
+          .toUpperCase(); // 'WEEKLY' | 'MONTHLY' | 'YEARLY'
 
       // Buscamos 7 intervalos para poder calcular a comparação do primeiro visível (que são 6 colunas)
-      final data = await _transactionRepository.fetchMonthlySpending(limit: 7, timeframe: timeframe);
-      
+      final data = await _transactionRepository.fetchMonthlySpending(
+        limit: 7,
+        timeframe: timeframe,
+      );
+
       // Se temos menos de 7 intervalos de retorno, completamos o array para 7 elementos
       while (data.length < 7) {
         final DateTime now = DateTime.now();
@@ -246,7 +275,11 @@ class AnalyticsViewModel extends ChangeNotifier {
             'byUser': [],
           });
         } else if (timeframe == 'WEEKLY') {
-          final currentWeekStart = DateTime(now.year, now.month, now.day - now.weekday);
+          final currentWeekStart = DateTime(
+            now.year,
+            now.month,
+            now.day - now.weekday,
+          );
           final d = currentWeekStart.subtract(Duration(days: intervalsAgo * 7));
           data.insert(0, {
             'year': d.year,
@@ -294,13 +327,17 @@ class AnalyticsViewModel extends ChangeNotifier {
           final int month = item['month'] as int;
           final int day = item['day'] as int;
           final date = DateTime(year, month, day);
-          
+
           final weekLabel = DateFormat('d/MMM', locale).format(date);
           formattedMonth = weekLabel;
           if (formattedMonth.isNotEmpty) {
-            formattedMonth = formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
+            formattedMonth =
+                formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
             if (formattedMonth.endsWith('.')) {
-              formattedMonth = formattedMonth.substring(0, formattedMonth.length - 1);
+              formattedMonth = formattedMonth.substring(
+                0,
+                formattedMonth.length - 1,
+              );
             }
           }
         } else {
@@ -309,12 +346,16 @@ class AnalyticsViewModel extends ChangeNotifier {
           final int year = item['year'] as int;
           final date = DateTime(year, month, 1);
           final monthName = DateFormat('MMM', locale).format(date);
-          
+
           formattedMonth = monthName;
           if (formattedMonth.isNotEmpty) {
-            formattedMonth = formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
+            formattedMonth =
+                formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
             if (formattedMonth.endsWith('.')) {
-              formattedMonth = formattedMonth.substring(0, formattedMonth.length - 1);
+              formattedMonth = formattedMonth.substring(
+                0,
+                formattedMonth.length - 1,
+              );
             }
           }
         }
@@ -329,7 +370,8 @@ class AnalyticsViewModel extends ChangeNotifier {
 
       // Define como ativo o intervalo atual (mês, semana ou ano atual) de forma inteligente
       if (_chartExpenses.isNotEmpty) {
-        _activeBarIndex = _chartExpenses.length - 1; // default fallback (mais recente)
+        _activeBarIndex =
+            _chartExpenses.length - 1; // default fallback (mais recente)
         final DateTime now = DateTime.now();
 
         for (int i = 0; i < displayData.length; i++) {
@@ -339,7 +381,11 @@ class AnalyticsViewModel extends ChangeNotifier {
               break;
             }
           } else if (timeframe == 'WEEKLY') {
-            final currentWeekStart = DateTime(now.year, now.month, now.day - now.weekday);
+            final currentWeekStart = DateTime(
+              now.year,
+              now.month,
+              now.day - now.weekday,
+            );
             final int year = displayData[i]['year'] as int;
             final int month = displayData[i]['month'] as int;
             final int day = displayData[i]['day'] as int;
@@ -352,7 +398,8 @@ class AnalyticsViewModel extends ChangeNotifier {
             }
           } else {
             // MONTHLY
-            if (displayData[i]['year'] == now.year && displayData[i]['month'] == now.month) {
+            if (displayData[i]['year'] == now.year &&
+                displayData[i]['month'] == now.month) {
               _activeBarIndex = i;
               break;
             }
@@ -400,9 +447,10 @@ class AnalyticsViewModel extends ChangeNotifier {
 
       // Salva o PDF localmente na pasta temporária do dispositivo
       final tempDir = await getTemporaryDirectory();
-      final String fileName = 'Relatorio_Financeiro_${startDateStr}_$endDateStr.pdf';
+      final String fileName =
+          'Relatorio_Financeiro_${startDateStr}_$endDateStr.pdf';
       final File file = File('${tempDir.path}/$fileName');
-      
+
       await file.writeAsBytes(pdfBytes, flush: true);
 
       // Abre o PDF nativamente

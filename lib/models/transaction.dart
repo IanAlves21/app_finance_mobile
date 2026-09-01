@@ -41,7 +41,8 @@ class Transaction {
     final double amount = (type == 'INCOME') ? rawAmount : -rawAmount;
 
     // Parse category
-    final String category = json['category'] != null && json['category']['name'] != null
+    final String category =
+        json['category'] != null && json['category']['name'] != null
         ? json['category']['name'].toString()
         : _inferCategory(name, type);
 
@@ -61,18 +62,20 @@ class Transaction {
     }
 
     // Resolve default fields or fallback values
-    final String paidBy = json['paidBy'] != null && json['paidBy']['name'] != null
+    final String paidBy =
+        json['paidBy'] != null && json['paidBy']['name'] != null
         ? json['paidBy']['name'].toString()
         : (json['paidById'] != null
-            ? _resolveUser(json['paidById'].toString())
-            : "John Doe");
-            
-    final String account = json['wallet'] != null && json['wallet']['name'] != null
+              ? _resolveUser(json['paidById'].toString())
+              : "John Doe");
+
+    final String account =
+        json['wallet'] != null && json['wallet']['name'] != null
         ? json['wallet']['name'].toString()
         : (json['walletId'] != null
-            ? _resolveAccount(json['walletId'].toString())
-            : "Shared Wallet Account");
-            
+              ? _resolveAccount(json['walletId'].toString())
+              : "Shared Wallet Account");
+
     final String note = json['note']?.toString() ?? "";
 
     // Format status
@@ -84,8 +87,12 @@ class Transaction {
       status = 'Failed';
     }
 
-    final String? categoryIcon = json['category'] != null ? json['category']['icon']?.toString() : null;
-    final String? categoryColor = json['category'] != null ? json['category']['color']?.toString() : null;
+    final String? categoryIcon = json['category'] != null
+        ? json['category']['icon']?.toString()
+        : null;
+    final String? categoryColor = json['category'] != null
+        ? json['category']['color']?.toString()
+        : null;
     final String? paymentMethod = json['paymentMethod']?.toString();
 
     return Transaction(

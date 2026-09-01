@@ -378,4 +378,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetHint => 'e.g. 500';
+
+  @override
+  String get loginTitle => 'Welcome back';
+
+  @override
+  String get loginSubtitle => 'Your financial life, simplified';
+
+  @override
+  String get emailLabel => 'E-MAIL';
+
+  @override
+  String get passwordLabel => 'PASSWORD';
+
+  @override
+  String get signInButton => 'Sign In';
+
+  @override
+  String get emailPlaceholder => 'your.email@example.com';
+
+  @override
+  String get invalidCredentialsError => 'Invalid email or password';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get pleaseFillAllFields => 'Please fill out all fields';
+
+  @override
+  String get signUpPrompt => 'New here? ';
+
+  @override
+  String get createAccountButton => 'Create account';
+
+  @override
+  String get registerTitle => 'Create Account';
+
+  @override
+  String get registerSubtitle => 'Sign up to get started';
+
+  @override
+  String get nameLabel => 'NAME';
+
+  @override
+  String get namePlaceholder => 'Your name';
+
+  @override
+  String get confirmPasswordLabel => 'CONFIRM PASSWORD';
+
+  @override
+  String get confirmPasswordPlaceholder => '••••••••';
+
+  @override
+  String get registerButton => 'Sign Up';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account? ';
+
+  @override
+  String get loginLink => 'Log In';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get registerSuccess => 'Account created successfully! Please log in.';
+
+  @override
+  String get nameRequired => 'Please enter your name';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters';
+
+  @override
+  String get googleSignInButton => 'Sign in with Google';
 }

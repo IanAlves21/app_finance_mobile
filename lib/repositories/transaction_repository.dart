@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/transaction.dart';
@@ -67,13 +67,17 @@ class TransactionRepository {
         await _apiService.logout();
         throw const HttpException('Unauthorized');
       } else {
-        throw HttpException('Failed to load transactions: ${response.statusCode}');
+        throw HttpException(
+          'Failed to load transactions: ${response.statusCode}',
+        );
       }
     } catch (e) {
       if (e is HttpException && e.message == 'Unauthorized') {
         rethrow;
       }
-      debugPrint('TransactionRepository error, carregando transações do cache local: $e');
+      debugPrint(
+        'TransactionRepository error, carregando transações do cache local: $e',
+      );
 
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -104,18 +108,15 @@ class TransactionRepository {
 
     try {
       final response = await _apiService
-          .post(
-            '/transactions',
-            {
-              'description': description,
-              'amount': amount,
-              'type': type,
-              'date': date,
-              if (categoryId != null) 'categoryId': categoryId,
-              if (paymentMethod != null) 'paymentMethod': paymentMethod,
-              if (installments != null) 'installments': installments,
-            },
-          )
+          .post('/transactions', {
+            'description': description,
+            'amount': amount,
+            'type': type,
+            'date': date,
+            if (categoryId != null) 'categoryId': categoryId,
+            if (paymentMethod != null) 'paymentMethod': paymentMethod,
+            if (installments != null) 'installments': installments,
+          })
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -126,11 +127,16 @@ class TransactionRepository {
         if (newTx.status == 'Completed' || newTx.status == 'Pending') {
           try {
             final String? cachedData = prefs.getString('cached_transactions');
-            final List<dynamic> cacheList = cachedData != null ? json.decode(cachedData) : [];
-            
+            final List<dynamic> cacheList = cachedData != null
+                ? json.decode(cachedData)
+                : [];
+
             // Adiciona no topo da lista (transação mais recente primeiro)
             cacheList.insert(0, data);
-            await prefs.setString('cached_transactions', json.encode(cacheList));
+            await prefs.setString(
+              'cached_transactions',
+              json.encode(cacheList),
+            );
           } catch (cacheError) {
             debugPrint('Erro ao atualizar cache de transações: $cacheError');
           }
@@ -158,7 +164,9 @@ class TransactionRepository {
       if (e is HttpException && e.message == 'Unauthorized') {
         rethrow;
       }
-      debugPrint('TransactionRepository error durante criação, enfileirando offline: $e');
+      debugPrint(
+        'TransactionRepository error durante criação, enfileirando offline: $e',
+      );
 
       // Salva a transação pendente na lista local para sincronização futura
       final pendingTx = {
@@ -231,7 +239,9 @@ class TransactionRepository {
 
       final List<dynamic> remainingPending = [];
 
-      debugPrint('TransactionRepository: Iniciando sincronização de ${pendingList.length} transações offline...');
+      debugPrint(
+        'TransactionRepository: Iniciando sincronização de ${pendingList.length} transações offline...',
+      );
 
       for (final txMap in pendingList) {
         try {
@@ -241,9 +251,12 @@ class TransactionRepository {
                 'amount': txMap['amount'],
                 'type': txMap['type'],
                 'date': txMap['date'],
-                if (txMap.containsKey('categoryId')) 'categoryId': txMap['categoryId'],
-                if (txMap.containsKey('paymentMethod')) 'paymentMethod': txMap['paymentMethod'],
-                if (txMap.containsKey('installments')) 'installments': txMap['installments'],
+                if (txMap.containsKey('categoryId'))
+                  'categoryId': txMap['categoryId'],
+                if (txMap.containsKey('paymentMethod'))
+                  'paymentMethod': txMap['paymentMethod'],
+                if (txMap.containsKey('installments'))
+                  'installments': txMap['installments'],
               })
               .timeout(const Duration(seconds: 5));
 
@@ -255,18 +268,29 @@ class TransactionRepository {
             remainingPending.add(txMap);
           }
         } catch (e) {
-          remainingPending.addAll(pendingList.sublist(pendingList.indexOf(txMap)));
-          debugPrint('TransactionRepository: Pausando sincronização de transações devido a erro de rede: $e');
+          remainingPending.addAll(
+            pendingList.sublist(pendingList.indexOf(txMap)),
+          );
+          debugPrint(
+            'TransactionRepository: Pausando sincronização de transações devido a erro de rede: $e',
+          );
           break;
         }
       }
 
       if (remainingPending.isEmpty) {
         await prefs.remove('pending_transactions');
-        debugPrint('TransactionRepository: Sincronização offline de transações concluída!');
+        debugPrint(
+          'TransactionRepository: Sincronização offline de transações concluída!',
+        );
       } else {
-        await prefs.setString('pending_transactions', json.encode(remainingPending));
-        debugPrint('TransactionRepository: Sincronização de transações incompleta. ${remainingPending.length} restantes na fila.');
+        await prefs.setString(
+          'pending_transactions',
+          json.encode(remainingPending),
+        );
+        debugPrint(
+          'TransactionRepository: Sincronização de transações incompleta. ${remainingPending.length} restantes na fila.',
+        );
       }
     } catch (e) {
       debugPrint('Erro ao sincronizar transações offline: $e');
@@ -295,7 +319,10 @@ class TransactionRepository {
           if (cachedData != null) {
             final List<dynamic> cacheList = json.decode(cachedData);
             cacheList.removeWhere((tx) => tx['id'] == id);
-            await prefs.setString('cached_transactions', json.encode(cacheList));
+            await prefs.setString(
+              'cached_transactions',
+              json.encode(cacheList),
+            );
           }
         } catch (cacheError) {
           debugPrint('Erro ao atualizar cache após exclusão: $cacheError');
@@ -304,7 +331,9 @@ class TransactionRepository {
         await _apiService.logout();
         throw const HttpException('Unauthorized');
       } else {
-        throw HttpException('Failed to delete transaction: ${response.statusCode}');
+        throw HttpException(
+          'Failed to delete transaction: ${response.statusCode}',
+        );
       }
     } catch (e) {
       if (e is HttpException && e.message == 'Unauthorized') {
@@ -369,8 +398,8 @@ class TransactionRepository {
       }
 
       final response = await _apiService
-         .get('/analytics/monthly-spending?limit=$limit&timeframe=$timeframe')
-         .timeout(const Duration(seconds: 5));
+          .get('/analytics/monthly-spending?limit=$limit&timeframe=$timeframe')
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -379,14 +408,18 @@ class TransactionRepository {
         await _apiService.logout();
         throw const HttpException('Unauthorized');
       } else {
-        throw HttpException('Failed to load monthly spending: ${response.statusCode}');
+        throw HttpException(
+          'Failed to load monthly spending: ${response.statusCode}',
+        );
       }
     } catch (e) {
       if (e is HttpException && e.message == 'Unauthorized') {
         rethrow;
       }
-      debugPrint('Erro ao carregar gastos históricos do servidor ($timeframe): $e');
-      
+      debugPrint(
+        'Erro ao carregar gastos históricos do servidor ($timeframe): $e',
+      );
+
       // Fallback local para estabilidade offline
       final DateTime now = DateTime.now();
       final List<Map<String, dynamic>> fallbackData = [];
@@ -398,7 +431,11 @@ class TransactionRepository {
             'expense': 0.0,
           });
         } else if (timeframe == 'WEEKLY') {
-          final currentWeekStart = DateTime(now.year, now.month, now.day - now.weekday);
+          final currentWeekStart = DateTime(
+            now.year,
+            now.month,
+            now.day - now.weekday,
+          );
           final d = currentWeekStart.subtract(Duration(days: i * 7));
           fallbackData.add({
             'year': d.year,
@@ -436,7 +473,9 @@ class TransactionRepository {
 
       final response = await _apiService
           .get('/analytics/report/pdf?startDate=$startDate&endDate=$endDate')
-          .timeout(const Duration(seconds: 10)); // 10 seconds timeout for report compilation
+          .timeout(
+            const Duration(seconds: 10),
+          ); // 10 seconds timeout for report compilation
 
       if (response.statusCode == 200) {
         return response.bodyBytes;
@@ -444,7 +483,9 @@ class TransactionRepository {
         await _apiService.logout();
         throw const HttpException('Unauthorized');
       } else {
-        throw HttpException('Failed to generate report: ${response.statusCode}');
+        throw HttpException(
+          'Failed to generate report: ${response.statusCode}',
+        );
       }
     } catch (e) {
       if (e is HttpException && e.message == 'Unauthorized') {

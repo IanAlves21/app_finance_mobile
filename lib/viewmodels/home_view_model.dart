@@ -9,7 +9,8 @@ class HomeViewModel extends ChangeNotifier {
   final TransactionRepository _transactionRepository;
 
   HomeViewModel({TransactionRepository? transactionRepository})
-    : _transactionRepository = transactionRepository ?? locator<TransactionRepository>();
+    : _transactionRepository =
+          transactionRepository ?? locator<TransactionRepository>();
 
   List<Transaction> _transactions = [];
   bool _isLoadingTransactions = true;
@@ -28,7 +29,8 @@ class HomeViewModel extends ChangeNotifier {
   bool _isLoadMoreLoading = false;
 
   List<Transaction> get transactions => _transactions;
-  bool get isLoading => _isLoadingTransactions; // Backward-compatibility for list skeletons
+  bool get isLoading =>
+      _isLoadingTransactions; // Backward-compatibility for list skeletons
   bool get isLoadingTransactions => _isLoadingTransactions;
   bool get isLoadingSummary => _isLoadingSummary;
   double get balance => _balance;
@@ -77,12 +79,15 @@ class HomeViewModel extends ChangeNotifier {
     final sign = pct >= 0 ? '+' : '';
     return '$sign${pct.toStringAsFixed(1)}%';
   }
-  
+
   int get currentPage => _currentPage;
   bool get hasMore => _hasMore;
   bool get isLoadMoreLoading => _isLoadMoreLoading;
 
-  Future<void> loadTransactions({bool isRefresh = true, VoidCallback? onUnauthorized}) async {
+  Future<void> loadTransactions({
+    bool isRefresh = true,
+    VoidCallback? onUnauthorized,
+  }) async {
     if (isRefresh) {
       _isLoadingTransactions = true;
       _isLoadingSummary = true;
@@ -152,8 +157,19 @@ class HomeViewModel extends ChangeNotifier {
 
         // Carrega também o resumo do mês anterior
         final prevMonthDate = DateTime(now.year, now.month - 1, 1);
-        final firstDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month, 1);
-        final lastDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month + 1, 0, 23, 59, 59);
+        final firstDayOfPrevMonth = DateTime(
+          prevMonthDate.year,
+          prevMonthDate.month,
+          1,
+        );
+        final lastDayOfPrevMonth = DateTime(
+          prevMonthDate.year,
+          prevMonthDate.month + 1,
+          0,
+          23,
+          59,
+          59,
+        );
 
         final prevSummary = await _transactionRepository.fetchMonthlySummary(
           startDate: firstDayOfPrevMonth.toIso8601String(),
@@ -199,10 +215,13 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   /// Exclui uma transação e atualiza o estado local de forma imediata
-  Future<void> deleteTransaction(String id, {VoidCallback? onUnauthorized}) async {
+  Future<void> deleteTransaction(
+    String id, {
+    VoidCallback? onUnauthorized,
+  }) async {
     try {
       await _transactionRepository.deleteTransaction(id);
-      
+
       // Remove a transação localmente
       _transactions.removeWhere((tx) => tx.id == id);
 
@@ -219,7 +238,7 @@ class HomeViewModel extends ChangeNotifier {
       _income = summary['income'];
       _expenses = summary['expenses'];
       _balance = summary['balance'];
-      
+
       notifyListeners();
     } on HttpException catch (e) {
       if (e.message == 'Unauthorized') {

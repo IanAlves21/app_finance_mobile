@@ -14,7 +14,8 @@ class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<TransactionHistoryScreen> createState() =>
+      _TransactionHistoryScreenState();
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
@@ -37,7 +38,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _viewModel.loadNextPage().catchError((e) {
         if (mounted) {
           final l10n = AppLocalizations.of(context)!;
@@ -78,10 +80,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             backgroundColor: isDark ? AppColors.darkCard : Colors.white,
             primaryColor: AppColors.accentOrange,
             onApplyClick: (start, end) {
-              _viewModel.setDateRange(DateTimeRange(
-                start: start,
-                end: DateTime(end.year, end.month, end.day, 23, 59, 59),
-              ));
+              _viewModel.setDateRange(
+                DateTimeRange(
+                  start: start,
+                  end: DateTime(end.year, end.month, end.day, 23, 59, 59),
+                ),
+              );
             },
             onCancelClick: () {
               // No pop needed here either, the package widget handles it internally
@@ -91,14 +95,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return ScaleTransition(
-          scale: CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutBack,
-          ),
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
     );
@@ -129,7 +127,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkScaffold : AppColors.lightScaffold,
+      backgroundColor: isDark
+          ? AppColors.darkScaffold
+          : AppColors.lightScaffold,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -137,8 +137,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
           statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-          systemNavigationBarColor: isDark ? AppColors.darkScaffold : AppColors.lightScaffold,
-          systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: isDark
+              ? AppColors.darkScaffold
+              : AppColors.lightScaffold,
+          systemNavigationBarIconBrightness: isDark
+              ? Brightness.light
+              : Brightness.dark,
         ),
         leading: IconButton(
           icon: Icon(
@@ -168,18 +172,26 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               children: [
                 // Filter Pill Card
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: InkWell(
                     onTap: _selectCustomRange,
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? AppColors.darkCard : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.darkSlate.withValues(alpha: isDark ? 0.2 : 0.04),
+                            color: AppColors.darkSlate.withValues(
+                              alpha: isDark ? 0.2 : 0.04,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -232,51 +244,62 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 Expanded(
                   child: _viewModel.isLoading
                       ? const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
                           child: TransactionSkeleton(itemCount: 5),
                         )
                       : _viewModel.transactions.isEmpty
-                          ? Center(
-                              child: Text(
-                                l10n.noTransactionsInPeriod,
-                                style: TextStyle(
-                                  color: subTextColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(
-                                parent: BouncingScrollPhysics(),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              itemCount: _viewModel.transactions.length + (_viewModel.hasMore ? 1 : 0),
-                              separatorBuilder: (context, index) => const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                if (index == _viewModel.transactions.length) {
-                                  return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 16),
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentOrange),
-                                        ),
+                      ? Center(
+                          child: Text(
+                            l10n.noTransactionsInPeriod,
+                            style: TextStyle(
+                              color: subTextColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          itemCount:
+                              _viewModel.transactions.length +
+                              (_viewModel.hasMore ? 1 : 0),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            if (index == _viewModel.transactions.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.accentOrange,
                                       ),
                                     ),
-                                  );
-                                }
-                                final tx = _viewModel.transactions[index];
-                                return TransactionCard(
-                                  transaction: tx,
-                                  onDelete: () => _deleteTransaction(tx.id),
-                                );
-                              },
-                            ),
+                                  ),
+                                ),
+                              );
+                            }
+                            final tx = _viewModel.transactions[index];
+                            return TransactionCard(
+                              transaction: tx,
+                              onDelete: () => _deleteTransaction(tx.id),
+                            );
+                          },
+                        ),
                 ),
               ],
             );

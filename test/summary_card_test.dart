@@ -4,14 +4,12 @@ import 'package:app_finance_mobile/widgets/summary_card.dart';
 
 void main() {
   Widget buildTestableWidget(Widget child) {
-    return MaterialApp(
-      home: Scaffold(
-        body: child,
-      ),
-    );
+    return MaterialApp(home: Scaffold(body: child));
   }
 
-  testWidgets('SummaryCard uses iconColor for border when selected', (WidgetTester tester) async {
+  testWidgets('SummaryCard uses iconColor for border when selected', (
+    WidgetTester tester,
+  ) async {
     const iconColor = Colors.green;
     const badgeColor = Colors.red;
 
@@ -32,22 +30,26 @@ void main() {
     );
 
     // Find the Container inside SummaryCard that holds the decoration
-    final containerFinder = find.descendant(
-      of: find.byType(SummaryCard),
-      matching: find.byType(Container),
-    ).first;
-    
+    final containerFinder = find
+        .descendant(
+          of: find.byType(SummaryCard),
+          matching: find.byType(Container),
+        )
+        .first;
+
     final container = tester.widget<Container>(containerFinder);
     final decoration = container.decoration as BoxDecoration;
     final border = decoration.border as Border?;
-    
+
     // Verify border color is iconColor (green), not badgeColor (red)
     expect(border, isNotNull);
     expect(border!.top.color, iconColor);
     expect(border.top.width, 2.0);
   });
 
-  testWidgets('SummaryCard uses transparent border when not selected', (WidgetTester tester) async {
+  testWidgets('SummaryCard uses transparent border when not selected', (
+    WidgetTester tester,
+  ) async {
     const iconColor = Colors.green;
     const badgeColor = Colors.red;
 
@@ -67,15 +69,17 @@ void main() {
       ),
     );
 
-    final containerFinder = find.descendant(
-      of: find.byType(SummaryCard),
-      matching: find.byType(Container),
-    ).first;
-    
+    final containerFinder = find
+        .descendant(
+          of: find.byType(SummaryCard),
+          matching: find.byType(Container),
+        )
+        .first;
+
     final container = tester.widget<Container>(containerFinder);
     final decoration = container.decoration as BoxDecoration;
     final border = decoration.border as Border?;
-    
+
     // Verify border color is Colors.transparent when not selected
     expect(border, isNotNull);
     expect(border!.top.color, Colors.transparent);

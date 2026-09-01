@@ -44,6 +44,7 @@ dependencies:
   custom_date_range_picker: ^1.2.0
   path_provider: ^2.1.2
   open_filex: ^4.5.0
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:

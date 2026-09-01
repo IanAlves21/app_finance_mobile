@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -10,8 +10,13 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 class MockTransactionRepository extends TransactionRepository {
-  MockTransactionRepository() : super(apiService: ApiService(client: MockClient((_) async => http.Response('', 200))));
-  
+  MockTransactionRepository()
+    : super(
+        apiService: ApiService(
+          client: MockClient((_) async => http.Response('', 200)),
+        ),
+      );
+
   List<Map<String, dynamic>>? mockSpendingResponse;
 
   @override
@@ -39,13 +44,15 @@ void main() {
 
   setUpAll(() {
     // Mock the PathProvider and OpenFilex platform channels to avoid native channel exceptions
-    const MethodChannel('plugins.flutter.io/path_provider')
-        .setMockMethodCallHandler((MethodCall methodCall) async {
+    const MethodChannel(
+      'plugins.flutter.io/path_provider',
+    ).setMockMethodCallHandler((MethodCall methodCall) async {
       return '.';
     });
 
-    const MethodChannel('open_filex')
-        .setMockMethodCallHandler((MethodCall methodCall) async {
+    const MethodChannel('open_filex').setMockMethodCallHandler((
+      MethodCall methodCall,
+    ) async {
       return {'type': 0, 'message': 'done'};
     });
   });
@@ -76,7 +83,7 @@ void main() {
           'expense': 6500.0,
           'categories': [],
           'byUser': [],
-        }
+        },
       ];
 
       await viewModel.loadMonthlySpending();
@@ -105,7 +112,7 @@ void main() {
           'expense': 5000.0,
           'categories': [],
           'byUser': [],
-        }
+        },
       ];
 
       await viewModel.loadMonthlySpending();
@@ -134,7 +141,7 @@ void main() {
           'expense': 1200.0,
           'categories': [],
           'byUser': [],
-        }
+        },
       ];
 
       await viewModel.loadMonthlySpending();
@@ -146,20 +153,23 @@ void main() {
       expect(viewModel.savingsRate, 0.0);
     });
 
-    test('generatePdfReport completes successfully and sets isGeneratingPdf', () async {
-      expect(viewModel.isGeneratingPdf, isFalse);
+    test(
+      'generatePdfReport completes successfully and sets isGeneratingPdf',
+      () async {
+        expect(viewModel.isGeneratingPdf, isFalse);
 
-      final future = viewModel.generatePdfReport(
-        startDate: DateTime(2026, 1, 1),
-        endDate: DateTime(2026, 1, 31),
-        onUnauthorized: () {},
-      );
+        final future = viewModel.generatePdfReport(
+          startDate: DateTime(2026, 1, 1),
+          endDate: DateTime(2026, 1, 31),
+          onUnauthorized: () {},
+        );
 
-      expect(viewModel.isGeneratingPdf, isTrue);
+        expect(viewModel.isGeneratingPdf, isTrue);
 
-      await future;
+        await future;
 
-      expect(viewModel.isGeneratingPdf, isFalse);
-    });
+        expect(viewModel.isGeneratingPdf, isFalse);
+      },
+    );
   });
 }

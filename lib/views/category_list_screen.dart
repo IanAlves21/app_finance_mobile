@@ -14,7 +14,8 @@ class CategoryListScreen extends StatefulWidget {
   State<CategoryListScreen> createState() => _CategoryListScreenState();
 }
 
-class _CategoryListScreenState extends State<CategoryListScreen> with SingleTickerProviderStateMixin {
+class _CategoryListScreenState extends State<CategoryListScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final CategoryListViewModel _viewModel;
 
@@ -50,18 +51,26 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           l10n.deleteCategory,
-          style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: Text(
           l10n.deleteCategoryConfirm(category.name),
-          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+          style: TextStyle(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               l10n.cancel,
-              style: const TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: AppColors.slate400,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           TextButton(
@@ -71,7 +80,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             },
             child: Text(
               l10n.delete,
-              style: const TextStyle(color: AppColors.redAccent, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: AppColors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -84,16 +96,16 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
     try {
       await _viewModel.deleteCategory(categoryId);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.categoryDeleteSuccess)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.categoryDeleteSuccess)));
       }
     } catch (e) {
       if (mounted) {
         final cleanMsg = e.toString().replaceAll('HttpException: ', '');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(cleanMsg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(cleanMsg)));
       }
     }
   }
@@ -105,7 +117,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
   }
 
   Widget _buildCategoryList(String type) {
-    final filtered = _viewModel.categories.where((cat) => cat.type == type).toList();
+    final filtered = _viewModel.categories
+        .where((cat) => cat.type == type)
+        .toList();
     final l10n = AppLocalizations.of(context)!;
 
     if (filtered.isEmpty) {
@@ -146,7 +160,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
         left: 20,
         right: 20,
         top: 16,
-        bottom: bottomPadding + 86, // Espaço para a barra de navegação do Android + FAB (Floating Action Button)
+        bottom:
+            bottomPadding +
+            86, // Espaço para a barra de navegação do Android + FAB (Floating Action Button)
       ),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
@@ -167,7 +183,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             ],
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 2,
+            ),
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -193,7 +212,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
             subtitle: Row(
               children: [
                 Text(
-                  category.familyId != null ? l10n.customLabel : l10n.systemLabel,
+                  category.familyId != null
+                      ? l10n.customLabel
+                      : l10n.systemLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -205,7 +226,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                 if (category.id.startsWith('offline_cat_')) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.accentOrange.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
@@ -232,7 +256,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                             context: context,
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
-                            builder: (context) => AddCategoryBottomSheet(categoryToEdit: category),
+                            builder: (context) => AddCategoryBottomSheet(
+                              categoryToEdit: category,
+                            ),
                           );
                           if (edited == true) {
                             _loadCategories();
@@ -240,7 +266,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                         },
                         child: const Padding(
                           padding: EdgeInsets.all(4),
-                          child: Icon(Icons.edit_outlined, color: AppColors.primarySeed, size: 23),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            color: AppColors.primarySeed,
+                            size: 23,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -248,7 +278,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                         onTap: () => _confirmDeleteCategory(category),
                         child: const Padding(
                           padding: EdgeInsets.only(left: 4, top: 4, bottom: 4),
-                          child: Icon(Icons.delete_outline_rounded, color: AppColors.redAccent, size: 23),
+                          child: Icon(
+                            Icons.delete_outline_rounded,
+                            color: AppColors.redAccent,
+                            size: 23,
+                          ),
                         ),
                       ),
                     ],
@@ -271,7 +305,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 18),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: textColor,
+            size: 18,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -288,7 +326,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
           unselectedLabelColor: AppColors.slate400,
           indicatorColor: AppColors.accentOrange,
           indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
           tabs: [
             Tab(text: l10n.expensesTab),
             Tab(text: l10n.incomesTab),

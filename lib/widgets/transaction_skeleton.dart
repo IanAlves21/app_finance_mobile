@@ -4,10 +4,7 @@ import 'shimmer_loading.dart';
 class TransactionSkeleton extends StatelessWidget {
   final int itemCount;
 
-  const TransactionSkeleton({
-    super.key,
-    this.itemCount = 3,
-  });
+  const TransactionSkeleton({super.key, this.itemCount = 3});
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +34,7 @@ class TransactionSkeleton extends StatelessWidget {
           child: const Row(
             children: [
               // Skeleton Icon Container
-              SkeletonContainer(
-                width: 44,
-                height: 44,
-                borderRadius: 14,
-              ),
+              SkeletonContainer(width: 44, height: 44, borderRadius: 14),
               SizedBox(width: 14),
 
               // Skeleton Title & Date Column
@@ -50,29 +43,17 @@ class TransactionSkeleton extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Skeleton Title
-                    SkeletonContainer(
-                      width: 120,
-                      height: 14,
-                      borderRadius: 4,
-                    ),
+                    SkeletonContainer(width: 120, height: 14, borderRadius: 4),
                     SizedBox(height: 8),
 
                     // Skeleton Date
-                    SkeletonContainer(
-                      width: 70,
-                      height: 10,
-                      borderRadius: 4,
-                    ),
+                    SkeletonContainer(width: 70, height: 10, borderRadius: 4),
                   ],
                 ),
               ),
 
               // Skeleton Amount
-              SkeletonContainer(
-                width: 80,
-                height: 16,
-                borderRadius: 4,
-              ),
+              SkeletonContainer(width: 80, height: 16, borderRadius: 4),
             ],
           ),
         );

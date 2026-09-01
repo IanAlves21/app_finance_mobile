@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
 class UIUtils {
-  static Color parseHexColor(String hexStr, {Color fallback = AppColors.primarySeed}) {
+  static Color parseHexColor(
+    String hexStr, {
+    Color fallback = AppColors.primarySeed,
+  }) {
     try {
       final String cleanHex = hexStr.replaceAll('#', '').trim();
       if (cleanHex.length == 6) {

@@ -379,4 +379,79 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get budgetHint => 'Ex: 500';
+
+  @override
+  String get loginTitle => 'Bem-vindo de volta';
+
+  @override
+  String get loginSubtitle => 'Suas finanças sob controle';
+
+  @override
+  String get emailLabel => 'E-MAIL';
+
+  @override
+  String get passwordLabel => 'SENHA';
+
+  @override
+  String get signInButton => 'Entrar';
+
+  @override
+  String get emailPlaceholder => 'seu.email@exemplo.com';
+
+  @override
+  String get invalidCredentialsError => 'E-mail ou senha inválidos';
+
+  @override
+  String get forgotPassword => 'Esqueceu a senha?';
+
+  @override
+  String get pleaseFillAllFields => 'Por favor, preencha todos os campos';
+
+  @override
+  String get signUpPrompt => 'Novo por aqui? ';
+
+  @override
+  String get createAccountButton => 'Criar conta';
+
+  @override
+  String get registerTitle => 'Criar Conta';
+
+  @override
+  String get registerSubtitle => 'Cadastre-se para começar';
+
+  @override
+  String get nameLabel => 'NOME';
+
+  @override
+  String get namePlaceholder => 'Seu nome';
+
+  @override
+  String get confirmPasswordLabel => 'CONFIRMAR SENHA';
+
+  @override
+  String get confirmPasswordPlaceholder => '••••••••';
+
+  @override
+  String get registerButton => 'Cadastrar';
+
+  @override
+  String get alreadyHaveAccount => 'Já tem uma conta? ';
+
+  @override
+  String get loginLink => 'Entrar';
+
+  @override
+  String get passwordsDoNotMatch => 'As senhas não coincidem';
+
+  @override
+  String get registerSuccess => 'Conta criada com sucesso! Faça login.';
+
+  @override
+  String get nameRequired => 'Por favor, insira seu nome';
+
+  @override
+  String get passwordTooShort => 'A senha deve ter pelo menos 6 caracteres';
+
+  @override
+  String get googleSignInButton => 'Entrar com o Google';
 }

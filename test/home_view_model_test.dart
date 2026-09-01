@@ -7,9 +7,15 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 class MockTransactionRepository extends TransactionRepository {
-  MockTransactionRepository() : super(apiService: ApiService(client: MockClient((_) async => http.Response('', 200))));
-  
-  Map<String, dynamic>? Function(String startDate, String endDate)? onFetchMonthlySummary;
+  MockTransactionRepository()
+    : super(
+        apiService: ApiService(
+          client: MockClient((_) async => http.Response('', 200)),
+        ),
+      );
+
+  Map<String, dynamic>? Function(String startDate, String endDate)?
+  onFetchMonthlySummary;
   Future<List<Transaction>> Function()? onFetchTransactions;
 
   @override
@@ -18,7 +24,8 @@ class MockTransactionRepository extends TransactionRepository {
     required String endDate,
   }) async {
     if (onFetchMonthlySummary != null) {
-      return onFetchMonthlySummary!(startDate, endDate) ?? {'income': 0.0, 'expenses': 0.0, 'balance': 0.0};
+      return onFetchMonthlySummary!(startDate, endDate) ??
+          {'income': 0.0, 'expenses': 0.0, 'balance': 0.0};
     }
     return {'income': 0.0, 'expenses': 0.0, 'balance': 0.0};
   }
@@ -54,22 +61,27 @@ void main() {
       final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
       final prevMonthDate = DateTime(now.year, now.month - 1, 1);
-      final firstDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month, 1);
-      final lastDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month + 1, 0, 23, 59, 59);
+      final firstDayOfPrevMonth = DateTime(
+        prevMonthDate.year,
+        prevMonthDate.month,
+        1,
+      );
+      final lastDayOfPrevMonth = DateTime(
+        prevMonthDate.year,
+        prevMonthDate.month + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
       mockRepository.onFetchMonthlySummary = (startDate, endDate) {
-        if (startDate == firstDayOfMonth.toIso8601String() && endDate == lastDayOfMonth.toIso8601String()) {
-          return {
-            'income': 5000.0,
-            'expenses': 2500.0,
-            'balance': 2500.0,
-          };
-        } else if (startDate == firstDayOfPrevMonth.toIso8601String() && endDate == lastDayOfPrevMonth.toIso8601String()) {
-          return {
-            'income': 4000.0,
-            'expenses': 2000.0,
-            'balance': 2000.0,
-          };
+        if (startDate == firstDayOfMonth.toIso8601String() &&
+            endDate == lastDayOfMonth.toIso8601String()) {
+          return {'income': 5000.0, 'expenses': 2500.0, 'balance': 2500.0};
+        } else if (startDate == firstDayOfPrevMonth.toIso8601String() &&
+            endDate == lastDayOfPrevMonth.toIso8601String()) {
+          return {'income': 4000.0, 'expenses': 2000.0, 'balance': 2000.0};
         }
         return null;
       };
@@ -106,22 +118,27 @@ void main() {
       final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
       final prevMonthDate = DateTime(now.year, now.month - 1, 1);
-      final firstDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month, 1);
-      final lastDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month + 1, 0, 23, 59, 59);
+      final firstDayOfPrevMonth = DateTime(
+        prevMonthDate.year,
+        prevMonthDate.month,
+        1,
+      );
+      final lastDayOfPrevMonth = DateTime(
+        prevMonthDate.year,
+        prevMonthDate.month + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
       mockRepository.onFetchMonthlySummary = (startDate, endDate) {
-        if (startDate == firstDayOfMonth.toIso8601String() && endDate == lastDayOfMonth.toIso8601String()) {
-          return {
-            'income': 3000.0,
-            'expenses': 1500.0,
-            'balance': 1500.0,
-          };
-        } else if (startDate == firstDayOfPrevMonth.toIso8601String() && endDate == lastDayOfPrevMonth.toIso8601String()) {
-          return {
-            'income': 4000.0,
-            'expenses': 2000.0,
-            'balance': 2000.0,
-          };
+        if (startDate == firstDayOfMonth.toIso8601String() &&
+            endDate == lastDayOfMonth.toIso8601String()) {
+          return {'income': 3000.0, 'expenses': 1500.0, 'balance': 1500.0};
+        } else if (startDate == firstDayOfPrevMonth.toIso8601String() &&
+            endDate == lastDayOfPrevMonth.toIso8601String()) {
+          return {'income': 4000.0, 'expenses': 2000.0, 'balance': 2000.0};
         }
         return null;
       };
@@ -149,22 +166,27 @@ void main() {
       final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
       final prevMonthDate = DateTime(now.year, now.month - 1, 1);
-      final firstDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month, 1);
-      final lastDayOfPrevMonth = DateTime(prevMonthDate.year, prevMonthDate.month + 1, 0, 23, 59, 59);
+      final firstDayOfPrevMonth = DateTime(
+        prevMonthDate.year,
+        prevMonthDate.month,
+        1,
+      );
+      final lastDayOfPrevMonth = DateTime(
+        prevMonthDate.year,
+        prevMonthDate.month + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
       mockRepository.onFetchMonthlySummary = (startDate, endDate) {
-        if (startDate == firstDayOfMonth.toIso8601String() && endDate == lastDayOfMonth.toIso8601String()) {
-          return {
-            'income': 2000.0,
-            'expenses': 1000.0,
-            'balance': 1000.0,
-          };
-        } else if (startDate == firstDayOfPrevMonth.toIso8601String() && endDate == lastDayOfPrevMonth.toIso8601String()) {
-          return {
-            'income': 0.0,
-            'expenses': 0.0,
-            'balance': 0.0,
-          };
+        if (startDate == firstDayOfMonth.toIso8601String() &&
+            endDate == lastDayOfMonth.toIso8601String()) {
+          return {'income': 2000.0, 'expenses': 1000.0, 'balance': 1000.0};
+        } else if (startDate == firstDayOfPrevMonth.toIso8601String() &&
+            endDate == lastDayOfPrevMonth.toIso8601String()) {
+          return {'income': 0.0, 'expenses': 0.0, 'balance': 0.0};
         }
         return null;
       };

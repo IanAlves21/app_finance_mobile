@@ -61,4 +61,30 @@ class AddTransactionViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> updateTransaction({
+    required String id,
+    required String description,
+    required double amount,
+    required String type, // 'INCOME' ou 'EXPENSE'
+    String? categoryId,
+    String? paymentMethod,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _transactionRepository.updateTransaction(
+        id: id,
+        description: description,
+        amount: amount,
+        type: type,
+        categoryId: categoryId,
+        paymentMethod: paymentMethod,
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

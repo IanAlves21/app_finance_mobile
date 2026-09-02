@@ -7,6 +7,8 @@ import 'interactive_card.dart';
 import 'transaction_detail_bottom_sheet.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/app_localizations_extension.dart';
+import '../main.dart';
+import 'add_transaction_bottom_sheet.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
@@ -32,8 +34,8 @@ class TransactionCard extends StatelessWidget {
     final bool isPositive = transaction.amount > 0;
 
     return InteractiveCard(
-      onTap: () {
-        showModalBottomSheet(
+      onTap: () async {
+        final result = await showModalBottomSheet<dynamic>(
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
@@ -42,6 +44,19 @@ class TransactionCard extends StatelessWidget {
             onDelete: onDelete,
           ),
         );
+
+        if (result == 'edit' && context.mounted) {
+          final bool? shouldRefresh = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => AddTransactionBottomSheet(transaction: transaction),
+          );
+
+          if (shouldRefresh == true) {
+            transactionRefreshNotifier.value++;
+          }
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(14),

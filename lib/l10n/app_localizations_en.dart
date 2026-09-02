@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goodMorning => 'GOOD MORNING';
 
   @override
+  String get goodAfternoon => 'GOOD AFTERNOON';
+
+  @override
+  String get goodEvening => 'GOOD EVENING';
+
+  @override
   String get sharedTotalBalance => 'SHARED TOTAL BALANCE';
 
   @override
@@ -183,6 +189,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionSaved => 'Transaction saved successfully!';
 
   @override
+  String get transactionUpdatedSuccess => 'Transaction updated successfully!';
+
+  @override
   String get food => 'Food';
 
   @override
@@ -240,10 +249,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paidByLabel => 'Paid by';
 
   @override
+  String get receivedByLabel => 'Received by';
+
+  @override
   String get accountLabel => 'Account';
 
   @override
   String get noteLabel => 'Note';
+
+  @override
+  String get paymentMethodLabel => 'Payment Method';
+
+  @override
+  String get creditCard => 'Credit Card';
+
+  @override
+  String get debitCard => 'Debit Card';
+
+  @override
+  String get pix => 'Pix';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get otherPayment => 'Other';
+
+  @override
+  String get installmentLabel => 'Installment';
+
+  @override
+  String get totalPurchaseLabel => 'Total Purchase Value';
+
+  @override
+  String installmentOf(String current, String total) {
+    return '$current of $total';
+  }
 
   @override
   String get completedStatus => 'Completed';
@@ -318,6 +359,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editCategory => 'Edit Category';
+
+  @override
+  String get editTransaction => 'Edit Transaction';
 
   @override
   String get deleteCategory => 'Delete Category';

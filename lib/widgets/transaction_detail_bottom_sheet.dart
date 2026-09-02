@@ -6,6 +6,8 @@ import '../l10n/app_localizations_extension.dart';
 import '../utils/transaction_ui_extension.dart';
 import '../utils/currency_formatter.dart';
 import 'custom_toast.dart';
+import '../main.dart';
+import 'add_transaction_bottom_sheet.dart';
 
 class TransactionDetailBottomSheet extends StatefulWidget {
   final Transaction transaction;
@@ -45,18 +47,18 @@ class _TransactionDetailBottomSheetState
     }
   }
 
-  String _getPaymentMethodTranslation(String? method) {
+  String _getPaymentMethodTranslation(String? method, AppLocalizations l10n) {
     switch (method) {
       case 'CREDIT':
-        return 'Cartão de Crédito';
+        return l10n.creditCard;
       case 'DEBIT':
-        return 'Cartão de Débito';
+        return l10n.debitCard;
       case 'PIX':
-        return 'Pix';
+        return l10n.pix;
       case 'CASH':
-        return 'Dinheiro';
+        return l10n.cash;
       default:
-        return 'Outro';
+        return l10n.otherPayment;
     }
   }
 
@@ -243,7 +245,7 @@ class _TransactionDetailBottomSheetState
     if (match != null) {
       final current = int.parse(match.group(1)!);
       final total = int.parse(match.group(2)!);
-      installmentValue = '$current de $total';
+      installmentValue = l10n.installmentOf(current.toString(), total.toString());
 
       // Estima o valor total original da compra multiplicando o valor absoluto pela quantidade de parcelas
       final double absoluteAmount = transaction.amount.abs();
@@ -271,29 +273,24 @@ class _TransactionDetailBottomSheetState
       },
       {
         'icon': Icons.person_rounded,
-        'label': l10n.paidByLabel,
+        'label': isPositive ? l10n.receivedByLabel : l10n.paidByLabel,
         'value': transaction.paidBy,
-      },
-      {
-        'icon': Icons.credit_card_rounded,
-        'label': l10n.accountLabel,
-        'value': transaction.account,
       },
       if (transaction.paymentMethod != null)
         {
           'icon': _getPaymentMethodIcon(transaction.paymentMethod),
-          'label': 'Forma de Pagamento',
-          'value': _getPaymentMethodTranslation(transaction.paymentMethod),
+          'label': l10n.paymentMethodLabel,
+          'value': _getPaymentMethodTranslation(transaction.paymentMethod, l10n),
         },
       if (installmentValue != null) ...[
         {
           'icon': Icons.layers_rounded,
-          'label': 'Parcela',
+          'label': l10n.installmentLabel,
           'value': installmentValue,
         },
         {
           'icon': Icons.shopping_bag_rounded,
-          'label': 'Valor Total da Compra',
+          'label': l10n.totalPurchaseLabel,
           'value': totalPurchaseValue ?? '',
         },
       ],
@@ -352,23 +349,50 @@ class _TransactionDetailBottomSheetState
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF222E45)
-                          : const Color(0xFFF0F1F5),
-                      shape: BoxShape.circle,
+                Row(
+                  children: [
+                    // Edit button
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context, 'edit');
+                      },
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentOrange.withValues(
+                            alpha: isDark ? 0.15 : 0.08,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.edit_rounded,
+                          size: 18,
+                          color: AppColors.accentOrange,
+                        ),
+                      ),
                     ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 16,
-                      color: subTextColor,
+                    const SizedBox(width: 10),
+                    // Close button
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF222E45)
+                              : const Color(0xFFF0F1F5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: textColor.withValues(alpha: 0.8),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

@@ -7,9 +7,11 @@ import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../theme/app_colors.dart';
 import '../viewmodels/add_transaction_view_model.dart';
 import '../services/service_locator.dart';
+import '../models/transaction.dart';
 
 class AddTransactionBottomSheet extends StatefulWidget {
-  const AddTransactionBottomSheet({super.key});
+  final Transaction? transaction;
+  const AddTransactionBottomSheet({super.key, this.transaction});
 
   @override
   State<AddTransactionBottomSheet> createState() =>
@@ -32,6 +34,19 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     _viewModel.addListener(_onViewModelChanged);
     _viewModel.loadCategories();
     _amountController.addListener(_onAmountChanged);
+
+    if (widget.transaction != null) {
+      final tx = widget.transaction!;
+      _nameController.text = tx.name;
+
+      final double absoluteAmount = tx.amount.abs();
+      final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
+      _amountController.text = formatter.format(absoluteAmount);
+
+      _selectedType = tx.amount > 0 ? 'Income' : 'Expense';
+      _selectedCategory = tx.categoryId ?? '';
+      _selectedPaymentMethod = tx.paymentMethod;
+    }
   }
 
   void _onAmountChanged() {
@@ -50,10 +65,16 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           )
           .toList();
 
-      if (filtered.isNotEmpty &&
-          (_selectedCategory.isEmpty ||
-              !filtered.any((cat) => cat.id == _selectedCategory))) {
-        _selectedCategory = filtered.first.id;
+      if (filtered.isNotEmpty) {
+        if (_selectedCategory.isEmpty && widget.transaction != null) {
+          final match = filtered.firstWhere(
+            (cat) => cat.name.toLowerCase() == widget.transaction!.category.toLowerCase(),
+            orElse: () => filtered.first,
+          );
+          _selectedCategory = match.id;
+        } else if (_selectedCategory.isEmpty || !filtered.any((cat) => cat.id == _selectedCategory)) {
+          _selectedCategory = filtered.first.id;
+        }
       }
       setState(() {});
     }
@@ -139,24 +160,40 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     }
 
     try {
-      await _viewModel.saveTransaction(
-        description: description,
-        amount: amount,
-        type: _selectedType.toUpperCase(), // 'INCOME' ou 'EXPENSE'
-        categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
-        paymentMethod: _selectedType == 'Expense'
-            ? _selectedPaymentMethod
-            : null,
-        installments:
-            _selectedType == 'Expense' && _selectedPaymentMethod == 'CREDIT'
-            ? _installments
-            : null,
-      );
+      if (widget.transaction != null) {
+        await _viewModel.updateTransaction(
+          id: widget.transaction!.id,
+          description: description,
+          amount: amount,
+          type: _selectedType.toUpperCase(),
+          categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
+          paymentMethod: _selectedType == 'Expense' ? _selectedPaymentMethod : null,
+        );
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      Navigator.pop(context, true);
-      CustomToast.showSuccess(context, l10n.transactionSaved);
+        Navigator.pop(context, true);
+        CustomToast.showSuccess(context, l10n.transactionUpdatedSuccess);
+      } else {
+        await _viewModel.saveTransaction(
+          description: description,
+          amount: amount,
+          type: _selectedType.toUpperCase(), // 'INCOME' ou 'EXPENSE'
+          categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
+          paymentMethod: _selectedType == 'Expense'
+              ? _selectedPaymentMethod
+              : null,
+          installments:
+              _selectedType == 'Expense' && _selectedPaymentMethod == 'CREDIT'
+              ? _installments
+              : null,
+        );
+
+        if (!mounted) return;
+
+        Navigator.pop(context, true);
+        CustomToast.showSuccess(context, l10n.transactionSaved);
+      }
     } catch (e) {
       if (!mounted) return;
       CustomToast.showError(context, 'Erro ao salvar transação: $e');
@@ -362,7 +399,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
 
             // Form Title
             Text(
-              l10n.addNewTransaction,
+              widget.transaction != null ? l10n.editTransaction : l10n.addNewTransaction,
               style: TextStyle(
                 color: textColor,
                 fontSize: 18,
@@ -780,7 +817,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                         ),
                       )
                     : Text(
-                        l10n.saveTransaction,
+                        widget.transaction != null ? l10n.editTransaction : l10n.saveTransaction,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,

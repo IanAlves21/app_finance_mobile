@@ -17,7 +17,9 @@ import '../widgets/shimmer_loading.dart';
 import '../views/transaction_history_screen.dart';
 
 class HomeTab extends StatefulWidget {
-  const HomeTab({super.key});
+  static DateTime? debugGreetingDateTime;
+  final DateTime? debugDateTime;
+  const HomeTab({super.key, this.debugDateTime});
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -42,6 +44,17 @@ class _HomeTabState extends State<HomeTab> {
         }
       },
     );
+  }
+
+  String _getGreeting(AppLocalizations l10n) {
+    final int hour = (widget.debugDateTime ?? HomeTab.debugGreetingDateTime ?? DateTime.now()).hour;
+    if (hour >= 6 && hour < 12) {
+      return l10n.goodMorning;
+    } else if (hour >= 12 && hour < 18) {
+      return l10n.goodAfternoon;
+    } else {
+      return l10n.goodEvening;
+    }
   }
 
   @override
@@ -193,7 +206,7 @@ class _HomeTabState extends State<HomeTab> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  l10n.goodMorning,
+                                                  _getGreeting(l10n),
                                                   style: TextStyle(
                                                     color: Colors.white
                                                         .withValues(

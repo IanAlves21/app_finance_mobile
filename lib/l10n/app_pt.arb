@@ -1,6 +1,8 @@
 {
   "@@locale": "pt",
   "goodMorning": "BOM DIA",
+  "goodAfternoon": "BOA TARDE",
+  "goodEvening": "BOA NOITE",
   "sharedTotalBalance": "SALDO TOTAL COMPARTILHADO",
   "vsLastMonth": "vs último mês",
   "monthlyIncome": "Receitas do Mês",
@@ -58,6 +60,7 @@
   "categoryLabel": "Categoria",
   "saveTransaction": "Salvar Transação",
   "transactionSaved": "Transação salva com sucesso!",
+  "transactionUpdatedSuccess": "Transação atualizada com sucesso!",
   "food": "Alimentação",
   "dining": "Restaurante",
   "transport": "Transporte",
@@ -78,8 +81,28 @@
   "transactionDetails": "Detalhes da Transação",
   "dateLabel": "Data",
   "paidByLabel": "Pago por",
+  "receivedByLabel": "Recebido por",
   "accountLabel": "Conta",
   "noteLabel": "Observação",
+  "paymentMethodLabel": "Forma de Pagamento",
+  "creditCard": "Cartão de Crédito",
+  "debitCard": "Cartão de Débito",
+  "pix": "Pix",
+  "cash": "Dinheiro",
+  "otherPayment": "Outro",
+  "installmentLabel": "Parcela",
+  "totalPurchaseLabel": "Valor Total da Compra",
+  "installmentOf": "{current} de {total}",
+  "@installmentOf": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
   "completedStatus": "Concluído",
   "sessionExpiredMessage": "Sua sessão expirou. Por favor, faça login novamente.",
   "manageCategories": "Gerenciar Categorias",
@@ -104,6 +127,7 @@
   "categoryUpdatedSuccess": "Categoria atualizada com sucesso!",
   "categoryUpdateError": "Erro ao atualizar categoria",
   "editCategory": "Editar Categoria",
+  "editTransaction": "Editar Transação",
   "deleteCategory": "Excluir Categoria",
   "deleteCategoryConfirm": "Deseja realmente excluir a categoria \"{name}\"?",
   "delete": "Excluir",

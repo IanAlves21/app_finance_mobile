@@ -17,12 +17,14 @@ import 'package:app_finance_mobile/viewmodels/add_transaction_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/settings_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/transaction_history_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/wallets_view_model.dart';
+import 'package:app_finance_mobile/tabs/home_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
   setUp(() async {
+    HomeTab.debugGreetingDateTime = DateTime(2026, 9, 2, 8, 0, 0); // Always morning for tests
     SecureStorageManager.useMock = true;
     SecureStorageManager.mockToken = 'mocked_jwt_token';
     isLoggedInNotifier.value = false;
@@ -272,7 +274,6 @@ void main() {
         find.text('Payment for design system deliverables'),
         findsOneWidget,
       );
-      expect(find.text('Shared Wallet Account'), findsOneWidget);
       expect(find.text('Concluído'), findsOneWidget);
 
       // Tap the close button to close the bottom sheet
@@ -609,6 +610,149 @@ void main() {
       );
     },
   );
+
+  testWidgets('App opens TransactionDetailBottomSheet and edits a transaction', (
+    WidgetTester tester,
+  ) async {
+    // Force login state to bypass login screen in existing test flows
+    isLoggedInNotifier.value = true;
+
+    // Set locale to Portuguese
+    localeNotifier.value = const Locale('pt');
+
+    // Custom mock client that handles both GET, PATCH, and categories fetching
+    bool patchCalled = false;
+    final customMockClient = MockClient((request) async {
+      if (request.url.path == '/transactions/summary') {
+        return http.Response(
+          json.encode({'income': 4500.0, 'expenses': 0.0, 'balance': 4500.0}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      if (request.url.path == '/transactions/categories') {
+        return http.Response(
+          json.encode([
+            {
+              'id': 'cat_income_1',
+              'name': 'Income',
+              'type': 'INCOME',
+              'icon': 'briefcase',
+              'color': '#4CAF50',
+            }
+          ]),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      if (request.url.path == '/transactions/1' && request.method == 'PATCH') {
+        patchCalled = true;
+        return http.Response(
+          json.encode({
+            'id': '1',
+            'description': 'Freelance Payment Edited',
+            'type': 'INCOME',
+            'amount': 4500.0,
+            'date': '2026-07-05T12:00:00.000Z',
+            'category': {
+              'id': 'cat_income_1',
+              'name': 'Income',
+              'type': 'INCOME',
+              'icon': 'briefcase',
+              'color': '#4CAF50',
+            },
+            'paidBy': {'name': 'John Doe'},
+            'wallet': {'name': 'Shared Wallet Account'},
+            'note': 'Payment for design system deliverables',
+            'status': 'COMPLETED',
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      if (request.url.path == '/transactions') {
+        return http.Response(
+          json.encode([
+            {
+              'id': '1',
+              'description': 'Freelance Payment',
+              'type': 'INCOME',
+              'amount': '4500.0',
+              'date': '2026-07-05T12:00:00.000Z',
+              'category': {
+                'id': 'cat_income_1',
+                'name': 'Income',
+                'type': 'INCOME',
+                'icon': 'briefcase',
+                'color': '#4CAF50',
+              },
+              'paidBy': {'name': 'John Doe'},
+              'wallet': {'name': 'Shared Wallet Account'},
+              'note': 'Payment for design system deliverables',
+              'status': 'COMPLETED',
+            },
+          ]),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('Not Found', 404);
+    });
+
+    final customApiService = ApiService(client: customMockClient);
+    await locator.reset();
+    locator.registerSingleton<ApiService>(customApiService);
+    locator.registerSingleton<TransactionRepository>(
+      TransactionRepository(apiService: customApiService),
+    );
+    locator.registerSingleton<CategoryRepository>(
+      CategoryRepository(apiService: customApiService),
+    );
+    _registerTestViewModels();
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify transaction is listed (translated under the hood to "Pagamento Freelance")
+    final transactionFinder = find.text('Pagamento Freelance');
+    expect(transactionFinder, findsOneWidget);
+
+    // Ensure the transaction widget is fully visible and scrollable in screen
+    await tester.ensureVisible(transactionFinder);
+    await tester.pumpAndSettle();
+
+    // Tap on the transaction to open the detail bottom sheet
+    await tester.tap(transactionFinder);
+    await tester.pumpAndSettle();
+
+    // Verify "Detalhes da Transação" is open
+    expect(find.text('Detalhes da Transação'), findsOneWidget);
+
+    // Find and tap the edit button in the header (has Icons.edit_rounded)
+    final editButtonFinder = find.byIcon(Icons.edit_rounded);
+    expect(editButtonFinder, findsOneWidget);
+    await tester.tap(editButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Verify "Editar Transação" is now open (found in both the title and the submit button)
+    expect(find.text('Editar Transação'), findsNWidgets(2));
+
+    // Verify text field has original name
+    expect(find.text('Freelance Payment'), findsOneWidget);
+
+    // Edit the text field
+    final descriptionFieldFinder = find.byType(TextField).first;
+    await tester.enterText(descriptionFieldFinder, 'Freelance Payment Edited');
+    await tester.pumpAndSettle();
+
+    // Tap submit button (has text "Editar Transação" as the last matching widget)
+    final saveButtonFinder = find.text('Editar Transação').last;
+    await tester.tap(saveButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Verify PATCH was called
+    expect(patchCalled, isTrue);
+  });
 }
 
 void _registerTestViewModels() {

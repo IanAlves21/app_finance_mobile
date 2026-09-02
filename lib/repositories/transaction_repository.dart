@@ -222,6 +222,75 @@ class TransactionRepository {
     }
   }
 
+  /// Atualiza uma transação existente online
+  Future<Transaction> updateTransaction({
+    required String id,
+    required String description,
+    required double amount,
+    required String type, // 'INCOME' ou 'EXPENSE'
+    String? categoryId,
+    String? paymentMethod,
+  }) async {
+    try {
+      final response = await _apiService
+          .patch('/transactions/$id', {
+            'description': description,
+            'amount': amount,
+            'type': type,
+            'categoryId': categoryId,
+            'paymentMethod': paymentMethod,
+          })
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final Transaction updatedTx = Transaction.fromJson(data);
+
+        // Atualiza o cache local
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final String? cachedData = prefs.getString('cached_transactions');
+          if (cachedData != null && cachedData.isNotEmpty) {
+            final List<dynamic> cacheList = json.decode(cachedData);
+            final int index = cacheList.indexWhere((tx) => tx['id']?.toString() == id);
+            if (index != -1) {
+              cacheList[index] = data;
+              await prefs.setString(
+                'cached_transactions',
+                json.encode(cacheList),
+              );
+            }
+          }
+        } catch (cacheError) {
+          debugPrint('Erro ao atualizar cache de transações no update: $cacheError');
+        }
+
+        return updatedTx;
+      } else if (response.statusCode == 401) {
+        await _apiService.logout();
+        throw const HttpException('Unauthorized');
+      } else {
+        String errorMessage = 'Falha ao atualizar transação';
+        try {
+          final Map<String, dynamic> data = json.decode(response.body);
+          if (data.containsKey('message')) {
+            if (data['message'] is List) {
+              errorMessage = (data['message'] as List).join(', ');
+            } else {
+              errorMessage = data['message'].toString();
+            }
+          }
+        } catch (_) {}
+        throw HttpException(errorMessage);
+      }
+    } catch (e) {
+      if (e is HttpException) {
+        rethrow;
+      }
+      throw HttpException('Erro de conexão ao atualizar transação: $e');
+    }
+  }
+
   /// Sincroniza todas as transações criadas offline que estão pendentes
   Future<void> syncPendingTransactions() async {
     try {

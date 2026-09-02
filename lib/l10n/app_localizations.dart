@@ -104,6 +104,18 @@ abstract class AppLocalizations {
   /// **'GOOD MORNING'**
   String get goodMorning;
 
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'GOOD AFTERNOON'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'GOOD EVENING'**
+  String get goodEvening;
+
   /// No description provided for @sharedTotalBalance.
   ///
   /// In en, this message translates to:
@@ -446,6 +458,12 @@ abstract class AppLocalizations {
   /// **'Transaction saved successfully!'**
   String get transactionSaved;
 
+  /// No description provided for @transactionUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction updated successfully!'**
+  String get transactionUpdatedSuccess;
+
   /// No description provided for @food.
   ///
   /// In en, this message translates to:
@@ -560,6 +578,12 @@ abstract class AppLocalizations {
   /// **'Paid by'**
   String get paidByLabel;
 
+  /// No description provided for @receivedByLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Received by'**
+  String get receivedByLabel;
+
   /// No description provided for @accountLabel.
   ///
   /// In en, this message translates to:
@@ -571,6 +595,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Note'**
   String get noteLabel;
+
+  /// No description provided for @paymentMethodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethodLabel;
+
+  /// No description provided for @creditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get creditCard;
+
+  /// No description provided for @debitCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Debit Card'**
+  String get debitCard;
+
+  /// No description provided for @pix.
+  ///
+  /// In en, this message translates to:
+  /// **'Pix'**
+  String get pix;
+
+  /// No description provided for @cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// No description provided for @otherPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get otherPayment;
+
+  /// No description provided for @installmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment'**
+  String get installmentLabel;
+
+  /// No description provided for @totalPurchaseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Purchase Value'**
+  String get totalPurchaseLabel;
+
+  /// No description provided for @installmentOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String installmentOf(String current, String total);
 
   /// No description provided for @completedStatus.
   ///
@@ -715,6 +793,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Category'**
   String get editCategory;
+
+  /// No description provided for @editTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Transaction'**
+  String get editTransaction;
 
   /// No description provided for @deleteCategory.
   ///

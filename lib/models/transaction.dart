@@ -4,6 +4,7 @@ class Transaction {
   final String id;
   final String name;
   final String category;
+  final String? categoryId;
   final String date;
   final double amount;
   final String paidBy;
@@ -18,6 +19,7 @@ class Transaction {
     required this.id,
     required this.name,
     required this.category,
+    this.categoryId,
     required this.date,
     required this.amount,
     this.paidBy = "John Doe",
@@ -94,11 +96,15 @@ class Transaction {
         ? json['category']['color']?.toString()
         : null;
     final String? paymentMethod = json['paymentMethod']?.toString();
+    final String? categoryId = json['category'] != null
+        ? json['category']['id']?.toString()
+        : json['categoryId']?.toString();
 
     return Transaction(
       id: id,
       name: name,
       category: category,
+      categoryId: categoryId,
       date: formattedDate,
       amount: amount,
       paidBy: paidBy,

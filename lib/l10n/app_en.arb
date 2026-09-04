@@ -171,5 +171,61 @@
   "registerSuccess": "Account created successfully! Please log in.",
   "nameRequired": "Please enter your name",
   "passwordTooShort": "Password must be at least 6 characters",
-  "googleSignInButton": "Sign in with Google"
+  "googleSignInButton": "Sign in with Google",
+
+  "invitePartner": "Invite Partner",
+  "acceptInvite": "Join a Group",
+  "leaveGroup": "Leave Group",
+  "leaveGroupTitle": "Leave Group?",
+  "leaveGroupConfirmMsg": "Are you sure you want to leave the shared financial group? Your new transactions will no longer be visible to your partner.",
+  "leaveGroupSuccess": "You left the financial group!",
+  "leaveGroupError": "Failed to leave group: {error}",
+  "@leaveGroupError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteCodeCopied": "Invite link copied!",
+  "shareInviteMsg": "Hello! Join my financial group in the Finance App by clicking the link: {link}",
+  "@shareInviteMsg": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "shareInviteSubject": "Invitation to Financial Group",
+  "shareInvitePrompt": "Share the link below with your partner. By clicking on it, they will be able to join your financial group!",
+  "shareInviteOrCode": "Or share only the 6-character code:",
+  "inviteOnlyCodeCopied": "Invite code copied!",
+  "shareInviteBtn": "Share Invitation",
+  "expiresAtLabel": "Expires on: {date}",
+  "@expiresAtLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "close": "Close",
+  "confirm": "Confirm",
+  "enterGroupPrompt": "Enter the 6-digit code you received to join your partner's family group.",
+  "codePlaceholder": "CODE",
+  "enter": "Join",
+  "codeLengthError": "The code must be 6 characters long",
+  "groupJoinSuccess": "Group joined successfully!",
+  "groupJoinError": "Failed to join group: {error}",
+  "@groupJoinError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "myFamilyGroup": "My Family Group",
+  "groupSubtitle": "Shared and organized finances",
+  "groupMembers": "GROUP MEMBERS",
+  "unknownUser": "User"
 }

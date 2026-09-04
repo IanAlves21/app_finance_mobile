@@ -1,6 +1,8 @@
 import 'dart:ui' as ui;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:app_links/app_links.dart';
 import 'l10n/app_localizations.dart'; // Import Custom Localization
 import 'theme/app_colors.dart';
 import 'tabs/home_tab.dart';
@@ -11,6 +13,8 @@ import 'widgets/interactive_card.dart';
 import 'widgets/add_transaction_bottom_sheet.dart';
 import 'views/login_screen.dart';
 import 'viewmodels/login_view_model.dart';
+import 'viewmodels/group_view_model.dart';
+import 'widgets/custom_toast.dart';
 import 'models/user.dart';
 import 'services/api_service.dart';
 import 'services/secure_storage_manager.dart';
@@ -25,6 +29,9 @@ final ValueNotifier<int> transactionRefreshNotifier = ValueNotifier<int>(0);
 
 // Global Notifier for App Current User data
 final ValueNotifier<User?> currentUserNotifier = ValueNotifier<User?>(null);
+
+// Global Notifier for Pending Invite Deep Link
+final ValueNotifier<String?> pendingInviteNotifier = ValueNotifier<String?>(null);
 
 // Global Notifier for App Theme Mode
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(
@@ -87,10 +94,65 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final LoginViewModel? loginViewModel;
 
   const MyApp({super.key, this.loginViewModel});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinking();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _initDeepLinking() async {
+    _appLinks = AppLinks();
+
+    // 1. Capture initial link (e.g. app cold start clicking a link)
+    try {
+      final Uri? initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint('Error getting initial link: $e');
+    }
+
+    // 2. Listen to incoming links in real-time while app is running
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (Uri uri) {
+        _handleDeepLink(uri);
+      },
+      onError: (err) {
+        debugPrint('Error listening to links: $err');
+      },
+    );
+  }
+
+  void _handleDeepLink(Uri uri) {
+    debugPrint('Received Deep Link: $uri');
+    if (uri.scheme == 'financeapp' && uri.host == 'invite') {
+      final segments = uri.pathSegments;
+      if (segments.isNotEmpty) {
+        final code = segments.first.toUpperCase();
+        pendingInviteNotifier.value = code;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +238,7 @@ class MyApp extends StatelessWidget {
                           )
                         : LoginScreen(
                             key: const ValueKey('LoginScreen'),
-                            viewModel: loginViewModel,
+                            viewModel: widget.loginViewModel,
                             onLogin: () async {
                               try {
                                 final prefs =
@@ -218,6 +280,162 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const WalletsTab(),
     const SettingsTab(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    pendingInviteNotifier.addListener(_checkPendingInvite);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingInvite();
+    });
+  }
+
+  @override
+  void dispose() {
+    pendingInviteNotifier.removeListener(_checkPendingInvite);
+    super.dispose();
+  }
+
+  void _checkPendingInvite() async {
+    final code = pendingInviteNotifier.value;
+    if (code == null || !mounted) return;
+
+    // Consome o convite imediatamente para não duplicar popups
+    pendingInviteNotifier.value = null;
+
+    final groupViewModel = locator<GroupViewModel>();
+    try {
+      // 1. Busca os detalhes do convite
+      final details = await groupViewModel.loadInviteDetails(code);
+      if (!mounted) return;
+
+      final familyName = details['familyName'] as String? ?? 'Grupo Familiar';
+      final ownerName = details['ownerName'] as String? ?? 'Membro';
+
+      // 2. Apresenta o BottomSheet de Aceite
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final textColor = isDark ? Colors.white : AppColors.darkSlate;
+          final cardBgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+
+          return Container(
+            decoration: BoxDecoration(
+              color: cardBgColor,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
+              ),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              24 + MediaQuery.of(context).padding.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Icon(
+                  Icons.mark_email_unread_rounded,
+                  color: AppColors.accentOrange,
+                  size: 48,
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Convite de Grupo Recebido!',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: const TextStyle(color: Colors.grey, height: 1.4, fontSize: 14),
+                    children: [
+                      const TextSpan(text: 'O usuário '),
+                      TextSpan(
+                        text: ownerName,
+                        style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                      ),
+                      const TextSpan(text: ' convidou você para se juntar ao grupo '),
+                      TextSpan(
+                        text: familyName,
+                        style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                      ),
+                      const TextSpan(text: '.\n\nTodas as suas despesas e receitas passadas e futuras serão mescladas e compartilhadas neste grupo!'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        child: Text('Recusar', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          try {
+                            await groupViewModel.acceptInvite(code);
+                            if (mounted) {
+                              CustomToast.showSuccess(context, 'Convite aceito! Grupo mesclado.');
+                              transactionRefreshNotifier.value++; // Atualiza as telas de transações!
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              CustomToast.showError(context, 'Falha ao aceitar convite: $e');
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          backgroundColor: AppColors.accentOrange,
+                        ),
+                        child: const Text('Aceitar e Unir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        CustomToast.showError(context, 'Convite inválido ou expirado: $e');
+      }
+    }
+  }
 
   void _showAddTransactionBottomSheet() async {
     final bool? shouldRefresh = await showModalBottomSheet<bool>(

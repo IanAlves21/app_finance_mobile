@@ -1063,6 +1063,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in with Google'**
   String get googleSignInButton;
+
+  /// No description provided for @invitePartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Partner'**
+  String get invitePartner;
+
+  /// No description provided for @acceptInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a Group'**
+  String get acceptInvite;
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Group'**
+  String get leaveGroup;
+
+  /// No description provided for @leaveGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Group?'**
+  String get leaveGroupTitle;
+
+  /// No description provided for @leaveGroupConfirmMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave the shared financial group? Your new transactions will no longer be visible to your partner.'**
+  String get leaveGroupConfirmMsg;
+
+  /// No description provided for @leaveGroupSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the financial group!'**
+  String get leaveGroupSuccess;
+
+  /// No description provided for @leaveGroupError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to leave group: {error}'**
+  String leaveGroupError(String error);
+
+  /// No description provided for @inviteCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite link copied!'**
+  String get inviteCodeCopied;
+
+  /// No description provided for @shareInviteMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello! Join my financial group in the Finance App by clicking the link: {link}'**
+  String shareInviteMsg(String link);
+
+  /// No description provided for @shareInviteSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation to Financial Group'**
+  String get shareInviteSubject;
+
+  /// No description provided for @shareInvitePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the link below with your partner. By clicking on it, they will be able to join your financial group!'**
+  String get shareInvitePrompt;
+
+  /// No description provided for @shareInviteOrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Or share only the 6-character code:'**
+  String get shareInviteOrCode;
+
+  /// No description provided for @inviteOnlyCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied!'**
+  String get inviteOnlyCodeCopied;
+
+  /// No description provided for @shareInviteBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Invitation'**
+  String get shareInviteBtn;
+
+  /// No description provided for @expiresAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires on: {date}'**
+  String expiresAtLabel(String date);
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @enterGroupPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code you received to join your partner\'s family group.'**
+  String get enterGroupPrompt;
+
+  /// No description provided for @codePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'CODE'**
+  String get codePlaceholder;
+
+  /// No description provided for @enter.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get enter;
+
+  /// No description provided for @codeLengthError.
+  ///
+  /// In en, this message translates to:
+  /// **'The code must be 6 characters long'**
+  String get codeLengthError;
+
+  /// No description provided for @groupJoinSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Group joined successfully!'**
+  String get groupJoinSuccess;
+
+  /// No description provided for @groupJoinError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to join group: {error}'**
+  String groupJoinError(String error);
+
+  /// No description provided for @myFamilyGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'My Family Group'**
+  String get myFamilyGroup;
+
+  /// No description provided for @groupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared and organized finances'**
+  String get groupSubtitle;
+
+  /// No description provided for @groupMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'GROUP MEMBERS'**
+  String get groupMembers;
+
+  /// No description provided for @unknownUser.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get unknownUser;
 }
 
 class _AppLocalizationsDelegate

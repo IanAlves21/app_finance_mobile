@@ -8,6 +8,7 @@ import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../utils/currency_formatter.dart';
 import '../viewmodels/home_view_model.dart';
+import '../viewmodels/group_view_model.dart';
 import '../widgets/custom_toast.dart';
 import '../widgets/shared_avatars.dart';
 import '../widgets/summary_card.dart';
@@ -15,6 +16,7 @@ import '../widgets/transaction_card.dart';
 import '../widgets/transaction_skeleton.dart';
 import '../widgets/shimmer_loading.dart';
 import '../views/transaction_history_screen.dart';
+import '../views/group_screen.dart';
 
 class HomeTab extends StatefulWidget {
   static DateTime? debugGreetingDateTime;
@@ -32,18 +34,22 @@ class _HomeTabState extends State<HomeTab> {
   );
 
   late final HomeViewModel _viewModel;
+  late final GroupViewModel _groupViewModel;
   String? _activeFilter; // 'INCOME', 'EXPENSE' ou null
 
   Future<void> _loadData() async {
-    await _viewModel.loadTransactions(
-      onUnauthorized: () {
-        if (!mounted) return;
-        final localizations = AppLocalizations.of(context);
-        if (localizations != null) {
-          CustomToast.showError(context, localizations.sessionExpiredMessage);
-        }
-      },
-    );
+    await Future.wait([
+      _viewModel.loadTransactions(
+        onUnauthorized: () {
+          if (!mounted) return;
+          final localizations = AppLocalizations.of(context);
+          if (localizations != null) {
+            CustomToast.showError(context, localizations.sessionExpiredMessage);
+          }
+        },
+      ),
+      _groupViewModel.loadGroupInfo(),
+    ]);
   }
 
   String _getGreeting(AppLocalizations l10n) {
@@ -61,6 +67,7 @@ class _HomeTabState extends State<HomeTab> {
   void initState() {
     super.initState();
     _viewModel = locator<HomeViewModel>();
+    _groupViewModel = locator<GroupViewModel>();
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -237,8 +244,27 @@ class _HomeTabState extends State<HomeTab> {
                                               ],
                                             ),
                                       // Shared overlapping avatars
-                                      SharedAvatars(
-                                        isLoading: _viewModel.isLoadingSummary,
+                                      ListenableBuilder(
+                                        listenable: _groupViewModel,
+                                        builder: (context, _) {
+                                          return GestureDetector(
+                                            onTap: () async {
+                                              final bool? shouldRefresh = await Navigator.push<bool>(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => const GroupScreen(),
+                                                ),
+                                              );
+                                              if (shouldRefresh == true) {
+                                                _loadData();
+                                              }
+                                            },
+                                            child: SharedAvatars(
+                                              members: _groupViewModel.members,
+                                              isLoading: _viewModel.isLoadingSummary || _groupViewModel.isLoading,
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),

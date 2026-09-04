@@ -3,6 +3,7 @@ import 'api_service.dart';
 import '../repositories/transaction_repository.dart';
 import '../repositories/category_repository.dart';
 import '../repositories/budget_repository.dart';
+import '../repositories/group_repository.dart';
 import '../viewmodels/add_transaction_view_model.dart';
 import '../viewmodels/analytics_view_model.dart';
 import '../viewmodels/category_list_view_model.dart';
@@ -12,6 +13,7 @@ import '../viewmodels/register_view_model.dart';
 import '../viewmodels/settings_view_model.dart';
 import '../viewmodels/transaction_history_view_model.dart';
 import '../viewmodels/wallets_view_model.dart';
+import '../viewmodels/group_view_model.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -30,6 +32,9 @@ void setupLocator() {
   locator.registerLazySingleton<BudgetRepository>(
     () => BudgetRepository(apiService: locator<ApiService>()),
   );
+  locator.registerLazySingleton<GroupRepository>(
+    () => GroupRepository(apiService: locator<ApiService>()),
+  );
 
   // Registra as ViewModels como Fábricas Transitórias (Instâncias novas a cada requisição)
   locator.registerFactory<AddTransactionViewModel>(
@@ -45,4 +50,5 @@ void setupLocator() {
     () => TransactionHistoryViewModel(),
   );
   locator.registerFactory<WalletsViewModel>(() => WalletsViewModel());
+  locator.registerFactory<GroupViewModel>(() => GroupViewModel());
 }

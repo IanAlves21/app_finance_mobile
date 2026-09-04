@@ -17,6 +17,8 @@ import 'package:app_finance_mobile/viewmodels/add_transaction_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/settings_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/transaction_history_view_model.dart';
 import 'package:app_finance_mobile/viewmodels/wallets_view_model.dart';
+import 'package:app_finance_mobile/viewmodels/group_view_model.dart';
+import 'package:app_finance_mobile/repositories/group_repository.dart';
 import 'package:app_finance_mobile/tabs/home_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -756,6 +758,12 @@ void main() {
 }
 
 void _registerTestViewModels() {
+  if (!locator.isRegistered<GroupRepository>()) {
+    locator.registerLazySingleton<GroupRepository>(
+      () => GroupRepository(apiService: locator<ApiService>()),
+    );
+  }
+
   locator.registerFactory<AddTransactionViewModel>(
     () => AddTransactionViewModel(),
   );
@@ -769,6 +777,7 @@ void _registerTestViewModels() {
     () => TransactionHistoryViewModel(),
   );
   locator.registerFactory<WalletsViewModel>(() => WalletsViewModel());
+  locator.registerFactory<GroupViewModel>(() => GroupViewModel());
 }
 
 class FakeGoogleSignIn extends Fake implements GoogleSignIn {

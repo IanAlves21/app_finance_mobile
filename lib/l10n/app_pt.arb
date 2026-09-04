@@ -171,5 +171,61 @@
   "registerSuccess": "Conta criada com sucesso! Faça login.",
   "nameRequired": "Por favor, insira seu nome",
   "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
-  "googleSignInButton": "Entrar com o Google"
+  "googleSignInButton": "Entrar com o Google",
+
+  "invitePartner": "Convidar Parceiro",
+  "acceptInvite": "Entrar em um Grupo",
+  "leaveGroup": "Sair do Grupo",
+  "leaveGroupTitle": "Sair do Grupo?",
+  "leaveGroupConfirmMsg": "Tem certeza que deseja sair do grupo financeiro compartilhado? Suas novas transações não serão mais visíveis para seu parceiro.",
+  "leaveGroupSuccess": "Você saiu do grupo financeiro!",
+  "leaveGroupError": "Falha ao sair do grupo: {error}",
+  "@leaveGroupError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteCodeCopied": "Link de convite copiado!",
+  "shareInviteMsg": "Olá! Junte-se ao meu grupo financeiro no App Finanças clicando no link: {link}",
+  "@shareInviteMsg": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "shareInviteSubject": "Convite para o Grupo Financeiro",
+  "shareInvitePrompt": "Compartilhe o link abaixo com seu parceiro. Ao clicar nele, ele poderá se juntar ao seu grupo financeiro!",
+  "shareInviteOrCode": "Ou compartilhe apenas o código de 6 dígitos:",
+  "inviteOnlyCodeCopied": "Código de convite copiado!",
+  "shareInviteBtn": "Compartilhar Convite",
+  "expiresAtLabel": "Expira em: {date}",
+  "@expiresAtLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "close": "Fechar",
+  "confirm": "Confirmar",
+  "enterGroupPrompt": "Digite o código de 6 dígitos que você recebeu para se integrar ao grupo familiar do seu parceiro.",
+  "codePlaceholder": "CÓDIGO",
+  "enter": "Entrar",
+  "codeLengthError": "O código deve ter 6 caracteres",
+  "groupJoinSuccess": "Grupo integrado com sucesso!",
+  "groupJoinError": "Falha ao aceitar convite: {error}",
+  "@groupJoinError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "myFamilyGroup": "Meu Grupo Familiar",
+  "groupSubtitle": "Finanças compartilhadas e organizadas",
+  "groupMembers": "MEMBROS DO GRUPO",
+  "unknownUser": "Usuário"
 }

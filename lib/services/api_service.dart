@@ -15,7 +15,8 @@ class ApiService {
 
   /// O Client ID Web gerado pelo Google Console (Necessário para o Google Sign-In no Android v7+)
   /// ATENÇÃO: Cole o seu ID de Cliente Web aqui (ex: "634529212241-xxxxxxxxxx.apps.googleusercontent.com")
-  static const String googleServerClientId = '634529212241-j6dmtm8df0l8lo0sgbvvpdjqn5lav6g7.apps.googleusercontent.com';
+  static const String googleServerClientId =
+      '634529212241-j6dmtm8df0l8lo0sgbvvpdjqn5lav6g7.apps.googleusercontent.com';
 
   static String get baseUrl {
     // API Gateway runs on 8080. On Android emulator, use 10.0.2.2.
@@ -91,7 +92,11 @@ class ApiService {
   }
 
   /// Realiza o cadastro de um novo usuário
-  Future<Map<String, dynamic>> register(String name, String email, String password) async {
+  Future<Map<String, dynamic>> register(
+    String name,
+    String email,
+    String password,
+  ) async {
     final response = await client
         .post(
           Uri.parse('$baseUrl/auth/register'),
@@ -99,7 +104,11 @@ class ApiService {
             'Content-Type': 'application/json',
             'Accept-Language': languageCode,
           },
-          body: json.encode({'name': name, 'email': email, 'password': password}),
+          body: json.encode({
+            'name': name,
+            'email': email,
+            'password': password,
+          }),
         )
         .timeout(const Duration(seconds: 5));
 

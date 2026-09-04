@@ -498,4 +498,97 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get googleSignInButton => 'Entrar com o Google';
+
+  @override
+  String get invitePartner => 'Convidar Parceiro';
+
+  @override
+  String get acceptInvite => 'Entrar em um Grupo';
+
+  @override
+  String get leaveGroup => 'Sair do Grupo';
+
+  @override
+  String get leaveGroupTitle => 'Sair do Grupo?';
+
+  @override
+  String get leaveGroupConfirmMsg =>
+      'Tem certeza que deseja sair do grupo financeiro compartilhado? Suas novas transações não serão mais visíveis para seu parceiro.';
+
+  @override
+  String get leaveGroupSuccess => 'Você saiu do grupo financeiro!';
+
+  @override
+  String leaveGroupError(String error) {
+    return 'Falha ao sair do grupo: $error';
+  }
+
+  @override
+  String get inviteCodeCopied => 'Link de convite copiado!';
+
+  @override
+  String shareInviteMsg(String link) {
+    return 'Olá! Junte-se ao meu grupo financeiro no App Finanças clicando no link: $link';
+  }
+
+  @override
+  String get shareInviteSubject => 'Convite para o Grupo Financeiro';
+
+  @override
+  String get shareInvitePrompt =>
+      'Compartilhe o link abaixo com seu parceiro. Ao clicar nele, ele poderá se juntar ao seu grupo financeiro!';
+
+  @override
+  String get shareInviteOrCode =>
+      'Ou compartilhe apenas o código de 6 dígitos:';
+
+  @override
+  String get inviteOnlyCodeCopied => 'Código de convite copiado!';
+
+  @override
+  String get shareInviteBtn => 'Compartilhar Convite';
+
+  @override
+  String expiresAtLabel(String date) {
+    return 'Expira em: $date';
+  }
+
+  @override
+  String get close => 'Fechar';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get enterGroupPrompt =>
+      'Digite o código de 6 dígitos que você recebeu para se integrar ao grupo familiar do seu parceiro.';
+
+  @override
+  String get codePlaceholder => 'CÓDIGO';
+
+  @override
+  String get enter => 'Entrar';
+
+  @override
+  String get codeLengthError => 'O código deve ter 6 caracteres';
+
+  @override
+  String get groupJoinSuccess => 'Grupo integrado com sucesso!';
+
+  @override
+  String groupJoinError(String error) {
+    return 'Falha ao aceitar convite: $error';
+  }
+
+  @override
+  String get myFamilyGroup => 'Meu Grupo Familiar';
+
+  @override
+  String get groupSubtitle => 'Finanças compartilhadas e organizadas';
+
+  @override
+  String get groupMembers => 'MEMBROS DO GRUPO';
+
+  @override
+  String get unknownUser => 'Usuário';
 }

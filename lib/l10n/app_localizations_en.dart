@@ -497,4 +497,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleSignInButton => 'Sign in with Google';
+
+  @override
+  String get invitePartner => 'Invite Partner';
+
+  @override
+  String get acceptInvite => 'Join a Group';
+
+  @override
+  String get leaveGroup => 'Leave Group';
+
+  @override
+  String get leaveGroupTitle => 'Leave Group?';
+
+  @override
+  String get leaveGroupConfirmMsg =>
+      'Are you sure you want to leave the shared financial group? Your new transactions will no longer be visible to your partner.';
+
+  @override
+  String get leaveGroupSuccess => 'You left the financial group!';
+
+  @override
+  String leaveGroupError(String error) {
+    return 'Failed to leave group: $error';
+  }
+
+  @override
+  String get inviteCodeCopied => 'Invite link copied!';
+
+  @override
+  String shareInviteMsg(String link) {
+    return 'Hello! Join my financial group in the Finance App by clicking the link: $link';
+  }
+
+  @override
+  String get shareInviteSubject => 'Invitation to Financial Group';
+
+  @override
+  String get shareInvitePrompt =>
+      'Share the link below with your partner. By clicking on it, they will be able to join your financial group!';
+
+  @override
+  String get shareInviteOrCode => 'Or share only the 6-character code:';
+
+  @override
+  String get inviteOnlyCodeCopied => 'Invite code copied!';
+
+  @override
+  String get shareInviteBtn => 'Share Invitation';
+
+  @override
+  String expiresAtLabel(String date) {
+    return 'Expires on: $date';
+  }
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get enterGroupPrompt =>
+      'Enter the 6-digit code you received to join your partner\'s family group.';
+
+  @override
+  String get codePlaceholder => 'CODE';
+
+  @override
+  String get enter => 'Join';
+
+  @override
+  String get codeLengthError => 'The code must be 6 characters long';
+
+  @override
+  String get groupJoinSuccess => 'Group joined successfully!';
+
+  @override
+  String groupJoinError(String error) {
+    return 'Failed to join group: $error';
+  }
+
+  @override
+  String get myFamilyGroup => 'My Family Group';
+
+  @override
+  String get groupSubtitle => 'Shared and organized finances';
+
+  @override
+  String get groupMembers => 'GROUP MEMBERS';
+
+  @override
+  String get unknownUser => 'User';
 }

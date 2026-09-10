@@ -20,7 +20,7 @@
   "foodDining": "Food & Dining",
   "transportation": "Transportation",
   "others": "Others",
-  "wallets": "Wallets",
+  "wallets": "AI Assistant",
   "manageSharedAccounts": "Manage shared accounts & cards",
   "cardHolder": "CARD HOLDER",
   "expires": "EXPIRES",
@@ -66,7 +66,7 @@
   "transport": "Transport",
   "homeNav": "Home",
   "analyticsNav": "Analytics",
-  "walletsNav": "Wallets",
+  "walletsNav": "AI Chat",
   "settingsNav": "Settings",
   "freelancePayment": "Freelance Payment",
   "groceryStore": "Grocery Store",
@@ -227,5 +227,11 @@
   "myFamilyGroup": "My Family Group",
   "groupSubtitle": "Shared and organized finances",
   "groupMembers": "GROUP MEMBERS",
-  "unknownUser": "User"
+  "unknownUser": "User",
+  "aiAssistantWelcome": "Hello! How can I help with your finances today? You can write something like: 'I spent R$ 45 on lunch today'.",
+  "confirmTransaction": "Confirm Transaction",
+  "discard": "Discard",
+  "transactionLogged": "Transaction confirmed!",
+  "transactionDiscarded": "Transaction discarded",
+  "typeMessage": "Type a message..."
 }

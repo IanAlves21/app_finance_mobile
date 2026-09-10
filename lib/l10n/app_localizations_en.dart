@@ -69,7 +69,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get others => 'Others';
 
   @override
-  String get wallets => 'Wallets';
+  String get wallets => 'AI Assistant';
 
   @override
   String get manageSharedAccounts => 'Manage shared accounts & cards';
@@ -207,7 +207,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyticsNav => 'Analytics';
 
   @override
-  String get walletsNav => 'Wallets';
+  String get walletsNav => 'AI Chat';
 
   @override
   String get settingsNav => 'Settings';
@@ -589,4 +589,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unknownUser => 'User';
+
+  @override
+  String get aiAssistantWelcome =>
+      'Hello! How can I help with your finances today? You can write something like: \'I spent R\$ 45 on lunch today\'.';
+
+  @override
+  String get confirmTransaction => 'Confirm Transaction';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get transactionLogged => 'Transaction confirmed!';
+
+  @override
+  String get transactionDiscarded => 'Transaction discarded';
+
+  @override
+  String get typeMessage => 'Type a message...';
 }

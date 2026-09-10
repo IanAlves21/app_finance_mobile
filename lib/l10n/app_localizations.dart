@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @wallets.
   ///
   /// In en, this message translates to:
-  /// **'Wallets'**
+  /// **'AI Assistant'**
   String get wallets;
 
   /// No description provided for @manageSharedAccounts.
@@ -497,7 +497,7 @@ abstract class AppLocalizations {
   /// No description provided for @walletsNav.
   ///
   /// In en, this message translates to:
-  /// **'Wallets'**
+  /// **'AI Chat'**
   String get walletsNav;
 
   /// No description provided for @settingsNav.
@@ -1225,6 +1225,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User'**
   String get unknownUser;
+
+  /// No description provided for @aiAssistantWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello! How can I help with your finances today? You can write something like: \'I spent R\$ 45 on lunch today\'.'**
+  String get aiAssistantWelcome;
+
+  /// No description provided for @confirmTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Transaction'**
+  String get confirmTransaction;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
+  /// No description provided for @transactionLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction confirmed!'**
+  String get transactionLogged;
+
+  /// No description provided for @transactionDiscarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction discarded'**
+  String get transactionDiscarded;
+
+  /// No description provided for @typeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message...'**
+  String get typeMessage;
 }
 
 class _AppLocalizationsDelegate

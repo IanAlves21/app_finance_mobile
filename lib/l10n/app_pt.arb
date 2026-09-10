@@ -20,7 +20,7 @@
   "foodDining": "Comida & Jantar",
   "transportation": "Transporte",
   "others": "Outros",
-  "wallets": "Carteiras",
+  "wallets": "Assistente IA",
   "manageSharedAccounts": "Gerencie suas contas & cartões",
   "cardHolder": "TITULAR DO CARTÃO",
   "expires": "VALIDADE",
@@ -66,7 +66,7 @@
   "transport": "Transporte",
   "homeNav": "Início",
   "analyticsNav": "Análise",
-  "walletsNav": "Carteiras",
+  "walletsNav": "IA Chat",
   "settingsNav": "Configurações",
   "freelancePayment": "Pagamento Freelance",
   "groceryStore": "Supermercado",
@@ -227,5 +227,11 @@
   "myFamilyGroup": "Meu Grupo Familiar",
   "groupSubtitle": "Finanças compartilhadas e organizadas",
   "groupMembers": "MEMBROS DO GRUPO",
-  "unknownUser": "Usuário"
+  "unknownUser": "Usuário",
+  "aiAssistantWelcome": "Olá! Como posso ajudar com suas finanças hoje? Você pode escrever algo como: 'Gastei R$ 45 com almoço hoje'.",
+  "confirmTransaction": "Confirmar Lançamento",
+  "discard": "Descartar",
+  "transactionLogged": "Lançamento confirmado!",
+  "transactionDiscarded": "Lançamento descartado",
+  "typeMessage": "Escreva uma mensagem..."
 }

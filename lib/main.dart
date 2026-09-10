@@ -7,7 +7,7 @@ import 'l10n/app_localizations.dart'; // Import Custom Localization
 import 'theme/app_colors.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/analytics_tab.dart';
-import 'tabs/wallets_tab.dart';
+import 'tabs/chat_tab.dart';
 import 'tabs/settings_tab.dart';
 import 'widgets/interactive_card.dart';
 import 'widgets/add_transaction_bottom_sheet.dart';
@@ -277,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _tabs = [
     const HomeTab(),
     const AnalyticsTab(),
-    const WalletsTab(),
+    const ChatTab(),
     const SettingsTab(),
   ];
 
@@ -529,7 +529,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(width: 80),
                         _buildNavItem(
                           2,
-                          Icons.account_balance_wallet_rounded,
+                          Icons.insights_rounded,
                           l10n.walletsNav,
                           isDark,
                         ),

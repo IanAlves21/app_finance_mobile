@@ -46,3 +46,6 @@ app.*.map.json
 
 # Gemini and local agent artifacts
 /out/
+
+# Test generated reports
+/Relatorio_Financeiro_*.pdf

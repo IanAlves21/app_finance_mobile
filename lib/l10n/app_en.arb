@@ -233,5 +233,14 @@
   "discard": "Discard",
   "transactionLogged": "Transaction confirmed!",
   "transactionDiscarded": "Transaction discarded",
-  "typeMessage": "Type a message..."
+  "typeMessage": "Type a message...",
+  "transactionDetected": "Transaction Detected",
+  "pendingStatus": "Pending",
+  "savedStatus": "Saved",
+  "discardedStatus": "Discarded",
+  "typeLabel": "Type:",
+  "valueLabel": "Value:",
+  "notApplicable": "Not applicable",
+  "messageCopied": "Message copied!",
+  "errorSavingTransaction": "An error occurred while saving the transaction."
 }

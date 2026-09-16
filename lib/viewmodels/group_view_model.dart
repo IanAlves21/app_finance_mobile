@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../repositories/group_repository.dart';
 import '../services/service_locator.dart';
+import '../utils/ui_utils.dart';
 
 class GroupViewModel extends ChangeNotifier {
   final GroupRepository _groupRepository = locator<GroupRepository>();
@@ -30,7 +31,7 @@ class GroupViewModel extends ChangeNotifier {
       _groupName = info['name'] as String?;
       _members = info['members'] as List<dynamic>? ?? [];
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Erro ao carregar informações do grupo');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -50,7 +51,7 @@ class GroupViewModel extends ChangeNotifier {
         _inviteExpiresAt = DateTime.parse(invite['expiresAt'] as String);
       }
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Erro ao gerar convite para o grupo');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -66,7 +67,7 @@ class GroupViewModel extends ChangeNotifier {
     try {
       return await _groupRepository.fetchInviteDetails(code);
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Erro ao carregar detalhes do convite');
       rethrow;
     } finally {
       _isLoading = false;
@@ -84,7 +85,7 @@ class GroupViewModel extends ChangeNotifier {
       await _groupRepository.acceptInvite(code);
       await loadGroupInfo(); // Recarrega os membros locais após a mesclagem!
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Erro ao entrar no grupo');
       rethrow;
     } finally {
       _isLoading = false;
@@ -102,7 +103,7 @@ class GroupViewModel extends ChangeNotifier {
       await _groupRepository.leaveGroup();
       await loadGroupInfo(); // Recarrega os membros locais após a saída!
     } catch (e) {
-      _errorMessage = e.toString().replaceAll('HttpException: ', '');
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Erro ao sair do grupo');
       rethrow;
     } finally {
       _isLoading = false;

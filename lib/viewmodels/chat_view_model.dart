@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repositories/chat_repository.dart';
 import '../repositories/transaction_repository.dart';
+import '../repositories/category_repository.dart';
+import '../models/category.dart';
 import '../services/service_locator.dart';
+import '../utils/ui_utils.dart';
 
 class ChatMessage {
   final String text;
@@ -55,13 +58,18 @@ class ChatMessage {
 class ChatViewModel extends ChangeNotifier {
   final ChatRepository _chatRepository;
   final TransactionRepository _transactionRepository;
+  final CategoryRepository _categoryRepository;
+  List<Category> _categories = [];
 
   ChatViewModel({
     ChatRepository? chatRepository,
     TransactionRepository? transactionRepository,
+    CategoryRepository? categoryRepository,
   })  : _chatRepository = chatRepository ?? locator<ChatRepository>(),
         _transactionRepository =
-            transactionRepository ?? locator<TransactionRepository>();
+            transactionRepository ?? locator<TransactionRepository>(),
+        _categoryRepository =
+            categoryRepository ?? locator<CategoryRepository>();
 
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
@@ -70,9 +78,16 @@ class ChatViewModel extends ChangeNotifier {
   List<ChatMessage> get messages => _messages;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  List<Category> get categories => _categories;
 
   /// Inicializa o chat carregando o histórico persistido do SharedPreferences
   Future<void> initializeWelcomeMessage(String welcomeText) async {
+    try {
+      _categories = await _categoryRepository.fetchCategories();
+    } catch (e) {
+      debugPrint('Erro ao carregar categorias no ChatViewModel: $e');
+    }
+
     if (_messages.isNotEmpty) return;
 
     try {
@@ -114,6 +129,12 @@ class ChatViewModel extends ChangeNotifier {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
+    if (_categories.isEmpty) {
+      try {
+        _categories = await _categoryRepository.fetchCategories();
+      } catch (_) {}
+    }
+
     // 1. Adiciona a mensagem do usuário e persiste
     _messages.add(ChatMessage(text: text, isUser: true));
     _isLoading = true;
@@ -127,9 +148,12 @@ class ChatViewModel extends ChangeNotifier {
 
       final isTransaction = response['isTransaction'] as bool? ?? false;
       final String reply = response['reply'] as String? ?? 'Desculpe, não entendi.';
+      final String cleanReply = _sanitizeReply(reply);
 
       Map<String, dynamic>? transactionData;
       if (isTransaction) {
+        final detectedPaymentMethod = _detectPaymentMethod(text, response['type']?.toString() ?? 'EXPENSE');
+        final detectedInstallments = _detectInstallments(text, detectedPaymentMethod);
         transactionData = {
           'amount': response['amount'],
           'description': response['description'],
@@ -137,18 +161,20 @@ class ChatViewModel extends ChangeNotifier {
           'categoryName': response['categoryName'],
           'categoryId': response['categoryId'],
           'date': response['date'],
+          'paymentMethod': detectedPaymentMethod,
+          'installments': detectedInstallments,
         };
       }
 
       // 3. Adiciona a resposta da IA e persiste
       _messages.add(ChatMessage(
-        text: reply,
+        text: cleanReply,
         isUser: false,
         transactionData: transactionData,
       ));
       await _saveHistory();
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = UIUtils.sanitizeErrorMessage(e);
       _messages.add(ChatMessage(
         text: 'Desculpe, tive um problema para me conectar. Por favor, tente novamente.',
         isUser: false,
@@ -157,6 +183,101 @@ class ChatViewModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Higieniza e traduz respostas com erros ou contendo JSON para mensagens amigáveis ao usuário
+  String _sanitizeReply(String reply) {
+    if (reply.contains('{') && reply.contains('}')) {
+      final clean = UIUtils.sanitizeErrorMessage(reply);
+      final lower = clean.toLowerCase();
+      if (clean.contains('Erro na API') || 
+          clean.contains('Gemini') || 
+          clean.contains('assistente') ||
+          lower.contains('blocked') ||
+          lower.contains('key') ||
+          lower.contains('api') ||
+          lower.contains('unauthorized') ||
+          lower.contains('invalid')) {
+        return 'Desculpe, o assistente inteligente está indisponível ou em manutenção no momento. Por favor, tente novamente em instantes.';
+      }
+      return clean;
+    }
+    if (reply.contains('Error') || reply.contains('Exception') || reply.contains('failed') || reply.contains('Gemini:')) {
+      return 'Desculpe, o assistente encontrou uma instabilidade ao processar sua mensagem. Por favor, tente novamente.';
+    }
+    return reply;
+  }
+
+  /// Detecta de forma inteligente a forma de pagamento a partir do texto do usuário
+  String? _detectPaymentMethod(String text, String type) {
+    if (type == 'INCOME') return null;
+    final lower = text.toLowerCase();
+    if (lower.contains('crédito') || lower.contains('credito') || lower.contains('cartão') || lower.contains('cartao')) {
+      return 'CREDIT';
+    }
+    if (lower.contains('débito') || lower.contains('debito')) {
+      return 'DEBIT';
+    }
+    if (lower.contains('pix')) {
+      return 'PIX';
+    }
+    if (lower.contains('dinheiro') || lower.contains('espécie') || lower.contains('especie') || lower.contains('cash')) {
+      return 'CASH';
+    }
+    return 'CASH'; // Fallback padrão
+  }
+
+  /// Detecta de forma inteligente o número de parcelas a partir do texto do usuário para crédito
+  int? _detectInstallments(String text, String? paymentMethod) {
+    if (paymentMethod != 'CREDIT') return null;
+    
+    final lower = text.toLowerCase();
+    
+    // Procura padrões como "3x", "3 x", "em 3 vezes", "em 3 vez", "3 parcelas", "3 parcela", "parcelado em 3"
+    final regexes = [
+      RegExp(r'(\d+)\s*x'),
+      RegExp(r'em\s+(\d+)\s*(vezes|vez)'),
+      RegExp(r'(\d+)\s*(parcelas|parcela)'),
+      RegExp(r'parcelado\s+em\s+(\d+)'),
+    ];
+    
+    for (final reg in regexes) {
+      final match = reg.firstMatch(lower);
+      if (match != null) {
+        final String? digits = match.group(1);
+        if (digits != null) {
+          final int? value = int.tryParse(digits);
+          if (value != null && value > 1) {
+            return value;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Permite ao usuário alterar a forma de pagamento diretamente no card de transação do chat
+  void updatePaymentMethod(ChatMessage msg, String paymentMethod) {
+    if (msg.transactionData != null) {
+      msg.transactionData!['paymentMethod'] = paymentMethod;
+      // Garante parcelas adequadas ao mudar para crédito ou outras formas
+      if (paymentMethod == 'CREDIT') {
+        msg.transactionData!['installments'] ??= 1;
+      } else {
+        msg.transactionData!.remove('installments');
+      }
+      notifyListeners();
+      _saveHistory();
+    }
+  }
+
+  /// Permite ao usuário alterar o número de parcelas diretamente no card de transação do chat
+  void updateInstallments(ChatMessage msg, int installments) {
+    if (msg.transactionData != null) {
+      msg.transactionData!['installments'] = installments;
+      notifyListeners();
+      _saveHistory();
     }
   }
 
@@ -174,6 +295,8 @@ class ChatViewModel extends ChangeNotifier {
       final String type = data['type'] as String? ?? 'EXPENSE';
       final String? categoryId = data['categoryId'] as String?;
       final String dateStr = data['date'] as String? ?? DateTime.now().toIso8601String();
+      final String? paymentMethod = data['paymentMethod'] as String?;
+      final int? installments = data['installments'] as int?;
 
       // Chama a inserção de transação padrão
       await _transactionRepository.createTransaction(
@@ -182,7 +305,8 @@ class ChatViewModel extends ChangeNotifier {
         type: type,
         date: dateStr,
         categoryId: categoryId,
-        paymentMethod: type == 'EXPENSE' ? 'CASH' : null,
+        paymentMethod: paymentMethod,
+        installments: installments,
       );
 
       message.isConfirmed = true;

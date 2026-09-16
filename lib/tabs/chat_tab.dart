@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../models/category.dart';
+import '../utils/ui_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../services/service_locator.dart';
@@ -265,25 +267,37 @@ class _ChatTabState extends State<ChatTab> {
             crossAxisAlignment: msg.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               // Bolha do chat com texto
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: bubbleColor,
-                  borderRadius: borderRadius,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.1 : 0.03),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+              GestureDetector(
+                onLongPress: () async {
+                  await Clipboard.setData(ClipboardData(text: msg.text));
+                  if (mounted) {
+                    HapticFeedback.mediumImpact(); // Feedback tátil premium
+                    CustomToast.showSuccess(
+                      context,
+                      l10n.messageCopied,
+                    );
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: borderRadius,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.1 : 0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    msg.text,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 14.5,
+                      height: 1.4,
                     ),
-                  ],
-                ),
-                child: Text(
-                  msg.text,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 14.5,
-                    height: 1.4,
                   ),
                 ),
               ),
@@ -300,6 +314,217 @@ class _ChatTabState extends State<ChatTab> {
     );
   }
 
+  Widget _buildInfoRow({
+    required String label,
+    required Widget valueWidget,
+    required bool isDark,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 95,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white54 : Colors.grey.shade600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: valueWidget,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSelector(ChatMessage msg, String? currentMethod, bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
+    final methods = [
+      {'value': 'CREDIT', 'label': l10n.creditCard, 'icon': Icons.credit_card_rounded},
+      {'value': 'DEBIT', 'label': l10n.debitCard, 'icon': Icons.credit_card_outlined},
+      {'value': 'PIX', 'label': l10n.pix, 'icon': Icons.qr_code_rounded},
+      {'value': 'CASH', 'label': l10n.cash, 'icon': Icons.payments_rounded},
+    ];
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: methods.map((m) {
+        final isSelected = currentMethod == m['value'];
+        final Color activeColor = AppColors.accentOrange;
+
+        return GestureDetector(
+          onTap: () {
+            _viewModel.updatePaymentMethod(msg, m['value'] as String);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? activeColor.withValues(alpha: 0.12)
+                  : (isDark ? const Color(0xFF0F172A) : Colors.grey.shade100),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? activeColor : Colors.transparent,
+                width: 1.2,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  m['icon'] as IconData,
+                  size: 13,
+                  color: isSelected ? activeColor : (isDark ? Colors.white54 : Colors.grey.shade600),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  m['label'] as String,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? activeColor : (isDark ? Colors.white70 : AppColors.darkSlate),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStaticPaymentMethod(String? method, bool isDark) {
+    if (method == null) {
+      return Text(
+        '—',
+        style: TextStyle(fontSize: 13.5, color: isDark ? Colors.white30 : Colors.grey),
+      );
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    IconData icon;
+    String label;
+    switch (method) {
+      case 'CREDIT':
+        icon = Icons.credit_card_rounded;
+        label = l10n.creditCard;
+        break;
+      case 'DEBIT':
+        icon = Icons.credit_card_outlined;
+        label = l10n.debitCard;
+        break;
+      case 'PIX':
+        icon = Icons.qr_code_rounded;
+        label = l10n.pix;
+        break;
+      case 'CASH':
+      default:
+        icon = Icons.payments_rounded;
+        label = l10n.cash;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 13,
+            color: isDark ? Colors.white70 : AppColors.darkSlate,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white70 : AppColors.darkSlate,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstallmentsStepper(ChatMessage msg, int? currentInstallments, bool isDark) {
+    final installments = currentInstallments ?? 1;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: installments > 1
+              ? () {
+                  _viewModel.updateInstallments(msg, installments - 1);
+                }
+              : null,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.remove_rounded,
+              size: 14,
+              color: installments > 1
+                  ? AppColors.accentOrange
+                  : (isDark ? Colors.white24 : Colors.grey.shade300),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          '${installments}x',
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : AppColors.darkSlate,
+          ),
+        ),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: installments < 12
+              ? () {
+                  _viewModel.updateInstallments(msg, installments + 1);
+                }
+              : null,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.add_rounded,
+              size: 14,
+              color: installments < 12
+                  ? AppColors.accentOrange
+                  : (isDark ? Colors.white24 : Colors.grey.shade300),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTransactionConfirmationCard(ChatMessage msg, bool isDark) {
     final l10n = AppLocalizations.of(context)!;
     final data = msg.transactionData!;
@@ -307,12 +532,37 @@ class _ChatTabState extends State<ChatTab> {
     final String description = data['description'] as String? ?? 'Sem descrição';
     final String type = data['type'] as String? ?? 'EXPENSE';
     final String categoryName = data['categoryName'] as String? ?? 'Outros';
-    final String? iconName = data['categoryId'] != null ? categoryName : null;
+    final String? categoryId = data['categoryId']?.toString();
+    final String? currentPaymentMethod = data['paymentMethod'] as String?;
+    final int? currentInstallments = data['installments'] as int?;
+
+    // Busca categoria no viewModel para usar o ícone e a cor cadastrados pelo usuário!
+    final Category matchedCategory = _viewModel.categories.firstWhere(
+      (cat) => (categoryId != null && cat.id == categoryId) || cat.name.toLowerCase() == categoryName.toLowerCase(),
+      orElse: () => const Category(id: '', name: '', type: ''),
+    );
+
+    final bool hasCategory = matchedCategory.id.isNotEmpty;
+    final Color catColor = hasCategory
+        ? UIUtils.parseHexColor(matchedCategory.color)
+        : (isDark ? Colors.white30 : Colors.grey.shade400);
+
+    final Color badgeBg = hasCategory
+        ? catColor.withValues(alpha: 0.12)
+        : (isDark ? const Color(0xFF0F172A) : Colors.grey.shade200);
+
+    final Color badgeTextColor = hasCategory
+        ? catColor
+        : (isDark ? Colors.white70 : AppColors.darkSlate);
+
+    final IconData categoryIcon = hasCategory
+        ? UIUtils.getIconData(matchedCategory.icon)
+        : _getCategoryIcon(matchedCategory.icon ?? (categoryId != null ? categoryName : null));
 
     final isExpense = type == 'EXPENSE';
     final statusColor = isExpense ? AppColors.redAccent : AppColors.greenAccent;
-    final bgColor = isDark ? const Color(0xFF151D30) : const Color(0xFFF1F5F9);
     final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final bool isPending = !msg.isConfirmed && !msg.isCancelled;
 
     return Container(
       width: double.infinity,
@@ -336,7 +586,7 @@ class _ChatTabState extends State<ChatTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header com tipo e categoria
+          // Header com tipo e título principal do Lançamento
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
@@ -351,79 +601,181 @@ class _ChatTabState extends State<ChatTab> {
             child: Row(
               children: [
                 Icon(
-                  isExpense ? Icons.arrow_circle_down_rounded : Icons.arrow_circle_up_rounded,
-                  color: statusColor,
-                  size: 20,
+                  Icons.receipt_long_rounded,
+                  color: isDark ? Colors.white70 : AppColors.darkSlate,
+                  size: 18,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Text(
-                  isExpense ? l10n.expense : l10n.income,
+                  l10n.transactionDetected,
                   style: TextStyle(
-                    color: statusColor,
+                    color: isDark ? Colors.white : AppColors.darkSlate,
                     fontWeight: FontWeight.w800,
-                    fontSize: 12,
+                    fontSize: 14,
                     letterSpacing: 0.5,
                   ),
                 ),
                 const Spacer(),
+                // Selo compacto de status pendente/confirmado/descartado
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(8),
+                    color: isPending
+                        ? Colors.amber.withValues(alpha: 0.15)
+                        : (msg.isConfirmed ? AppColors.greenAccent.withValues(alpha: 0.15) : Colors.redAccent.withValues(alpha: 0.15)),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _getCategoryIcon(iconName),
-                        size: 13,
-                        color: isDark ? Colors.white70 : AppColors.darkSlate,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        categoryName,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white70 : AppColors.darkSlate,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    isPending ? l10n.pendingStatus : (msg.isConfirmed ? l10n.savedStatus : l10n.discardedStatus),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isPending
+                          ? Colors.amber.shade700
+                          : (msg.isConfirmed ? AppColors.greenAccent : Colors.redAccent),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          // Detalhes Principais (Valor e Descrição)
+          // Lista Estruturada de Detalhes da Transação
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  CurrencyFormatter.formatSummaryValue(amount),
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
+                // Tipo
+                _buildInfoRow(
+                  label: l10n.typeLabel,
+                  isDark: isDark,
+                  valueWidget: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      isExpense ? l10n.expense : l10n.income,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: isDark ? Colors.white70 : AppColors.darkSlate,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                const Divider(height: 1, thickness: 0.5),
+
+                // Valor
+                _buildInfoRow(
+                  label: l10n.valueLabel,
+                  isDark: isDark,
+                  valueWidget: Text(
+                    CurrencyFormatter.formatSummaryValue(amount),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
+                const Divider(height: 1, thickness: 0.5),
+
+                // Categoria
+                _buildInfoRow(
+                  label: '${l10n.categoryLabel}:',
+                  isDark: isDark,
+                  valueWidget: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: hasCategory
+                          ? Border.all(color: catColor.withValues(alpha: 0.2), width: 1)
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          categoryIcon,
+                          size: 13,
+                          color: badgeTextColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          categoryName,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: badgeTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Divider(height: 1, thickness: 0.5),
+
+                // Descrição
+                _buildInfoRow(
+                  label: '${l10n.description}:',
+                  isDark: isDark,
+                  valueWidget: Text(
+                    description,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppColors.darkSlate,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1, thickness: 0.5),
+
+                // Forma de Pagamento
+                _buildInfoRow(
+                  label: '${l10n.paymentMethodLabel}:',
+                  isDark: isDark,
+                  valueWidget: isExpense
+                      ? (isPending
+                          ? _buildPaymentMethodSelector(msg, currentPaymentMethod, isDark)
+                          : _buildStaticPaymentMethod(currentPaymentMethod, isDark))
+                      : Text(
+                          l10n.notApplicable,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            color: isDark ? Colors.white30 : Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                ),
+
+                // Parcelas (Apenas para Crédito em Despesas)
+                if (isExpense && currentPaymentMethod == 'CREDIT') ...[
+                  const Divider(height: 1, thickness: 0.5),
+                  _buildInfoRow(
+                    label: '${l10n.installmentLabel}s:',
+                    isDark: isDark,
+                    valueWidget: isPending
+                        ? _buildInstallmentsStepper(msg, currentInstallments, isDark)
+                        : Text(
+                            '${currentInstallments ?? 1}x',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : AppColors.darkSlate,
+                            ),
+                          ),
+                  ),
+                ],
               ],
             ),
           ),
 
           // Botões de Confirmação Rápida
-          if (!msg.isConfirmed && !msg.isCancelled) ...[
+          if (isPending) ...[
             const Divider(height: 1, thickness: 1),
             Row(
               children: [

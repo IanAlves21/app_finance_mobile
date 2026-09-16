@@ -5,6 +5,7 @@ import '../main.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/secure_storage_manager.dart';
+import '../utils/ui_utils.dart';
 
 class LoginViewModel extends ChangeNotifier {
   final ApiService _apiService;
@@ -78,7 +79,7 @@ class LoginViewModel extends ChangeNotifier {
       onSuccess();
     } catch (e) {
       _loading = false;
-      _errorMessage = e.toString().replaceAll('HttpException: ', '');
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Falha ao realizar login');
       notifyListeners();
       onError(_errorMessage!);
     }
@@ -148,7 +149,7 @@ class LoginViewModel extends ChangeNotifier {
       onSuccess();
     } catch (e) {
       _loading = false;
-      _errorMessage = e.toString().replaceAll('HttpException: ', '');
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Falha ao autenticar com o Google');
       notifyListeners();
       onError(_errorMessage!);
     }

@@ -610,4 +610,31 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get typeMessage => 'Escreva uma mensagem...';
+
+  @override
+  String get transactionDetected => 'Transação Detectada';
+
+  @override
+  String get pendingStatus => 'Pendente';
+
+  @override
+  String get savedStatus => 'Salvo';
+
+  @override
+  String get discardedStatus => 'Descartado';
+
+  @override
+  String get typeLabel => 'Tipo:';
+
+  @override
+  String get valueLabel => 'Valor:';
+
+  @override
+  String get notApplicable => 'Não aplicável';
+
+  @override
+  String get messageCopied => 'Mensagem copiada!';
+
+  @override
+  String get errorSavingTransaction => 'Ocorreu um erro ao salvar lançamento.';
 }

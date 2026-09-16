@@ -233,5 +233,14 @@
   "discard": "Descartar",
   "transactionLogged": "Lançamento confirmado!",
   "transactionDiscarded": "Lançamento descartado",
-  "typeMessage": "Escreva uma mensagem..."
+  "typeMessage": "Escreva uma mensagem...",
+  "transactionDetected": "Transação Detectada",
+  "pendingStatus": "Pendente",
+  "savedStatus": "Salvo",
+  "discardedStatus": "Descartado",
+  "typeLabel": "Tipo:",
+  "valueLabel": "Valor:",
+  "notApplicable": "Não aplicável",
+  "messageCopied": "Mensagem copiada!",
+  "errorSavingTransaction": "Ocorreu um erro ao salvar lançamento."
 }

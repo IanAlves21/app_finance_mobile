@@ -1261,6 +1261,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type a message...'**
   String get typeMessage;
+
+  /// No description provided for @transactionDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Detected'**
+  String get transactionDetected;
+
+  /// No description provided for @pendingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pendingStatus;
+
+  /// No description provided for @savedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedStatus;
+
+  /// No description provided for @discardedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Discarded'**
+  String get discardedStatus;
+
+  /// No description provided for @typeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type:'**
+  String get typeLabel;
+
+  /// No description provided for @valueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Value:'**
+  String get valueLabel;
+
+  /// No description provided for @notApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not applicable'**
+  String get notApplicable;
+
+  /// No description provided for @messageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied!'**
+  String get messageCopied;
+
+  /// No description provided for @errorSavingTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while saving the transaction.'**
+  String get errorSavingTransaction;
 }
 
 class _AppLocalizationsDelegate

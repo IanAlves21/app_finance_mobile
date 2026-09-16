@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
+import '../utils/ui_utils.dart';
 
 class RegisterViewModel extends ChangeNotifier {
   final ApiService _apiService;
@@ -77,7 +78,7 @@ class RegisterViewModel extends ChangeNotifier {
       onSuccess();
     } catch (e) {
       _loading = false;
-      _errorMessage = e.toString().replaceAll('HttpException: ', '');
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Falha ao cadastrar conta');
       notifyListeners();
       onError(_errorMessage!);
     }

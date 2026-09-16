@@ -608,4 +608,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get typeMessage => 'Type a message...';
+
+  @override
+  String get transactionDetected => 'Transaction Detected';
+
+  @override
+  String get pendingStatus => 'Pending';
+
+  @override
+  String get savedStatus => 'Saved';
+
+  @override
+  String get discardedStatus => 'Discarded';
+
+  @override
+  String get typeLabel => 'Type:';
+
+  @override
+  String get valueLabel => 'Value:';
+
+  @override
+  String get notApplicable => 'Not applicable';
+
+  @override
+  String get messageCopied => 'Message copied!';
+
+  @override
+  String get errorSavingTransaction =>
+      'An error occurred while saving the transaction.';
 }

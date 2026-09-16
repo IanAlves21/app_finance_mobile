@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_finance_mobile/viewmodels/chat_view_model.dart';
 import 'package:app_finance_mobile/repositories/chat_repository.dart';
 import 'package:app_finance_mobile/repositories/transaction_repository.dart';
+import 'package:app_finance_mobile/repositories/category_repository.dart';
+import 'package:app_finance_mobile/models/category.dart';
 import 'package:app_finance_mobile/services/api_service.dart';
 import 'package:app_finance_mobile/models/transaction.dart';
 import 'package:http/http.dart' as http;
@@ -80,9 +82,29 @@ class MockTransactionRepository extends TransactionRepository {
   }
 }
 
+class MockCategoryRepository extends CategoryRepository {
+  MockCategoryRepository()
+      : super(
+          apiService: ApiService(
+            client: MockClient((_) async => http.Response('', 200)),
+          ),
+        );
+
+  Future<List<Category>> Function()? onFetchCategories;
+
+  @override
+  Future<List<Category>> fetchCategories() async {
+    if (onFetchCategories != null) {
+      return onFetchCategories!();
+    }
+    return [];
+  }
+}
+
 void main() {
   late MockChatRepository mockChatRepository;
   late MockTransactionRepository mockTransactionRepository;
+  late MockCategoryRepository mockCategoryRepository;
   late ChatViewModel viewModel;
 
   setUp(() {
@@ -90,9 +112,11 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     mockChatRepository = MockChatRepository();
     mockTransactionRepository = MockTransactionRepository();
+    mockCategoryRepository = MockCategoryRepository();
     viewModel = ChatViewModel(
       chatRepository: mockChatRepository,
       transactionRepository: mockTransactionRepository,
+      categoryRepository: mockCategoryRepository,
     );
   });
 
@@ -214,6 +238,137 @@ void main() {
 
       expect(chatMessage.isConfirmed, false);
       expect(chatMessage.isCancelled, true);
+    });
+
+    test('initializeWelcomeMessage fetches and stores user categories', () async {
+      mockCategoryRepository.onFetchCategories = () async {
+        return [
+          const Category(
+            id: 'food_uuid_123',
+            name: 'Alimentação',
+            type: 'EXPENSE',
+            icon: 'food',
+            color: '#de350b',
+          ),
+          const Category(
+            id: 'shopping_uuid_456',
+            name: 'Compras',
+            type: 'EXPENSE',
+            icon: 'shopping-cart',
+            color: '#00875a',
+          ),
+        ];
+      };
+
+      expect(viewModel.categories.isEmpty, true);
+
+      await viewModel.initializeWelcomeMessage('Welcome to AI Chat!');
+
+      expect(viewModel.categories.length, 2);
+      expect(viewModel.categories[0].id, 'food_uuid_123');
+      expect(viewModel.categories[0].name, 'Alimentação');
+      expect(viewModel.categories[1].name, 'Compras');
+    });
+
+    test('sendMessage triggers category fetch if categories list is empty', () async {
+      bool categoriesFetched = false;
+      mockCategoryRepository.onFetchCategories = () async {
+        categoriesFetched = true;
+        return [
+          const Category(
+            id: 'leisure_uuid_789',
+            name: 'Lazer',
+            type: 'EXPENSE',
+            icon: 'entertainment',
+            color: '#ffc107',
+          ),
+        ];
+      };
+
+      mockChatRepository.onSendMessage = (msg) async {
+        return {
+          'isTransaction': false,
+          'reply': 'Qualquer resposta',
+        };
+      };
+
+      expect(viewModel.categories.isEmpty, true);
+
+      await viewModel.sendMessage('Gastei com cinema');
+
+      expect(categoriesFetched, true);
+      expect(viewModel.categories.length, 1);
+      expect(viewModel.categories[0].name, 'Lazer');
+    });
+
+    test('sendMessage detects payment method and credit card installments from user message', () async {
+      mockCategoryRepository.onFetchCategories = () async => [];
+      mockChatRepository.onSendMessage = (msg) async {
+        return {
+          'isTransaction': true,
+          'amount': 350.0,
+          'description': 'Geladeira nova',
+          'type': 'EXPENSE',
+          'categoryName': 'Casa',
+          'categoryId': 'home_uuid_123',
+          'date': '2026-09-04T12:00:00.000Z',
+          'reply': 'Entendi! Lançando Geladeira nova.',
+        };
+      };
+
+      // Teste 1: Crédito parcelado
+      await viewModel.sendMessage('Comprei no crédito em 10 vezes uma geladeira');
+      final msg1 = viewModel.messages.last;
+      expect(msg1.transactionData != null, true);
+      expect(msg1.transactionData!['paymentMethod'], 'CREDIT');
+      expect(msg1.transactionData!['installments'], 10);
+
+      // Teste 2: Pix
+      await viewModel.sendMessage('Gastei 15 no pix pro almoço');
+      final msg2 = viewModel.messages.last;
+      expect(msg2.transactionData != null, true);
+      expect(msg2.transactionData!['paymentMethod'], 'PIX');
+      expect(msg2.transactionData!['installments'], null);
+    });
+
+    test('updatePaymentMethod and updateInstallments update message state correctly', () {
+      final chatMessage = ChatMessage(
+        text: 'Lançar',
+        isUser: false,
+        transactionData: {
+          'amount': 100.0,
+          'description': 'Compra',
+          'type': 'EXPENSE',
+          'paymentMethod': 'CASH',
+        },
+      );
+
+      viewModel.updatePaymentMethod(chatMessage, 'CREDIT');
+      expect(chatMessage.transactionData!['paymentMethod'], 'CREDIT');
+      expect(chatMessage.transactionData!['installments'], 1); // Garante que inicializa em 1 se for CREDIT
+
+      viewModel.updateInstallments(chatMessage, 5);
+      expect(chatMessage.transactionData!['installments'], 5);
+
+      viewModel.updatePaymentMethod(chatMessage, 'PIX');
+      expect(chatMessage.transactionData!['paymentMethod'], 'PIX');
+      expect(chatMessage.transactionData!['installments'], null); // Remove parcelas se não for crédito
+    });
+
+    test('sendMessage handles raw system or JSON error replies with friendly Portuguese sanitization', () async {
+      mockCategoryRepository.onFetchCategories = () async => [];
+      mockChatRepository.onSendMessage = (msg) async {
+        return {
+          'isTransaction': false,
+          'reply': 'Erro na API do Gemini: 500 - {"error": {"code": 500, "message": "API key blocked", "status": "INTERNAL"}}',
+        };
+      };
+
+      await viewModel.sendMessage('Oi assistente');
+      final errMessage = viewModel.messages.last;
+      expect(errMessage.isUser, false);
+      expect(errMessage.text.contains('indisponível') || errMessage.text.contains('instabilidade'), true);
+      expect(errMessage.text.contains('{"error":'), false); // Sem JSON feio!
     });
   });
 }

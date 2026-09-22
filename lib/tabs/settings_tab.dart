@@ -8,7 +8,9 @@ import '../models/user.dart';
 import '../theme/app_colors.dart';
 import '../viewmodels/settings_view_model.dart';
 import '../widgets/shared_avatars.dart';
+import '../widgets/custom_toast.dart';
 import '../views/category_list_screen.dart';
+import '../views/group_screen.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -100,89 +102,78 @@ class _SettingsTabState extends State<SettingsTab> {
                   const SizedBox(height: 28),
 
                   // Profile Header Widget
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.darkSlate.withValues(
-                            alpha: isDark ? 0.25 : 0.04,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const GroupScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.darkSlate.withValues(
+                              alpha: isDark ? 0.25 : 0.04,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
                           ),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const SharedAvatars(
-                          size: 36.0,
-                          overlap: 20.0,
-                          hasBorder: false,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ValueListenableBuilder<User?>(
-                            valueListenable: currentUserNotifier,
-                            builder: (context, user, _) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    user?.name ?? 'Lucas & Mariana',
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 1),
-                                  Text(
-                                    user?.email ?? l10n.premiumPlan,
-                                    style: TextStyle(
-                                      color: textColor.withValues(alpha: 0.5),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const SharedAvatars(
+                            size: 36.0,
+                            overlap: 20.0,
+                            hasBorder: false,
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ValueListenableBuilder<User?>(
+                              valueListenable: currentUserNotifier,
+                              builder: (context, user, _) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user?.name ?? 'Lucas & Mariana',
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      user?.email ?? l10n.premiumPlan,
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.5),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          Icon(
                             Icons.arrow_forward_ios_rounded,
                             color: subTextColor,
                             size: 16,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 28),
                   _buildSectionHeader(l10n.accountSettings, subTextColor),
-                  _buildSettingTile(
-                    Icons.person_outline_rounded,
-                    l10n.editProfiles,
-                    l10n.managePersonalProfiles,
-                    cardColor,
-                    textColor,
-                    subTextColor,
-                    isDark,
-                  ),
-                  _buildSettingTile(
-                    Icons.link_rounded,
-                    l10n.connectedBanks,
-                    l10n.banksLinked,
-                    cardColor,
-                    textColor,
-                    subTextColor,
-                    isDark,
-                  ),
                   _buildSettingTile(
                     Icons.category_outlined,
                     l10n.manageCategories,
@@ -201,27 +192,27 @@ class _SettingsTabState extends State<SettingsTab> {
                     },
                   ),
                   _buildSettingTile(
-                    Icons.card_giftcard_outlined,
-                    l10n.cardsSettings,
-                    l10n.cardsSubtitle,
+                    Icons.picture_as_pdf_rounded,
+                    _viewModel.isExporting ? l10n.generatingReport : l10n.exportReportLabel,
+                    l10n.exportReportSubtitle,
                     cardColor,
                     textColor,
                     subTextColor,
                     isDark,
+                    onTap: _viewModel.isExporting
+                        ? null
+                        : () async {
+                            HapticFeedback.mediumImpact();
+                            final success = await _viewModel.exportCurrentMonthReport();
+                            if (success) {
+                              CustomToast.showSuccess(context, l10n.exportSuccess);
+                            } else {
+                              CustomToast.showError(context, l10n.exportError);
+                            }
+                          },
                   ),
                   const SizedBox(height: 28),
                   _buildSectionHeader(l10n.preferences, subTextColor),
-                  _buildToggleTile(
-                    Icons.translate_rounded,
-                    'English Language',
-                    _viewModel.isEnglish,
-                    cardColor,
-                    textColor,
-                    isDark,
-                    (v) {
-                      _viewModel.toggleLanguage(v);
-                    },
-                  ),
                   _buildToggleTile(
                     Icons.dark_mode_outlined,
                     l10n.darkModeLabel,
@@ -230,6 +221,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     textColor,
                     isDark,
                     (v) {
+                      HapticFeedback.lightImpact();
                       _viewModel.toggleDarkMode(v);
                     },
                   ),
@@ -241,6 +233,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     textColor,
                     isDark,
                     (v) {
+                      HapticFeedback.lightImpact();
                       _viewModel.togglePushNotifications(v);
                     },
                   ),
@@ -252,45 +245,153 @@ class _SettingsTabState extends State<SettingsTab> {
                     textColor,
                     isDark,
                     (v) {
-                      _viewModel.toggleBiometricAuth(v);
+                      HapticFeedback.lightImpact();
+                      _showPasswordConfirmDialog(context, v);
                     },
                   ),
                   const SizedBox(height: 28),
                   _buildSectionHeader(l10n.support, subTextColor),
                   _buildSettingTile(
-                    Icons.help_outline_rounded,
-                    l10n.helpCenter,
-                    l10n.faqsSupport,
-                    cardColor,
-                    textColor,
-                    subTextColor,
-                    isDark,
-                  ),
-                  _buildSettingTile(
-                    Icons.policy_outlined,
-                    l10n.privacyPolicy,
-                    l10n.dataSecurity,
-                    cardColor,
-                    textColor,
-                    subTextColor,
-                    isDark,
-                  ),
-                  _buildSettingTile(
                     Icons.logout_rounded,
-                    _viewModel.isEnglish ? 'Sign Out' : 'Sair',
-                    _viewModel.isEnglish
-                        ? 'Disconnect from joint account'
-                        : 'Desconectar da conta conjunta',
+                    l10n.logoutLabel,
+                    l10n.logoutSubtitle,
                     cardColor,
                     isDark ? AppColors.redAccent : Colors.red,
                     subTextColor,
                     isDark,
-                    onTap: _viewModel.logout,
+                    onTap: () => _showLogoutConfirmDialog(context),
+                  ),
+                  const SizedBox(height: 40),
+                  Center(
+                    child: Text(
+                      'FinanceApp • Versão 1.0.0 (Build 202609)',
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.35),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showLogoutConfirmDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            l10n.logoutConfirmTitle,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          content: Text(
+            l10n.logoutConfirmMsg,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.cancel,
+                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                _viewModel.logout();
+              },
+              child: Text(
+                l10n.logoutLabel,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPasswordConfirmDialog(BuildContext context, bool value) {
+    if (!value) {
+      _viewModel.toggleBiometricAuth(false);
+      return;
+    }
+
+    final TextEditingController passController = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
+            'Confirmar Senha',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Digite sua senha atual para autorizar e criptografar o login biométrico no seu dispositivo:',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                  hintText: '••••••••',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentOrange,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              onPressed: () async {
+                final password = passController.text.trim();
+                if (password.isEmpty) {
+                  return;
+                }
+                Navigator.pop(context); // fecha dialog
+
+                final success = await _viewModel.toggleBiometricAuth(true, passwordConfirm: password);
+                if (success) {
+                  CustomToast.showSuccess(context, 'Login biométrico ativado com sucesso!');
+                } else {
+                  CustomToast.showError(context, 'Dispositivo não compatível ou autenticação cancelada.');
+                }
+              },
+              child: Text(l10n.confirm, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
         );
       },
     );

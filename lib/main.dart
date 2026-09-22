@@ -33,9 +33,9 @@ final ValueNotifier<User?> currentUserNotifier = ValueNotifier<User?>(null);
 // Global Notifier for Pending Invite Deep Link
 final ValueNotifier<String?> pendingInviteNotifier = ValueNotifier<String?>(null);
 
-// Global Notifier for App Theme Mode
+// Global Notifier for App Theme Mode - Defaults to ThemeMode.system to follow device settings
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier<ThemeMode>(
-  ThemeMode.light,
+  ThemeMode.system,
 );
 
 // Global Notifier for App Locale - Dynamically follows system settings (defaults to 'en')
@@ -69,6 +69,17 @@ void main() async {
   // Load persistent login session before running the app
   try {
     final prefs = await SharedPreferences.getInstance();
+    
+    // Recupera a preferência de tema do SharedPreferences
+    final String? themeModeStr = prefs.getString('theme_mode');
+    if (themeModeStr == 'dark') {
+      themeNotifier.value = ThemeMode.dark;
+    } else if (themeModeStr == 'light') {
+      themeNotifier.value = ThemeMode.light;
+    } else {
+      themeNotifier.value = ThemeMode.system; // Padrão: segue o celular!
+    }
+
     final String? token = await SecureStorageManager.readToken();
 
     // Verifica se temos um token salvo e se ele ainda é válido (não expirou)

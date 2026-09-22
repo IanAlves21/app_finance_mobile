@@ -117,24 +117,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettings => 'Account settings';
 
   @override
-  String get editProfiles => 'Edit Profiles';
-
-  @override
-  String get managePersonalProfiles => 'Manage personal profiles';
-
-  @override
-  String get connectedBanks => 'Connected Banks';
-
-  @override
-  String get banksLinked => '2 external bank accounts linked';
-
-  @override
-  String get cardsSettings => 'Cards Settings';
-
-  @override
-  String get cardsSubtitle => 'Virtual cards and blockings';
-
-  @override
   String get preferences => 'Preferences';
 
   @override
@@ -148,18 +130,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get support => 'Support';
-
-  @override
-  String get helpCenter => 'Help Center';
-
-  @override
-  String get faqsSupport => 'FAQs and technical support';
-
-  @override
-  String get privacyPolicy => 'Privacy Policy';
-
-  @override
-  String get dataSecurity => 'Data security policies';
 
   @override
   String get addNewTransaction => 'Add New Transaction';
@@ -636,4 +606,32 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorSavingTransaction =>
       'An error occurred while saving the transaction.';
+
+  @override
+  String get logoutLabel => 'Sign Out';
+
+  @override
+  String get logoutSubtitle => 'Disconnect from joint account';
+
+  @override
+  String get logoutConfirmTitle => 'Do you really want to sign out?';
+
+  @override
+  String get logoutConfirmMsg =>
+      'You will need to authenticate again when you open the app.';
+
+  @override
+  String get exportReportLabel => 'Export Monthly Report';
+
+  @override
+  String get exportReportSubtitle => 'Download transactions statement as PDF';
+
+  @override
+  String get exportSuccess => 'Report generated and opened successfully!';
+
+  @override
+  String get exportError => 'Error generating monthly report.';
+
+  @override
+  String get generatingReport => 'Generating Report...';
 }

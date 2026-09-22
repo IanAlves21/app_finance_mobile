@@ -117,24 +117,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountSettings => 'Configurações da conta';
 
   @override
-  String get editProfiles => 'Editar Perfis';
-
-  @override
-  String get managePersonalProfiles => 'Gerenciar perfis pessoais';
-
-  @override
-  String get connectedBanks => 'Bancos Conectados';
-
-  @override
-  String get banksLinked => '2 contas externas vinculadas';
-
-  @override
-  String get cardsSettings => 'Configurações de Cartão';
-
-  @override
-  String get cardsSubtitle => 'Cartões virtuais e bloqueios';
-
-  @override
   String get preferences => 'Preferências';
 
   @override
@@ -148,18 +130,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get support => 'Suporte';
-
-  @override
-  String get helpCenter => 'Central de Ajuda';
-
-  @override
-  String get faqsSupport => 'FAQs e suporte técnico';
-
-  @override
-  String get privacyPolicy => 'Política de Privacidade';
-
-  @override
-  String get dataSecurity => 'Políticas de segurança de dados';
 
   @override
   String get addNewTransaction => 'Adicionar Nova Transação';
@@ -637,4 +607,32 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errorSavingTransaction => 'Ocorreu um erro ao salvar lançamento.';
+
+  @override
+  String get logoutLabel => 'Sair';
+
+  @override
+  String get logoutSubtitle => 'Desconectar da conta conjunta';
+
+  @override
+  String get logoutConfirmTitle => 'Deseja realmente sair?';
+
+  @override
+  String get logoutConfirmMsg =>
+      'Você precisará autenticar-se novamente ao abrir o aplicativo.';
+
+  @override
+  String get exportReportLabel => 'Exportar Relatório Mensal';
+
+  @override
+  String get exportReportSubtitle => 'Baixar balanço de transações em PDF';
+
+  @override
+  String get exportSuccess => 'Relatório gerado e aberto com sucesso!';
+
+  @override
+  String get exportError => 'Erro ao gerar relatório mensal.';
+
+  @override
+  String get generatingReport => 'Gerando Relatório...';
 }

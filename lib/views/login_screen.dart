@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../services/service_locator.dart';
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController _passwordController;
   late final FocusNode _emailFocusNode;
   late final FocusNode _passwordFocusNode;
+  bool _isBiometricAuthEnabled = false;
 
   @override
   void initState() {
@@ -33,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController = TextEditingController();
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
+    _loadBiometricStatus();
 
     // Bind text controllers to viewmodel
     _emailController.addListener(() {
@@ -58,6 +61,24 @@ class _LoginScreenState extends State<LoginScreen> {
         _viewModel.setFocusedField(null);
       }
     });
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _isBiometricAuthEnabled = prefs.getBool('biometric_auth') ?? false;
+      });
+    } catch (_) {}
+  }
+
+  void _handleBiometricLogin() {
+    _viewModel.loginWithBiometrics(
+      onSuccess: widget.onLogin,
+      onError: (errorMsg) {
+        CustomToast.showError(context, errorMsg);
+      },
+    );
   }
 
   @override
@@ -400,73 +421,110 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 24),
 
                         // Submit Button
-                        InteractiveCard(
-                          onTap: _viewModel.loading ? () {} : _handleSubmit,
-                          scaleOnPressed: 0.97,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: double.infinity,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              gradient: _viewModel.loading
-                                  ? null
-                                  : const LinearGradient(
-                                      colors: [
-                                        AppColors.accentOrangeLight,
-                                        AppColors.accentOrange,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                              color: _viewModel.loading
-                                  ? AppColors.accentOrange.withValues(
-                                      alpha: 0.6,
-                                    )
-                                  : null,
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: _viewModel.loading
-                                  ? []
-                                  : [
-                                      BoxShadow(
-                                        color: AppColors.accentOrange
-                                            .withValues(alpha: 0.38),
-                                        blurRadius: 24,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                            ),
-                            alignment: Alignment.center,
-                            child: _viewModel.loading
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        l10n.signInButton,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w800,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InteractiveCard(
+                                onTap: _viewModel.loading ? () {} : _handleSubmit,
+                                scaleOnPressed: 0.97,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    gradient: _viewModel.loading
+                                        ? null
+                                        : const LinearGradient(
+                                            colors: [
+                                              AppColors.accentOrangeLight,
+                                              AppColors.accentOrange,
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                    color: _viewModel.loading
+                                        ? AppColors.accentOrange.withValues(
+                                            alpha: 0.6,
+                                          )
+                                        : null,
+                                    borderRadius: BorderRadius.circular(18),
+                                    boxShadow: _viewModel.loading
+                                        ? []
+                                        : [
+                                            BoxShadow(
+                                              color: AppColors.accentOrange
+                                                  .withValues(alpha: 0.38),
+                                              blurRadius: 24,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: _viewModel.loading
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                          ),
+                                        )
+                                      : Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              l10n.signInButton,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            const Icon(
+                                              Icons.arrow_forward_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      const Icon(
-                                        Icons.arrow_forward_rounded,
-                                        color: Colors.white,
-                                        size: 20,
+                                ),
+                              ),
+                            ),
+                            if (_isBiometricAuthEnabled) ...[
+                              const SizedBox(width: 12),
+                              InteractiveCard(
+                                scaleOnPressed: 0.96,
+                                onTap: _viewModel.loading ? () {} : _handleBiometricLogin,
+                                child: Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    color: cardBg,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isDark ? AppColors.slate800 : AppColors.slate200,
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
-                          ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.fingerprint_rounded,
+                                    color: AppColors.accentOrange,
+                                    size: 28,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
 
                         // Divider

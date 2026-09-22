@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:local_auth/local_auth.dart';
 import '../main.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
@@ -71,6 +72,13 @@ class LoginViewModel extends ChangeNotifier {
       await prefs.setString('user_name', userObj.name);
       await prefs.setString('user_email', userObj.email);
       await prefs.setBool('is_logged_in', true);
+
+      // Se a biometria estiver habilitada, salva as credenciais com segurança para logins futuros
+      final bool biometricEnabled = prefs.getBool('biometric_auth') ?? false;
+      if (biometricEnabled) {
+        await SecureStorageManager.write('biometric_email', _email);
+        await SecureStorageManager.write('biometric_password', _password);
+      }
 
       currentUserNotifier.value = userObj;
 
@@ -150,6 +158,76 @@ class LoginViewModel extends ChangeNotifier {
     } catch (e) {
       _loading = false;
       _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Falha ao autenticar com o Google');
+      notifyListeners();
+      onError(_errorMessage!);
+    }
+  }
+
+  /// Realiza o login utilizando autenticação biométrica local
+  Future<void> loginWithBiometrics({
+    required VoidCallback onSuccess,
+    required ValueChanged<String> onError,
+  }) async {
+    _loading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool biometricEnabled = prefs.getBool('biometric_auth') ?? false;
+      if (!biometricEnabled) {
+        throw Exception('Biometria não habilitada nas configurações do app.');
+      }
+
+      final savedEmail = await SecureStorageManager.read('biometric_email');
+      final savedPassword = await SecureStorageManager.read('biometric_password');
+
+      if (savedEmail == null || savedPassword == null) {
+        throw Exception('Credenciais biométricas não configuradas. Faça login com e-mail e senha primeiro.');
+      }
+
+      final localAuth = LocalAuthentication();
+      final bool canCheck = await localAuth.canCheckBiometrics;
+      final bool isSupported = await localAuth.isDeviceSupported();
+
+      if (!canCheck || !isSupported) {
+        throw Exception('Autenticação biométrica não suportada ou não ativa neste dispositivo.');
+      }
+
+      final bool didAuthenticate = await localAuth.authenticate(
+        localizedReason: 'Autentique-se para entrar no FinanceApp',
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
+      );
+
+      if (!didAuthenticate) {
+        _loading = false;
+        notifyListeners();
+        return; // Usuário cancelou ou falhou na biometria local
+      }
+
+      // Autenticação bem-sucedida! Executa login automático
+      final data = await _apiService.login(savedEmail, savedPassword);
+
+      final String accessToken = data['access_token'] as String;
+      final Map<String, dynamic> userJson =
+          data['user'] as Map<String, dynamic>;
+      final userObj = User.fromJson(userJson);
+
+      await SecureStorageManager.writeToken(accessToken);
+      await prefs.setString('user_id', userObj.id);
+      await prefs.setString('user_name', userObj.name);
+      await prefs.setString('user_email', userObj.email);
+      await prefs.setBool('is_logged_in', true);
+
+      currentUserNotifier.value = userObj;
+
+      _loading = false;
+      notifyListeners();
+      onSuccess();
+    } catch (e) {
+      _loading = false;
+      _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Falha no login biométrico');
       notifyListeners();
       onError(_errorMessage!);
     }

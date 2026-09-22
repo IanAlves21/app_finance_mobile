@@ -314,42 +314,6 @@ abstract class AppLocalizations {
   /// **'Account settings'**
   String get accountSettings;
 
-  /// No description provided for @editProfiles.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Profiles'**
-  String get editProfiles;
-
-  /// No description provided for @managePersonalProfiles.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage personal profiles'**
-  String get managePersonalProfiles;
-
-  /// No description provided for @connectedBanks.
-  ///
-  /// In en, this message translates to:
-  /// **'Connected Banks'**
-  String get connectedBanks;
-
-  /// No description provided for @banksLinked.
-  ///
-  /// In en, this message translates to:
-  /// **'2 external bank accounts linked'**
-  String get banksLinked;
-
-  /// No description provided for @cardsSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Cards Settings'**
-  String get cardsSettings;
-
-  /// No description provided for @cardsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Virtual cards and blockings'**
-  String get cardsSubtitle;
-
   /// No description provided for @preferences.
   ///
   /// In en, this message translates to:
@@ -379,30 +343,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Support'**
   String get support;
-
-  /// No description provided for @helpCenter.
-  ///
-  /// In en, this message translates to:
-  /// **'Help Center'**
-  String get helpCenter;
-
-  /// No description provided for @faqsSupport.
-  ///
-  /// In en, this message translates to:
-  /// **'FAQs and technical support'**
-  String get faqsSupport;
-
-  /// No description provided for @privacyPolicy.
-  ///
-  /// In en, this message translates to:
-  /// **'Privacy Policy'**
-  String get privacyPolicy;
-
-  /// No description provided for @dataSecurity.
-  ///
-  /// In en, this message translates to:
-  /// **'Data security policies'**
-  String get dataSecurity;
 
   /// No description provided for @addNewTransaction.
   ///
@@ -1315,6 +1255,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An error occurred while saving the transaction.'**
   String get errorSavingTransaction;
+
+  /// No description provided for @logoutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get logoutLabel;
+
+  /// No description provided for @logoutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect from joint account'**
+  String get logoutSubtitle;
+
+  /// No description provided for @logoutConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to sign out?'**
+  String get logoutConfirmTitle;
+
+  /// No description provided for @logoutConfirmMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'You will need to authenticate again when you open the app.'**
+  String get logoutConfirmMsg;
+
+  /// No description provided for @exportReportLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Monthly Report'**
+  String get exportReportLabel;
+
+  /// No description provided for @exportReportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download transactions statement as PDF'**
+  String get exportReportSubtitle;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Report generated and opened successfully!'**
+  String get exportSuccess;
+
+  /// No description provided for @exportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error generating monthly report.'**
+  String get exportError;
+
+  /// No description provided for @generatingReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating Report...'**
+  String get generatingReport;
 }
 
 class _AppLocalizationsDelegate

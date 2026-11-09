@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
@@ -119,13 +120,7 @@ class LoginViewModel extends ChangeNotifier {
       } catch (_) {}
 
       // Abre o seletor de contas do Google usando o authenticate() nativo
-      final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
-      if (googleUser == null) {
-        // Usuário cancelou o login manualmente
-        _loading = false;
-        notifyListeners();
-        return;
-      }
+      final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
 
       // No google_sign_in v7+, acessar a autenticação é um método síncrono (sem await)
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
@@ -225,6 +220,17 @@ class LoginViewModel extends ChangeNotifier {
       _loading = false;
       notifyListeners();
       onSuccess();
+    } on PlatformException catch (pe) {
+      _loading = false;
+      notifyListeners();
+      // Não exibe erro se o usuário apenas cancelou a biometria nativa
+      final code = pe.code.toLowerCase();
+      if (code.contains('cancel') || code == 'notavailable' || code == 'passcode_not_set') {
+        return;
+      }
+      _errorMessage = UIUtils.sanitizeErrorMessage(pe, defaultMessage: 'Falha no login biométrico');
+      notifyListeners();
+      onError(_errorMessage!);
     } catch (e) {
       _loading = false;
       _errorMessage = UIUtils.sanitizeErrorMessage(e, defaultMessage: 'Falha no login biométrico');

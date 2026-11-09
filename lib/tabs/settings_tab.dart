@@ -204,10 +204,11 @@ class _SettingsTabState extends State<SettingsTab> {
                         : () async {
                             HapticFeedback.mediumImpact();
                             final success = await _viewModel.exportCurrentMonthReport();
+                            if (!mounted) return;
                             if (success) {
-                              CustomToast.showSuccess(context, l10n.exportSuccess);
+                              CustomToast.showSuccess(this.context, l10n.exportSuccess);
                             } else {
-                              CustomToast.showError(context, l10n.exportError);
+                              CustomToast.showError(this.context, l10n.exportError);
                             }
                           },
                   ),
@@ -246,7 +247,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     isDark,
                     (v) {
                       HapticFeedback.lightImpact();
-                      _showPasswordConfirmDialog(context, v);
+                      _showPasswordConfirmDialog(v);
                     },
                   ),
                   const SizedBox(height: 28),
@@ -326,7 +327,7 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  void _showPasswordConfirmDialog(BuildContext context, bool value) {
+  void _showPasswordConfirmDialog(bool value) {
     if (!value) {
       _viewModel.toggleBiometricAuth(false);
       return;
@@ -337,7 +338,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
@@ -366,7 +367,7 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
@@ -380,9 +381,10 @@ class _SettingsTabState extends State<SettingsTab> {
                 if (password.isEmpty) {
                   return;
                 }
-                Navigator.pop(context); // fecha dialog
+                Navigator.pop(dialogContext); // fecha dialog
 
                 final success = await _viewModel.toggleBiometricAuth(true, passwordConfirm: password);
+                if (!mounted) return;
                 if (success) {
                   CustomToast.showSuccess(context, 'Login biométrico ativado com sucesso!');
                 } else {

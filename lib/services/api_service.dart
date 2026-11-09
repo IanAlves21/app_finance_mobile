@@ -18,8 +18,21 @@ class ApiService {
   static const String googleServerClientId =
       '634529212241-j6dmtm8df0l8lo0sgbvvpdjqn5lav6g7.apps.googleusercontent.com';
 
+  /// URL do API Gateway em produção (Cloud Run)
+  static const String _prodBaseUrl =
+      'https://app-finance-backend-service-gateway-797162048192.us-central1.run.app';
+
+  /// Override opcional via `--dart-define=API_BASE_URL=https://...`
+  /// (útil para apontar um build debug para PROD ou um device físico para o IP da sua máquina)
+  static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL');
+
   static String get baseUrl {
-    // API Gateway runs on 8080. On Android emulator, use 10.0.2.2.
+    if (_envBaseUrl.isNotEmpty) return _envBaseUrl;
+
+    // `flutter build --release` (APK/AAB/IPA) usa automaticamente a API de PROD
+    if (kReleaseMode) return _prodBaseUrl;
+
+    // Debug/Profile: API Gateway local na porta 8080. No emulador Android, use 10.0.2.2.
     if (!kIsWeb && Platform.isAndroid) {
       return 'http://10.0.2.2:8080';
     }

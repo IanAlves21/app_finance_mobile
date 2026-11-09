@@ -33,13 +33,15 @@ class _GroupScreenState extends State<GroupScreen> {
 
   void _shareInviteLink(String link) {
     final l10n = AppLocalizations.of(context)!;
-    Share.share(
-      l10n.shareInviteMsg(link),
-      subject: l10n.shareInviteSubject,
+    SharePlus.instance.share(
+      ShareParams(
+        text: l10n.shareInviteMsg(link),
+        subject: l10n.shareInviteSubject,
+      ),
     );
   }
 
-  void _showInviteDialog(BuildContext context) async {
+  void _showInviteDialog() async {
     final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isActionLoading = true;
@@ -68,8 +70,8 @@ class _GroupScreenState extends State<GroupScreen> {
 
     showDialog(
       context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -205,13 +207,13 @@ class _GroupScreenState extends State<GroupScreen> {
     );
   }
 
-  void _showAcceptCodeDialog(BuildContext context) {
+  void _showAcceptCodeDialog() {
     final codeController = TextEditingController();
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -268,7 +270,7 @@ class _GroupScreenState extends State<GroupScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(dialogContext),
                   child: Text(
                     l10n.cancel,
                     style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
@@ -281,7 +283,7 @@ class _GroupScreenState extends State<GroupScreen> {
                       CustomToast.showError(context, l10n.codeLengthError);
                       return;
                     }
-                    Navigator.pop(context); // Fecha o diálogo de entrada de código
+                    Navigator.pop(dialogContext); // Fecha o diálogo de entrada de código
 
                     setState(() {
                       _isActionLoading = true;
@@ -322,12 +324,12 @@ class _GroupScreenState extends State<GroupScreen> {
     );
   }
 
-  void _confirmLeaveGroup(BuildContext context) {
+  void _confirmLeaveGroup() {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -347,7 +349,7 @@ class _GroupScreenState extends State<GroupScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(dialogContext),
                   child: Text(
                     l10n.cancel,
                     style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
@@ -355,7 +357,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    Navigator.pop(context); // Fecha o diálogo de confirmação
+                    Navigator.pop(dialogContext); // Fecha o diálogo de confirmação
 
                     setState(() {
                       _isActionLoading = true;
@@ -366,18 +368,18 @@ class _GroupScreenState extends State<GroupScreen> {
                       await _viewModel.leaveGroup();
                       success = true;
                     } catch (e) {
-                      if (context.mounted) {
+                      if (mounted) {
                         CustomToast.showError(context, l10n.leaveGroupError(e.toString()));
                       }
                     } finally {
-                      if (context.mounted) {
+                      if (mounted) {
                         setState(() {
                           _isActionLoading = false;
                         });
                       }
                     }
 
-                    if (success && context.mounted) {
+                    if (success && mounted) {
                       CustomToast.showSuccess(context, l10n.leaveGroupSuccess);
                     }
                   },
@@ -439,8 +441,6 @@ class _GroupScreenState extends State<GroupScreen> {
               body: const Center(child: CircularProgressIndicator()),
             );
           }
-
-          final showButtons = _viewModel.members.isNotEmpty && !_viewModel.isLoading;
 
           return Stack(
             children: [
@@ -537,7 +537,7 @@ class _GroupScreenState extends State<GroupScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: _viewModel.members.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 10),
+                              separatorBuilder: (_, _) => const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 final member = _viewModel.members[index];
                                 final String name = member['name'] as String? ?? l10n.unknownUser;
@@ -600,7 +600,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                 children: [
                                   Expanded(
                                     child: ElevatedButton(
-                                      onPressed: () => _showInviteDialog(context),
+                                      onPressed: _showInviteDialog,
                                       style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(vertical: 16),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -626,7 +626,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                 children: [
                                   Expanded(
                                     child: OutlinedButton(
-                                      onPressed: () => _showAcceptCodeDialog(context),
+                                      onPressed: _showAcceptCodeDialog,
                                       style: OutlinedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(vertical: 16),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -653,7 +653,7 @@ class _GroupScreenState extends State<GroupScreen> {
                                   children: [
                                     Expanded(
                                       child: OutlinedButton(
-                                        onPressed: () => _confirmLeaveGroup(context),
+                                        onPressed: _confirmLeaveGroup,
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

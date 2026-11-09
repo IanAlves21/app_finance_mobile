@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
 import '../services/secure_storage_manager.dart';
 
 class GroupRepository {
   final ApiService _apiService;
 
-  GroupRepository({required ApiService apiService}) : _apiService = apiService;
+  GroupRepository({required this._apiService});
 
   /// Busca informações sobre o grupo familiar atual e seus membros
   Future<Map<String, dynamic>> fetchGroupInfo() async {

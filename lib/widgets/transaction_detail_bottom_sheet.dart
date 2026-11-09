@@ -6,8 +6,6 @@ import '../l10n/app_localizations_extension.dart';
 import '../utils/transaction_ui_extension.dart';
 import '../utils/currency_formatter.dart';
 import 'custom_toast.dart';
-import '../main.dart';
-import 'add_transaction_bottom_sheet.dart';
 
 class TransactionDetailBottomSheet extends StatefulWidget {
   final Transaction transaction;

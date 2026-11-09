@@ -55,6 +55,8 @@ class FakeTransactionRepository extends TransactionRepository {
     );
   }
 
+  int? lastUpdateInstallments;
+
   @override
   Future<Transaction> updateTransaction({
     required String id,
@@ -63,8 +65,10 @@ class FakeTransactionRepository extends TransactionRepository {
     required String type,
     String? categoryId,
     String? paymentMethod,
+    int? installments,
   }) async {
     updateCalled = true;
+    lastUpdateInstallments = installments;
     return Transaction(
       id: id,
       name: description,
@@ -116,16 +120,19 @@ void main() {
       expect(transactionRepo.createCalled, isTrue);
     });
 
-    test('updateTransaction delegates to TransactionRepository', () async {
+    test('updateTransaction delegates to TransactionRepository with installments', () async {
       await viewModel.updateTransaction(
         id: 'tx-existing',
         description: 'New Dinner',
         amount: 30.0,
         type: 'EXPENSE',
         categoryId: 'cat-1',
+        paymentMethod: 'CREDIT',
+        installments: 3,
       );
 
       expect(transactionRepo.updateCalled, isTrue);
+      expect(transactionRepo.lastUpdateInstallments, equals(3));
     });
   });
 }

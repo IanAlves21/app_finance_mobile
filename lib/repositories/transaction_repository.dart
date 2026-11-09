@@ -113,9 +113,9 @@ class TransactionRepository {
             'amount': amount,
             'type': type,
             'date': date,
-            if (categoryId != null) 'categoryId': categoryId,
-            if (paymentMethod != null) 'paymentMethod': paymentMethod,
-            if (installments != null) 'installments': installments,
+            'categoryId': ?categoryId,
+            'paymentMethod': ?paymentMethod,
+            'installments': ?installments,
           })
           .timeout(const Duration(seconds: 5));
 
@@ -174,9 +174,9 @@ class TransactionRepository {
         'amount': amount,
         'type': type,
         'date': date,
-        if (categoryId != null) 'categoryId': categoryId,
-        if (paymentMethod != null) 'paymentMethod': paymentMethod,
-        if (installments != null) 'installments': installments,
+        'categoryId': ?categoryId,
+        'paymentMethod': ?paymentMethod,
+        'installments': ?installments,
       };
 
       try {
@@ -203,8 +203,8 @@ class TransactionRepository {
           'type': type,
           'amount': amount.toString(),
           'date': date,
-          if (categoryId != null) 'categoryId': categoryId,
-          if (paymentMethod != null) 'paymentMethod': paymentMethod,
+          'categoryId': ?categoryId,
+          'paymentMethod': ?paymentMethod,
           'paidBy': {'name': prefs.getString('user_name') ?? 'Me'},
           'wallet': {'name': 'Shared Wallet Account'},
           'note': 'Sincronização pendente',
@@ -230,6 +230,7 @@ class TransactionRepository {
     required String type, // 'INCOME' ou 'EXPENSE'
     String? categoryId,
     String? paymentMethod,
+    int? installments,
   }) async {
     try {
       final response = await _apiService
@@ -239,6 +240,7 @@ class TransactionRepository {
             'type': type,
             'categoryId': categoryId,
             'paymentMethod': paymentMethod,
+            'installments': ?installments,
           })
           .timeout(const Duration(seconds: 5));
 

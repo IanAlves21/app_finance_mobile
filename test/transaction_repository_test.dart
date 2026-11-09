@@ -192,6 +192,42 @@ void main() {
       expect(list[0]['description'], 'Edited name');
     });
 
+    test('updateTransaction sends installments in PATCH payload when provided', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, '/transactions/tx-credit');
+        expect(request.method, 'PATCH');
+        final Map<String, dynamic> body = json.decode(request.body);
+        expect(body['installments'], 4);
+        expect(body['paymentMethod'], 'CREDIT');
+        return http.Response(
+          json.encode({
+            'id': 'tx-credit',
+            'description': 'Smartphone (1/4)',
+            'type': 'EXPENSE',
+            'amount': '-150.0',
+            'date': '2026-07-15T12:00:00.000Z',
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+
+      final apiService = ApiService(client: mockClient);
+      final repo = TransactionRepository(apiService: apiService);
+
+      final result = await repo.updateTransaction(
+        id: 'tx-credit',
+        description: 'Smartphone',
+        amount: 600.0,
+        type: 'EXPENSE',
+        paymentMethod: 'CREDIT',
+        installments: 4,
+      );
+
+      expect(result.id, 'tx-credit');
+      expect(result.name, 'Smartphone (1/4)');
+    });
+
     test('deleteTransaction sends DELETE online', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, '/transactions/tx-delete');

@@ -5,6 +5,7 @@ import 'interactive_card.dart';
 import 'custom_toast.dart';
 import '../l10n/app_localizations.dart'; // Import Custom Localization
 import '../theme/app_colors.dart';
+import '../utils/currency_formatter.dart';
 import '../viewmodels/add_transaction_view_model.dart';
 import '../services/service_locator.dart';
 import '../models/transaction.dart';
@@ -37,11 +38,24 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
 
     if (widget.transaction != null) {
       final tx = widget.transaction!;
-      _nameController.text = tx.name;
 
-      final double absoluteAmount = tx.amount.abs();
-      final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
-      _amountController.text = formatter.format(absoluteAmount);
+      final regex = RegExp(r'\s*\((\d+)\/(\d+)\)$');
+      final match = regex.firstMatch(tx.name);
+      if (match != null) {
+        final total = int.tryParse(match.group(2) ?? '1') ?? 1;
+        _installments = total;
+        _nameController.text = tx.name.replaceAll(regex, '').trim();
+
+        final double totalAmount = tx.amount.abs() * total;
+        final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
+        _amountController.text = formatter.format(totalAmount);
+      } else {
+        _nameController.text = tx.name;
+        final double absoluteAmount = tx.amount.abs();
+        final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
+        _amountController.text = formatter.format(absoluteAmount);
+        _installments = 1;
+      }
 
       _selectedType = tx.amount > 0 ? 'Income' : 'Expense';
       _selectedCategory = tx.categoryId ?? '';
@@ -168,6 +182,10 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           type: _selectedType.toUpperCase(),
           categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
           paymentMethod: _selectedType == 'Expense' ? _selectedPaymentMethod : null,
+          installments:
+              _selectedType == 'Expense' && _selectedPaymentMethod == 'CREDIT'
+                  ? _installments
+                  : null,
         );
 
         if (!mounted) return;
@@ -829,35 +847,6 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class CurrencyInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.selection.baseOffset == 0) {
-      return newValue;
-    }
-
-    String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanText.isEmpty) {
-      return const TextEditingValue(
-        text: 'R\$ 0,00',
-        selection: TextSelection.collapsed(offset: 7),
-      );
-    }
-
-    double value = double.parse(cleanText) / 100;
-    final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
-    String newText = formatter.format(value);
-
-    return TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: newText.length),
     );
   }
 }

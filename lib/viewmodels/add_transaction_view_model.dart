@@ -69,6 +69,7 @@ class AddTransactionViewModel extends ChangeNotifier {
     required String type, // 'INCOME' ou 'EXPENSE'
     String? categoryId,
     String? paymentMethod,
+    int? installments,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -81,6 +82,7 @@ class AddTransactionViewModel extends ChangeNotifier {
         type: type,
         categoryId: categoryId,
         paymentMethod: paymentMethod,
+        installments: installments,
       );
     } finally {
       _isLoading = false;

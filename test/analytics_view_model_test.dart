@@ -44,17 +44,17 @@ void main() {
 
   setUpAll(() {
     // Mock the PathProvider and OpenFilex platform channels to avoid native channel exceptions
-    const MethodChannel(
-      'plugins.flutter.io/path_provider',
-    ).setMockMethodCallHandler((MethodCall methodCall) async {
-      return '.';
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (MethodCall methodCall) async => '.',
+    );
 
-    const MethodChannel('open_filex').setMockMethodCallHandler((
-      MethodCall methodCall,
-    ) async {
-      return {'type': 0, 'message': 'done'};
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('open_filex'),
+      (MethodCall methodCall) async => {'type': 0, 'message': 'done'},
+    );
   });
 
   setUp(() async {

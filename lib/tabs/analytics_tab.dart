@@ -829,16 +829,16 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
     );
   }
 
-  void _showLoadingDialog(BuildContext context) {
+  void _showLoadingDialog() {
     final bool isPt = Localizations.localeOf(context).languageCode == 'pt';
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
+      builder: (dialogContext) {
         return PopScope(
           canPop: false,
           child: AlertDialog(
-            backgroundColor: Theme.of(context).cardColor,
+            backgroundColor: Theme.of(dialogContext).cardColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -907,7 +907,8 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
             primaryColor: AppColors.accentOrange,
             onApplyClick: (start, end) {
               Future.delayed(const Duration(milliseconds: 300), () {
-                _generateReportForRange(context, start, end, isPt);
+                if (!mounted) return;
+                _generateReportForRange(start, end, isPt);
               });
             },
             onCancelClick: () {
@@ -926,13 +927,12 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
   }
 
   Future<void> _generateReportForRange(
-    BuildContext context,
     DateTime start,
     DateTime end,
     bool isPt,
   ) async {
     if (!mounted) return;
-    _showLoadingDialog(context);
+    _showLoadingDialog();
     try {
       await _viewModel.generatePdfReport(
         startDate: start,

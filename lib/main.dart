@@ -19,6 +19,7 @@ import 'models/user.dart';
 import 'services/api_service.dart';
 import 'services/secure_storage_manager.dart';
 import 'services/service_locator.dart';
+import 'services/session_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Global Notifier for App Logged In state
@@ -93,10 +94,7 @@ void main() async {
       }
     } else {
       // Se expirou ou não existe, limpa localmente para forçar nova autenticação de forma segura
-      isLoggedInNotifier.value = false;
-      currentUserNotifier.value = null;
-      await prefs.clear();
-      await SecureStorageManager.deleteToken();
+      await SessionManager.logout();
     }
   } catch (e) {
     debugPrint('Error loading persistent session: $e');
@@ -328,8 +326,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
+        builder: (sheetContext) {
+          final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
           final textColor = isDark ? Colors.white : AppColors.darkSlate;
           final cardBgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
 
@@ -345,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               24,
               24,
               24,
-              24 + MediaQuery.of(context).padding.bottom,
+              24 + MediaQuery.of(sheetContext).padding.bottom,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -399,7 +397,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(sheetContext),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -412,7 +410,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          Navigator.pop(context);
+                          Navigator.pop(sheetContext);
                           try {
                             await groupViewModel.acceptInvite(code);
                             if (mounted) {

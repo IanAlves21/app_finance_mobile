@@ -90,8 +90,9 @@ class SettingsViewModel extends ChangeNotifier {
         // Se uma senha foi fornecida para salvar credenciais de login biometria
         if (passwordConfirm != null && passwordConfirm.isNotEmpty) {
           final currentUser = currentUserNotifier.value;
-          if (currentUser != null) {
-            await SecureStorageManager.write('biometric_email', currentUser.email);
+          final String? userEmail = currentUser?.email ?? prefs.getString('user_email');
+          if (userEmail != null) {
+            await SecureStorageManager.write('biometric_email', userEmail);
             await SecureStorageManager.write('biometric_password', passwordConfirm);
           }
         }

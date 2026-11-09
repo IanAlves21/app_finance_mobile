@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
 import '../repositories/category_repository.dart';
 import '../repositories/budget_repository.dart';
 import '../services/service_locator.dart';
 import '../theme/app_colors.dart';
+import '../utils/currency_formatter.dart';
 import '../utils/ui_utils.dart';
 import 'interactive_card.dart';
 import 'custom_toast.dart';
@@ -21,6 +24,7 @@ class AddCategoryBottomSheet extends StatefulWidget {
 class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
   final _nameController = TextEditingController();
   final _budgetController = TextEditingController();
+  String? _existingBudgetId;
   String _selectedType = 'EXPENSE';
   String _selectedIcon = 'category';
   String _selectedColor = '#1A2D5A'; // Default Primary Blue
@@ -51,10 +55,10 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
       );
       if (match.isNotEmpty) {
         if (mounted) {
+          final formatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
           setState(() {
-            _budgetController.text = match.first.amount
-                .toStringAsFixed(0)
-                .replaceAll('.00', '');
+            _existingBudgetId = match.first.id;
+            _budgetController.text = formatter.format(match.first.amount);
           });
         }
       }
@@ -134,20 +138,32 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
       }
 
       // Se for uma despesa e o limite do orçamento estiver preenchido, salva o orçamento
+      final String cleanAmount = _budgetController.text.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
+      final double? budgetLimit = cleanAmount.isEmpty
+          ? null
+          : double.tryParse(cleanAmount)! / 100;
+
       if (_selectedType == 'EXPENSE' &&
-          _budgetController.text.trim().isNotEmpty) {
-        final double? budgetLimit = double.tryParse(
-          _budgetController.text.trim(),
+          budgetLimit != null &&
+          budgetLimit > 0) {
+        final now = DateTime.now();
+        await locator<BudgetRepository>().upsertBudget(
+          amount: budgetLimit,
+          month: now.month,
+          year: now.year,
+          categoryId: categoryId,
         );
-        if (budgetLimit != null && budgetLimit > 0) {
-          final now = DateTime.now();
-          await locator<BudgetRepository>().upsertBudget(
-            amount: budgetLimit,
-            month: now.month,
-            year: now.year,
-            categoryId: categoryId,
-          );
-        }
+      } else if ((_selectedType != 'EXPENSE' || cleanAmount.isEmpty) &&
+          _existingBudgetId != null) {
+        // Se limpou o valor ou mudou o tipo da categoria para receita, remove o orçamento existente
+        await locator<BudgetRepository>()
+            .deleteBudget(_existingBudgetId!)
+            .catchError((e) {
+          debugPrint('Error deleting budget: $e');
+        });
       }
 
       if (mounted) {
@@ -347,12 +363,14 @@ class _AddCategoryBottomSheetState extends State<AddCategoryBottomSheet> {
               const SizedBox(height: 6),
               TextField(
                 controller: _budgetController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  const CurrencyInputFormatter(allowEmpty: true),
+                ],
                 style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
-                  hintText: l10n.budgetHint,
+                  hintText: 'R\$ 0,00',
                   hintStyle: TextStyle(
                     color: subTextColor.withValues(alpha: 0.5),
                   ),

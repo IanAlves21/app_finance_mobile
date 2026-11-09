@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../services/service_locator.dart';
+import '../services/secure_storage_manager.dart';
 import '../widgets/custom_toast.dart';
 import '../viewmodels/login_view_model.dart';
 import '../widgets/interactive_card.dart';
@@ -66,9 +67,29 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loadBiometricStatus() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final bool enabled = prefs.getBool('biometric_auth') ?? false;
+      final String? savedEmail = await SecureStorageManager.read('biometric_email');
+      final String? savedPassword = await SecureStorageManager.read('biometric_password');
+
+      final bool canUseBiometrics =
+          enabled && savedEmail != null && savedPassword != null;
+
+      if (!mounted) return;
       setState(() {
-        _isBiometricAuthEnabled = prefs.getBool('biometric_auth') ?? false;
+        _isBiometricAuthEnabled = canUseBiometrics;
+        if (savedEmail != null && _emailController.text.isEmpty) {
+          _emailController.text = savedEmail;
+        }
       });
+
+      // Se a biometria estiver configurada, solicita a autenticação automaticamente ao abrir a tela
+      if (canUseBiometrics) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_viewModel.loading) {
+            _handleBiometricLogin();
+          }
+        });
+      }
     } catch (_) {}
   }
 
@@ -76,7 +97,9 @@ class _LoginScreenState extends State<LoginScreen> {
     _viewModel.loginWithBiometrics(
       onSuccess: widget.onLogin,
       onError: (errorMsg) {
-        CustomToast.showError(context, errorMsg);
+        if (mounted) {
+          CustomToast.showError(context, errorMsg);
+        }
       },
     );
   }
@@ -163,35 +186,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: Column(
                       children: [
-                        // Logo Mark
+                        // Logo Mark Oficial
                         Container(
-                          width: 72,
-                          height: 72,
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppColors.accentOrangeLight,
-                                AppColors.accentOrange,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.accentOrange.withValues(
-                                  alpha: 0.45,
+                                  alpha: 0.35,
                                 ),
                                 blurRadius: 24,
                                 offset: const Offset(0, 8),
                               ),
                             ],
                           ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.account_balance_wallet_rounded,
-                            size: 34,
-                            color: Colors.white,
+                          child: Image.asset(
+                            'assets/icon/splash_logo.png',
+                            width: 84,
+                            height: 84,
+                            fit: BoxFit.contain,
                           ),
                         ),
                         const SizedBox(height: 20),

@@ -209,10 +209,6 @@ void main() {
     await tester.tap(googleBtn);
     await tester.pumpAndSettle();
 
-    if (mockLoginViewModel.errorMessage != null) {
-      print('GOOGLE SIGN IN ERROR: ${mockLoginViewModel.errorMessage}');
-    }
-
     // Verify it logged in and rendered dashboard
     expect(find.text('SALDO TOTAL COMPARTILHADO'), findsOneWidget);
   });
@@ -804,17 +800,20 @@ class FakeGoogleSignIn extends Fake implements GoogleSignIn {
 }
 
 class FakeGoogleSignInAccount extends Fake implements GoogleSignInAccount {
+  @override
   String get email => 'google.user@example.com';
 
+  @override
   String get displayName => 'Google User';
 
+  @override
   String get id => '123';
 
+  @override
   GoogleSignInAuthentication get authentication => FakeGoogleSignInAuthentication();
 }
 
 class FakeGoogleSignInAuthentication extends Fake implements GoogleSignInAuthentication {
+  @override
   String? get idToken => 'mocked_google_id_token';
-
-  String? get accessToken => 'mocked_google_access_token';
 }

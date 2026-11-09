@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/category.dart';
+import '../repositories/category_repository.dart';
 import '../theme/app_colors.dart';
 import '../services/service_locator.dart';
 import '../utils/ui_utils.dart';
 import '../widgets/add_category_bottom_sheet.dart';
+import '../widgets/custom_toast.dart';
 import '../viewmodels/category_list_view_model.dart';
 
 class CategoryListScreen extends StatefulWidget {
@@ -33,8 +35,12 @@ class _CategoryListScreenState extends State<CategoryListScreen>
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.categoryLoadError}: $e')),
+        CustomToast.showError(
+          context,
+          UIUtils.sanitizeErrorMessage(
+            e,
+            defaultMessage: l10n.categoryLoadError,
+          ),
         );
       }
     }
@@ -76,7 +82,7 @@ class _CategoryListScreenState extends State<CategoryListScreen>
           TextButton(
             onPressed: () async {
               Navigator.pop(context); // Fecha o dialog
-              _executeDeleteCategory(category.id);
+              _executeDeleteCategory(category);
             },
             child: Text(
               l10n.delete,
@@ -91,21 +97,85 @@ class _CategoryListScreenState extends State<CategoryListScreen>
     );
   }
 
-  Future<void> _executeDeleteCategory(String categoryId) async {
+  /// Avisa que a categoria possui transações e oferece excluir tudo em cascata
+  void _confirmForceDeleteCategory(Category category, int transactionCount) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: AppColors.redAccent,
+          size: 32,
+        ),
+        title: Text(
+          l10n.categoryHasTransactionsTitle,
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          l10n.categoryHasTransactionsMessage(category.name, transactionCount),
+          style: TextStyle(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(
+                color: AppColors.slate400,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _executeDeleteCategory(category, force: true);
+            },
+            child: Text(
+              l10n.deleteAll,
+              style: const TextStyle(
+                color: AppColors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _executeDeleteCategory(
+    Category category, {
+    bool force = false,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      await _viewModel.deleteCategory(categoryId);
+      await _viewModel.deleteCategory(category.id, force: force);
       if (mounted) {
-        ScaffoldMessenger.of(
+        CustomToast.showSuccess(
           context,
-        ).showSnackBar(SnackBar(content: Text(l10n.categoryDeleteSuccess)));
+          force
+              ? l10n.categoryAndTransactionsDeleteSuccess
+              : l10n.categoryDeleteSuccess,
+        );
+      }
+    } on CategoryHasTransactionsException catch (e) {
+      if (mounted) {
+        _confirmForceDeleteCategory(category, e.transactionCount);
       }
     } catch (e) {
       if (mounted) {
-        final cleanMsg = e.toString().replaceAll('HttpException: ', '');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(cleanMsg)));
+        CustomToast.showError(context, UIUtils.sanitizeErrorMessage(e));
       }
     }
   }

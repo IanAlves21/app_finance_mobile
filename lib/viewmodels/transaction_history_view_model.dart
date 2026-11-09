@@ -79,8 +79,8 @@ class TransactionHistoryViewModel extends ChangeNotifier {
 
   Future<void> deleteTransaction(String id) async {
     try {
-      await _transactionRepository.deleteTransaction(id);
-      _transactions.removeWhere((tx) => tx.id == id);
+      final deletedIds = await _transactionRepository.deleteTransaction(id);
+      _transactions.removeWhere((tx) => deletedIds.contains(tx.id));
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting transaction inside ViewModel: $e');

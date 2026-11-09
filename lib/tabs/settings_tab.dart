@@ -265,7 +265,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   const SizedBox(height: 40),
                   Center(
                     child: Text(
-                      'FinanceApp • Versão 1.0.0 (Build 202609)',
+                      'FinanceApp • Versão 1.1.0 (Build 2)',
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.35),
                         fontSize: 11.5,

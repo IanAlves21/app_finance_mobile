@@ -238,7 +238,38 @@ void main() {
       final apiService = ApiService(client: mockClient);
       final repo = TransactionRepository(apiService: apiService);
 
-      await repo.deleteTransaction('tx-delete');
+      final deletedIds = await repo.deleteTransaction('tx-delete');
+      expect(deletedIds, ['tx-delete']);
+    });
+
+    test('deleteTransaction returns all installment ids and clears them from cache', () async {
+      SharedPreferences.setMockInitialValues({
+        'cached_transactions': json.encode([
+          {'id': 'tx-1'},
+          {'id': 'tx-2'},
+          {'id': 'tx-3'},
+          {'id': 'tx-keep'},
+        ]),
+      });
+
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, '/transactions/tx-2');
+        return http.Response(
+          json.encode({
+            'id': 'tx-2',
+            'deletedIds': ['tx-2', 'tx-1', 'tx-3'],
+          }),
+          200,
+        );
+      });
+
+      final repo = TransactionRepository(apiService: ApiService(client: mockClient));
+      final deletedIds = await repo.deleteTransaction('tx-2');
+
+      expect(deletedIds, ['tx-2', 'tx-1', 'tx-3']);
+      final prefs = await SharedPreferences.getInstance();
+      final cache = json.decode(prefs.getString('cached_transactions')!) as List;
+      expect(cache.map((t) => t['id']), ['tx-keep']);
     });
   });
 }

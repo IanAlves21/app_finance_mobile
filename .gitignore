@@ -49,3 +49,8 @@ app.*.map.json
 
 # Test generated reports
 /Relatorio_Financeiro_*.pdf
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example

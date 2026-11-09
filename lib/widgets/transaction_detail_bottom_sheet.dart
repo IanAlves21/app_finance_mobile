@@ -82,6 +82,14 @@ class _TransactionDetailBottomSheetState
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
 
+    // Parcelas ("Compra (2/3)") são excluídas em conjunto pelo backend
+    final installmentMatch = RegExp(
+      r'\((\d+)\/(\d+)\)$',
+    ).firstMatch(transaction.name.trim());
+    final int? installmentTotal = installmentMatch != null
+        ? int.tryParse(installmentMatch.group(2)!)
+        : null;
+
     final Color modalBgColor = isDark ? AppColors.darkCard : Colors.white;
     final Color textColor = isDark ? Colors.white : AppColors.darkSlate;
     final Color subTextColor = isDark ? AppColors.slate400 : AppColors.slate600;
@@ -140,7 +148,9 @@ class _TransactionDetailBottomSheetState
 
                   // Message Body
                   Text(
-                    l10n.deleteTransactionConfirm,
+                    installmentTotal != null && installmentTotal > 1
+                        ? l10n.deleteInstallmentsConfirm(installmentTotal)
+                        : l10n.deleteTransactionConfirm,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: subTextColor,

@@ -369,7 +369,9 @@ class TransactionRepository {
   }
 
   /// Exclui uma transação online e atualiza o cache local
-  Future<void> deleteTransaction(String id) async {
+  /// Exclui uma transação. Se ela for uma parcela, o backend exclui o parcelamento inteiro.
+  /// Retorna os IDs de todas as transações removidas.
+  Future<List<String>> deleteTransaction(String id) async {
     try {
       final String? token = await SecureStorageManager.readToken();
 
@@ -383,13 +385,23 @@ class TransactionRepository {
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200 || response.statusCode == 204) {
-        // Atualiza o cache local removendo a transação excluída
+        List<String> deletedIds = [id];
+        try {
+          final dynamic body = json.decode(response.body);
+          if (body is Map && body['deletedIds'] is List) {
+            deletedIds = (body['deletedIds'] as List)
+                .map((e) => e.toString())
+                .toList();
+          }
+        } catch (_) {}
+
+        // Atualiza o cache local removendo as transações excluídas
         try {
           final prefs = await SharedPreferences.getInstance();
           final String? cachedData = prefs.getString('cached_transactions');
           if (cachedData != null) {
             final List<dynamic> cacheList = json.decode(cachedData);
-            cacheList.removeWhere((tx) => tx['id'] == id);
+            cacheList.removeWhere((tx) => deletedIds.contains(tx['id']));
             await prefs.setString(
               'cached_transactions',
               json.encode(cacheList),
@@ -398,6 +410,7 @@ class TransactionRepository {
         } catch (cacheError) {
           debugPrint('Erro ao atualizar cache após exclusão: $cacheError');
         }
+        return deletedIds;
       } else if (response.statusCode == 401) {
         await _apiService.logout();
         throw const HttpException('Unauthorized');

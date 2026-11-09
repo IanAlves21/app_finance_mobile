@@ -25,11 +25,12 @@ class CategoryListViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteCategory(String categoryId) async {
+  /// Com [force] = true, exclui também as transações vinculadas à categoria
+  Future<void> deleteCategory(String categoryId, {bool force = false}) async {
     _isLoading = true;
     notifyListeners();
     try {
-      await _categoryRepository.deleteCategory(categoryId);
+      await _categoryRepository.deleteCategory(categoryId, force: force);
       // Reload automatically
       _categories = await _categoryRepository.fetchCategories();
     } catch (e) {

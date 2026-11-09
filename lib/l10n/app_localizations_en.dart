@@ -351,11 +351,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryDeleteSuccess => 'Category deleted successfully!';
 
   @override
+  String get categoryHasTransactionsTitle => 'Category in use';
+
+  @override
+  String categoryHasTransactionsMessage(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count linked transactions',
+      one: '1 linked transaction',
+    );
+    return 'The category \"$name\" has $_temp0. To delete it, all of these transactions will also be permanently deleted. This action cannot be undone.';
+  }
+
+  @override
+  String get deleteAll => 'Delete all';
+
+  @override
+  String get categoryAndTransactionsDeleteSuccess =>
+      'Category and its transactions deleted successfully!';
+
+  @override
   String get deleteTransaction => 'Delete Transaction';
 
   @override
   String get deleteTransactionConfirm =>
       'Are you sure you want to delete this transaction? This action cannot be undone.';
+
+  @override
+  String deleteInstallmentsConfirm(int total) {
+    return 'This is an installment purchase (${total}x). All $total installments will be deleted. This action cannot be undone.';
+  }
 
   @override
   String get transactionDeleteSuccess => 'Transaction deleted successfully!';

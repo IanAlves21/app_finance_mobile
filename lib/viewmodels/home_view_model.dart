@@ -220,10 +220,10 @@ class HomeViewModel extends ChangeNotifier {
     VoidCallback? onUnauthorized,
   }) async {
     try {
-      await _transactionRepository.deleteTransaction(id);
+      final deletedIds = await _transactionRepository.deleteTransaction(id);
 
-      // Remove a transação localmente
-      _transactions.removeWhere((tx) => tx.id == id);
+      // Remove localmente a transação (e as demais parcelas, se for parcelada)
+      _transactions.removeWhere((tx) => deletedIds.contains(tx.id));
 
       // Busca o resumo mensal atualizado diretamente do backend para garantir precisão
       final now = DateTime.now();

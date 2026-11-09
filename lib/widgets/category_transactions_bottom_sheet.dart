@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../main.dart';
 import '../models/transaction.dart';
 import '../repositories/transaction_repository.dart';
 import '../services/service_locator.dart';
@@ -68,6 +69,19 @@ class _CategoryTransactionsBottomSheetState
         _isLoading = false;
       });
     }
+  }
+
+  /// Exclui a transação no servidor (o parcelamento inteiro, se for parcela),
+  /// remove da lista local e avisa as demais telas para recarregarem os totais.
+  /// Erros são propagados para o TransactionDetailBottomSheet exibir o toast.
+  Future<void> _deleteTransaction(String id) async {
+    final deletedIds = await _transactionRepository.deleteTransaction(id);
+    if (mounted) {
+      setState(() {
+        _transactions.removeWhere((tx) => deletedIds.contains(tx.id));
+      });
+    }
+    transactionRefreshNotifier.value++;
   }
 
   @override
@@ -239,9 +253,7 @@ class _CategoryTransactionsBottomSheetState
 
         return TransactionCard(
           transaction: tx,
-          onDelete: () async {
-            _loadTransactions();
-          },
+          onDelete: () => _deleteTransaction(tx.id),
           badgeText: badgeText,
         );
       },

@@ -770,6 +770,30 @@ abstract class AppLocalizations {
   /// **'Category deleted successfully!'**
   String get categoryDeleteSuccess;
 
+  /// No description provided for @categoryHasTransactionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Category in use'**
+  String get categoryHasTransactionsTitle;
+
+  /// No description provided for @categoryHasTransactionsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The category \"{name}\" has {count, plural, =1{1 linked transaction} other{{count} linked transactions}}. To delete it, all of these transactions will also be permanently deleted. This action cannot be undone.'**
+  String categoryHasTransactionsMessage(String name, int count);
+
+  /// No description provided for @deleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all'**
+  String get deleteAll;
+
+  /// No description provided for @categoryAndTransactionsDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category and its transactions deleted successfully!'**
+  String get categoryAndTransactionsDeleteSuccess;
+
   /// No description provided for @deleteTransaction.
   ///
   /// In en, this message translates to:
@@ -781,6 +805,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to delete this transaction? This action cannot be undone.'**
   String get deleteTransactionConfirm;
+
+  /// No description provided for @deleteInstallmentsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This is an installment purchase ({total}x). All {total} installments will be deleted. This action cannot be undone.'**
+  String deleteInstallmentsConfirm(int total);
 
   /// No description provided for @transactionDeleteSuccess.
   ///

@@ -35,6 +35,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     _viewModel.addListener(_onViewModelChanged);
     _viewModel.loadCategories();
     _amountController.addListener(_onAmountChanged);
+    _nameController.addListener(_onAmountChanged);
 
     if (widget.transaction != null) {
       final tx = widget.transaction!;
@@ -63,6 +64,33 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
     }
   }
 
+  /// Todos os campos obrigatórios do modal estão preenchidos?
+  /// (descrição, valor > 0, categoria válida para o tipo e, se despesa, forma de pagamento)
+  bool get _isFormValid {
+    if (_nameController.text.trim().isEmpty) return false;
+
+    final String cleanAmount = _amountController.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+    final int cents = int.tryParse(cleanAmount) ?? 0;
+    if (cents <= 0) return false;
+
+    final bool hasValidCategory = _viewModel.categories.any(
+      (cat) =>
+          cat.id == _selectedCategory &&
+          cat.type == _selectedType.toUpperCase() &&
+          !cat.id.startsWith('offline_cat_'),
+    );
+    if (!hasValidCategory) return false;
+
+    if (_selectedType == 'Expense' && _selectedPaymentMethod == null) {
+      return false;
+    }
+
+    return true;
+  }
+
   void _onAmountChanged() {
     if (mounted) {
       setState(() {});
@@ -82,11 +110,14 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
       if (filtered.isNotEmpty) {
         if (_selectedCategory.isEmpty && widget.transaction != null) {
           final match = filtered.firstWhere(
-            (cat) => cat.name.toLowerCase() == widget.transaction!.category.toLowerCase(),
+            (cat) =>
+                cat.name.toLowerCase() ==
+                widget.transaction!.category.toLowerCase(),
             orElse: () => filtered.first,
           );
           _selectedCategory = match.id;
-        } else if (_selectedCategory.isEmpty || !filtered.any((cat) => cat.id == _selectedCategory)) {
+        } else if (_selectedCategory.isEmpty ||
+            !filtered.any((cat) => cat.id == _selectedCategory)) {
           _selectedCategory = filtered.first.id;
         }
       }
@@ -181,11 +212,13 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
           amount: amount,
           type: _selectedType.toUpperCase(),
           categoryId: _selectedCategory.isNotEmpty ? _selectedCategory : null,
-          paymentMethod: _selectedType == 'Expense' ? _selectedPaymentMethod : null,
+          paymentMethod: _selectedType == 'Expense'
+              ? _selectedPaymentMethod
+              : null,
           installments:
               _selectedType == 'Expense' && _selectedPaymentMethod == 'CREDIT'
-                  ? _installments
-                  : null,
+              ? _installments
+              : null,
         );
 
         if (!mounted) return;
@@ -353,6 +386,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
   @override
   void dispose() {
     _amountController.removeListener(_onAmountChanged);
+    _nameController.removeListener(_onAmountChanged);
     _nameController.dispose();
     _amountController.dispose();
     _viewModel.removeListener(_onViewModelChanged);
@@ -417,7 +451,9 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
 
             // Form Title
             Text(
-              widget.transaction != null ? l10n.editTransaction : l10n.addNewTransaction,
+              widget.transaction != null
+                  ? l10n.editTransaction
+                  : l10n.addNewTransaction,
               style: TextStyle(
                 color: textColor,
                 fontSize: 18,
@@ -805,44 +841,67 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
             ),
             const SizedBox(height: 24),
 
-            // Submit Button
-            InteractiveCard(
-              onTap: _viewModel.isLoading ? null : _saveTransaction,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFB923C), Color(0xFFF97316)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF97316).withValues(alpha: 0.35),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: _viewModel.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+            // Submit Button (habilitado apenas com todos os campos preenchidos)
+            Builder(
+              builder: (context) {
+                final bool isEnabled = _isFormValid && !_viewModel.isLoading;
+                final bool showAsActive = _isFormValid || _viewModel.isLoading;
+                return IgnorePointer(
+                  ignoring: !isEnabled,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: showAsActive ? 1.0 : 0.45,
+                    child: InteractiveCard(
+                      key: const Key('save_transaction_button'),
+                      onTap: isEnabled ? _saveTransaction : null,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: showAsActive
+                                ? const [Color(0xFFFB923C), Color(0xFFF97316)]
+                                : [AppColors.slate400, AppColors.slate400],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: showAsActive
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFF97316,
+                                    ).withValues(alpha: 0.35),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : const [],
                         ),
-                      )
-                    : Text(
-                        widget.transaction != null ? l10n.editTransaction : l10n.saveTransaction,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        alignment: Alignment.center,
+                        child: _viewModel.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                widget.transaction != null
+                                    ? l10n.editTransaction
+                                    : l10n.saveTransaction,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
-              ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

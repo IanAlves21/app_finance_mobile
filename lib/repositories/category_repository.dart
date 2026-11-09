@@ -6,6 +6,18 @@ import '../models/category.dart';
 import '../services/api_service.dart';
 import '../services/secure_storage_manager.dart';
 
+/// Lançada quando o backend recusa excluir uma categoria que possui transações vinculadas.
+/// Permite à UI oferecer a exclusão em cascata (categoria + transações).
+class CategoryHasTransactionsException implements Exception {
+  final int transactionCount;
+  final String message;
+
+  const CategoryHasTransactionsException(this.transactionCount, this.message);
+
+  @override
+  String toString() => message;
+}
+
 class CategoryRepository {
   final ApiService _apiService;
 
@@ -314,13 +326,18 @@ class CategoryRepository {
     }
   }
 
-  /// Exclui uma categoria do servidor e remove localmente
-  Future<void> deleteCategory(String id) async {
+  /// Exclui uma categoria do servidor e remove localmente.
+  /// Com [force] = true, também exclui todas as transações vinculadas a ela.
+  /// Lança [CategoryHasTransactionsException] se houver transações e [force] for false.
+  Future<void> deleteCategory(String id, {bool force = false}) async {
     final prefs = await SharedPreferences.getInstance();
 
     try {
+      final String path = force
+          ? '/transactions/categories/$id?force=true'
+          : '/transactions/categories/$id';
       final response = await _apiService
-          .delete('/transactions/categories/$id')
+          .delete(path)
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200 || response.statusCode == 204) {
@@ -336,9 +353,37 @@ class CategoryRepository {
             );
           }
         } catch (_) {}
+
+        // Remove do cache offline as transações apagadas em cascata
+        if (force) {
+          try {
+            final String? cachedTxs = prefs.getString('cached_transactions');
+            if (cachedTxs != null) {
+              final List<dynamic> txs = json.decode(cachedTxs);
+              txs.removeWhere(
+                (tx) =>
+                    tx is Map &&
+                    (tx['categoryId'] == id ||
+                        (tx['category'] is Map && tx['category']['id'] == id)),
+              );
+              await prefs.setString('cached_transactions', json.encode(txs));
+            }
+          } catch (_) {}
+        }
       } else if (response.statusCode == 401) {
         await _apiService.logout();
         throw const HttpException('Unauthorized');
+      } else if (response.statusCode == 409) {
+        int count = 0;
+        String errMsg = 'Categoria possui transações associadas';
+        try {
+          final Map<String, dynamic> data = json.decode(response.body);
+          count = (data['transactionCount'] as num?)?.toInt() ?? 0;
+          if (data.containsKey('message')) {
+            errMsg = data['message'].toString();
+          }
+        } catch (_) {}
+        throw CategoryHasTransactionsException(count, errMsg);
       } else {
         String errMsg = 'Falha ao excluir categoria';
         try {
@@ -350,7 +395,7 @@ class CategoryRepository {
         throw HttpException(errMsg);
       }
     } catch (e) {
-      if (e is HttpException) {
+      if (e is HttpException || e is CategoryHasTransactionsException) {
         rethrow;
       }
       throw HttpException('Erro ao excluir categoria: $e');

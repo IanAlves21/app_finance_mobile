@@ -14,6 +14,7 @@ import '../widgets/category_transactions_bottom_sheet.dart';
 import '../widgets/interactive_card.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/ui_utils.dart';
+import '../main.dart';
 
 class AnalyticsTab extends StatefulWidget {
   const AnalyticsTab({super.key});
@@ -30,6 +31,13 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
   void initState() {
     super.initState();
     _viewModel = locator<AnalyticsViewModel>();
+    transactionRefreshNotifier.addListener(_onTransactionsChanged);
+  }
+
+  /// Recarrega os gráficos/totais quando transações são criadas, editadas ou excluídas
+  void _onTransactionsChanged() {
+    if (!mounted || _currentLocale == null) return;
+    _viewModel.loadMonthlySpending(locale: _currentLocale!);
   }
 
   @override
@@ -44,6 +52,7 @@ class _AnalyticsTabState extends State<AnalyticsTab> {
 
   @override
   void dispose() {
+    transactionRefreshNotifier.removeListener(_onTransactionsChanged);
     _viewModel.dispose();
     super.dispose();
   }

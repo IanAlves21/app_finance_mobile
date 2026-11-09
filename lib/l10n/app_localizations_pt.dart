@@ -351,11 +351,37 @@ class AppLocalizationsPt extends AppLocalizations {
   String get categoryDeleteSuccess => 'Categoria excluída com sucesso!';
 
   @override
+  String get categoryHasTransactionsTitle => 'Categoria em uso';
+
+  @override
+  String categoryHasTransactionsMessage(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transações vinculadas',
+      one: '1 transação vinculada',
+    );
+    return 'A categoria \"$name\" possui $_temp0. Para excluí-la, todas essas transações também serão excluídas permanentemente. Esta ação não pode ser desfeita.';
+  }
+
+  @override
+  String get deleteAll => 'Excluir tudo';
+
+  @override
+  String get categoryAndTransactionsDeleteSuccess =>
+      'Categoria e suas transações excluídas com sucesso!';
+
+  @override
   String get deleteTransaction => 'Excluir Transação';
 
   @override
   String get deleteTransactionConfirm =>
       'Deseja realmente excluir esta transação? Esta ação não pode ser desfeita.';
+
+  @override
+  String deleteInstallmentsConfirm(int total) {
+    return 'Esta é uma compra parcelada em ${total}x. Todas as $total parcelas serão excluídas. Esta ação não pode ser desfeita.';
+  }
 
   @override
   String get transactionDeleteSuccess => 'Transação excluída com sucesso!';
